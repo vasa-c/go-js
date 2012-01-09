@@ -12,11 +12,110 @@
  */
 "use strict";
 
-var go = (function () {
+/*global window */
 
-	var go = {
-		'VERSION' : "1.0-beta"
+var go = (function (global) {
+
+	var VERSION = "1.0-beta",
+
+		/**
+		 * http-адрес каталога в котором находится go.js и модули
+		 *
+		 * @var string
+		 */
+		GO_DIR,
+
+		/**
+		 * Список модулей, для которых уже инициирована загрузка
+		 *
+		 * @var hash (имя => true)
+		 */
+		loading = {},
+
+		doc = global.document;
+
+
+	/**
+	 * go.include(): инициирование загрузки нужных модулей
+	 * (только на этапе загрузки страницы)
+	 *
+	 * @param string[] names
+	 *        имя нужного модуля или список из нескольких имён
+	 */
+	function include(names) {
+		var i, len, name, src;
+		if (typeof names !== "object") {
+			names = [names];
+		}
+		for (i = 0, len = names.length; i < len; i += 1) {
+			name = names[i];
+			if (!loading[name]) {
+				src = GO_DIR + names[i] + ".js";
+				doc.write('<script type="text/javascript" src="' + src + '"></script>');
+				loading[name] = true;
+			}
+		}
+	}
+
+	/**
+	 * go.appendModule(): добавление модуля в пространство имён
+	 * (вызывается при определении модуля в соответствующем файле)
+	 *
+	 * @param string name
+	 *        имя модуля
+	 * @param object module
+	 *        объект модуля
+	 */
+	function appendModule(name, module) {
+		go[name] = module;
+	}
+
+	/**
+	 * Инициализация библиотеки
+	 * - вычисление каталога с go.js
+	 * - подключение модулей заданных в параметрах URL
+	 *
+	 * @todo оптимизировать и протестировать для различных вариантов URL
+	 */
+	(function () {
+
+		var SRC_PATTERN = new RegExp("^(.*\\/)?go\\.js(\\?.*?l=(.*?))?$"),
+			matches;
+
+		if (doc.currentScript) {
+			matches = SRC_PATTERN.exec(doc.currentScript.getAttribute("src"));
+		}
+		if (!matches) {
+			matches = (function () {
+				var scripts = doc.getElementsByTagName("script"),
+					i,
+					src,
+					matches;
+				for (i = scripts.length; i > 0; i -= 1) {
+					src = scripts[i - 1].getAttribute("src");
+					matches = SRC_PATTERN.exec(src);
+					if (matches) {
+						return matches;
+					}
+				}
+			}());
+		}
+
+		if (!matches) {
+			throw new Error("go.js is not found in DOM");
+		}
+
+		GO_DIR = matches[1];
+
+		if (matches[3]) {
+			include(matches[3].split(","));
+		}
+
+	}());
+
+	return {
+		'VERSION'      : VERSION,
+		'include'      : include,
+		'appendModule' : appendModule
 	};
-
-	return go;
-}());
+}(window));
