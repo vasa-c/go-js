@@ -104,3 +104,24 @@ tests.test("getType", function () {
 
 	equal(go.Lang.getType({'go$type': 'user'}), "user");
 });
+
+tests.test("isArray", function () {
+
+	var astrict   = [1, 2, 3],
+		asimilar1 = arguments,
+		asimilar2 = document.body.childNodes,
+		anone1    = {'x': 1},
+		anone2    = 5;
+
+	ok(go.Lang.isArray(astrict));
+	ok(go.Lang.isArray(asimilar1));
+	ok(go.Lang.isArray(asimilar2));
+	ok(!go.Lang.isArray(anone1));
+	ok(!go.Lang.isArray(anone2));
+
+	ok(go.Lang.isArray(astrict, true));
+	ok(!go.Lang.isArray(asimilar1, true));
+	ok(!go.Lang.isArray(asimilar2, true));
+	ok(!go.Lang.isArray(anone1, true));
+	ok(!go.Lang.isArray(anone2, true));
+});

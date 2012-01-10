@@ -205,6 +205,29 @@ go("Lang", (function (global) {
 			return "object";
 		},
 
+		/**
+		 * Является ли значение массивом
+		 *
+		 * @param mixed value
+		 *        проверяемое значение
+		 * @param bool strict [optional]
+		 *        точная проверка - именно массивом
+		 *        по умолчанию - любая коллекция с порядковым доступом
+		 * @return bool
+		 *         является ли значение массивом
+		 */
+		'isArray': function (value, strict) {
+			switch (Lang.getType(value)) {
+			case "array":
+				return true;
+			case "collection":
+			case "arguments":
+				return (!strict);
+			default:
+				return false;
+			}
+		},
+
 		'eoc': null
 	};
 
