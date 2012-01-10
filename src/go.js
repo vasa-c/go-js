@@ -75,6 +75,7 @@ var go = (function (global) {
 	 */
 	go.appendModule = function (name, module) {
 		go[name] = module;
+		loading[name] = module;
 	};
 
 	/**
