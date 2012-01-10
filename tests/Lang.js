@@ -7,7 +7,7 @@
  */
 "use strict";
 
-/*global window, go, tests, ok, equal */
+/*global window, document, go, tests, ok, equal */
 
 tests.module("Lang");
 
@@ -77,4 +77,30 @@ tests.test("bind() user defined", function () {
 
 	var f2 = go.Lang.bind(f);
 	equal(f2(), "bind");
+});
+
+tests.test("getType", function () {
+
+	var undef, div, html, spans;
+
+	equal(go.Lang.getType(undef), "undefined");
+	equal(go.Lang.getType(null), "null");
+	equal(go.Lang.getType(true), "boolean");
+	equal(go.Lang.getType(3), "number");
+	equal(go.Lang.getType(-3.3), "number");
+	equal(go.Lang.getType("str"), "string");
+	equal(go.Lang.getType(function () {}), "function");
+	equal(go.Lang.getType({'x': 5}), "object");
+	equal(go.Lang.getType([1, 2, 3]), "array");
+	equal(go.Lang.getType(arguments), "arguments");
+
+	div = document.createElement("div");
+	div.innerHTML = "<span>1</span> <span>2</span>";
+	spans = div.getElementsByTagName("span");
+
+	equal(go.Lang.getType(div), "element");
+	equal(go.Lang.getType(spans.item(0).firstChild), "textnode");
+	equal(go.Lang.getType(spans), "collection");
+
+	equal(go.Lang.getType({'go$type': 'user'}), "user");
 });

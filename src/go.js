@@ -174,6 +174,37 @@ go("Lang", (function (global) {
 			return result;
 		},
 
+		/**
+		 * Получение типа значения
+		 *
+		 * @param mixed value
+		 *        проверяемое значение
+		 * @return string
+		 *         название типа
+		 * @todo протестировать лучше
+		 */
+		'getType': function (value) {
+			var type = typeof value;
+			if (type !== "object") {
+				return type;
+			} else if (value === null) {
+				return "null";
+			} else if (value.go$type) {
+				return value.go$type;
+			} else if (value instanceof Array) {
+				return "array";
+			} else if (value.nodeType === 1) {
+				return "element";
+			} else if (value.nodeType === 3) {
+				return "textnode";
+			} else if (typeof value.item === "function") {
+				return "collection";
+			} else if (typeof value.length !== "undefined") {
+				return "arguments";
+			}
+			return "object";
+		},
+
 		'eoc': null
 	};
 
