@@ -10,9 +10,9 @@
  * @license MIT (http://www.opensource.org/licenses/mit-license.php)
  * @link    https://github.com/vasa-c/go-js
  */
-"use strict";
-
+/*jslint node: true, nomen: true */
 /*global window */
+"use strict";
 
 var go = (function (global) {
 
@@ -226,6 +226,45 @@ go("Lang", (function (global) {
 			default:
 				return false;
 			}
+		},
+
+		/**
+		 * Итерация объекта
+		 *
+		 * @param object iter
+		 *        итерируемый объект (или порядковый массив)
+		 * @param function(value, key, iter) fn
+		 *        тело цикла
+		 * @param object thisArg [optional]
+		 *        контект, в котором следует выполнять тело цикла
+		 * @param bool deep [optional]
+		 *        обходить ли прототипы
+		 * @return mixed
+		 *         результаты выполнения функции для всех элементов
+		 */
+		'each': function (iter, fn, thisArg, deep) {
+
+			var result, i, len;
+			thisArg = thisArg || global;
+
+			if (Lang.isArray(iter)) {
+				result = [];
+				for (i = 0, len = iter.length; i < len; i += 1) {
+					result.push(fn.call(thisArg, iter[i], i, iter));
+				}
+			} else {
+				result = {};
+				/*jslint forin: true */
+				for (i in iter) {
+
+					if (iter.hasOwnProperty(i) || deep) {
+						result[i] = fn.call(thisArg, iter[i], i, iter);
+					}
+				}
+				/*jslint forin: false */
+			}
+
+			return result;
 		},
 
 		'eoc': null
