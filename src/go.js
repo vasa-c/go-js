@@ -34,6 +34,13 @@ var go = (function (global) {
 
 		doc = global.document;
 
+	function go(name, module) {
+		if (name) {
+			go.appendModule(name, module);
+		}
+		return go;
+	}
+	go.VERSION = VERSION;
 
 	/**
 	 * go.include(): инициирование загрузки нужных модулей
@@ -42,7 +49,7 @@ var go = (function (global) {
 	 * @param string[] names
 	 *        имя нужного модуля или список из нескольких имён
 	 */
-	function include(names) {
+	go.include = function (names) {
 		var i, len, name, src;
 		if (typeof names !== "object") {
 			names = [names];
@@ -55,7 +62,7 @@ var go = (function (global) {
 				loading[name] = true;
 			}
 		}
-	}
+	};
 
 	/**
 	 * go.appendModule(): добавление модуля в пространство имён
@@ -66,9 +73,9 @@ var go = (function (global) {
 	 * @param object module
 	 *        объект модуля
 	 */
-	function appendModule(name, module) {
+	go.appendModule = function (name, module) {
 		go[name] = module;
-	}
+	};
 
 	/**
 	 * Инициализация библиотеки
@@ -108,14 +115,10 @@ var go = (function (global) {
 		GO_DIR = matches[1];
 
 		if (matches[3]) {
-			include(matches[3].split(","));
+			go.include(matches[3].split(","));
 		}
 
 	}());
 
-	return {
-		'VERSION'      : VERSION,
-		'include'      : include,
-		'appendModule' : appendModule
-	};
+	return go;
 }(window));
