@@ -8,11 +8,17 @@
         <script type="text/javascript" src="./qunit/qunit.js"></script>
         <script type="text/javascript" src="../src/go.js?l=Tests"></script>
         <script type="text/javascript">
-        (function() {
-            $(document).ready(function() {
-				// @todo
-            });
-        })();
+		"use strict";
+		/*global go, $, document */
+		var tests;
+		(function () {
+			var modules = [null];
+			tests = new go.Tests(modules, "./");
+		    $(document).ready(function () {
+				tests.run();
+				tests.destroy();
+		    });
+		}());
         </script>
 	</head>
 	<body>
