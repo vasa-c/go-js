@@ -62,7 +62,6 @@ go("Tests", (function (go, global) {
 			for (i = 0, len = calls.length; i < len; i += 1) {
 				call = calls[i];
 				call[0].apply(obj, call[1]);
-				console.log(call);
 			}
 		},
 
