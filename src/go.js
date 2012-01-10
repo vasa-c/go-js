@@ -123,3 +123,59 @@ var go = (function (global) {
 
 	return go;
 }(window));
+
+/**
+ * @subpackage Lang
+ * @namespace go.Lang
+ */
+go("Lang", (function (global) {
+
+	var Lang = {
+
+		/**
+		 * Связывание функции с контекстом и аргументами
+		 * Поведение аналогично Function.prototype.bind()
+		 * @see https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function/bind
+		 *
+		 * Если для функции определён свой метод bind(), то используется он
+		 *
+		 * @namespace go.Lang
+		 * @method bind
+		 * @param function func
+		 *        функция
+		 * @param object thisArg [optional]
+		 *        контекст в котором функция должна выполняться
+		 *        по умолчанию - global
+		 * @param list args [optional]
+		 *        аргументы, вставляемые в начало вызова функции
+		 * @return function
+		 *         связанная с контекстом функция
+		 * @todo протестировать в IE
+		 */
+		'bind': function (func, thisArg, args) {
+			var result;
+			thisArg = thisArg || global;
+			if (func.bind) {
+	            if (args) {
+	                args = [thisArg].concat(args);
+	            } else {
+	                args = [thisArg];
+	            }
+	            return func.bind.apply(func, args);
+			} else if (args) {
+	            result = function () {
+	                return func.apply(thisArg, args.concat(Array.prototype.slice.call(arguments, 0)));
+	            };
+	        } else {
+	            result = function () {
+	                return func.apply(thisArg, arguments);
+	            };
+	        }
+			return result;
+		},
+
+		'eoc': null
+	};
+
+	return Lang;
+}(window)));
