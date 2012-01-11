@@ -358,6 +358,13 @@ go("Lang", (function (global) {
 			 * Функция, не делающая ничего
 			 */
 			'empty': function () {
+			},
+
+			/**
+			 * Функция, просто возвращающая FALSE
+			 */
+			'ffalse': function () {
+				return false;
 			}
 		},
 

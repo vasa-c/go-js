@@ -324,5 +324,6 @@ tests.test("tryDo", function () {
 tests.test("go.Lang.f", function () {
 
 	equal(go.Lang.f.empty());
+	equal(go.Lang.f.ffalse(), false);
 
 });
