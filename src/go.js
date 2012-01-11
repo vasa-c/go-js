@@ -290,6 +290,15 @@ go("Lang", (function (global) {
 			return destination;
 		},
 
+		'curry': function (fn) {
+			var slice = Array.prototype.slice,
+				cargs = slice.call(arguments, 1);
+			return function () {
+				var args = cargs.concat(slice.call(arguments));
+				return fn.apply(global, args);
+			};
+		},
+
 		'eoc': null
 	};
 

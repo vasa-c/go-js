@@ -249,3 +249,18 @@ tests.test("extend", function () {
 	deepEqual(go.Lang.extend(objDest, objSrc, true), expected, "extend() deep");
 	deepEqual(objDest, expected);
 });
+
+tests.test("curry", function () {
+
+	var cur, cur2;
+
+	function f(a, b, c, d) {
+		return [a, b, c, d].join(", ");
+	}
+
+	cur = go.Lang.curry(f, 1, 2);
+	equal(cur(3, 4), "1, 2, 3, 4");
+
+	cur2 = go.Lang.curry(cur, 5);
+	equal(cur2(6), "1, 2, 5, 6");
+});
