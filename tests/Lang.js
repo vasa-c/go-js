@@ -264,3 +264,21 @@ tests.test("curry", function () {
 	cur2 = go.Lang.curry(cur, 5);
 	equal(cur2(6), "1, 2, 5, 6");
 });
+
+tests.test("inArray", function () {
+
+	var
+		obj1 = {'x': 5},
+		obj2 = {'x': 5},
+		haystack = [1, 3, "5", obj1];
+
+	ok(go.Lang.inArray(1, haystack));
+	ok(go.Lang.inArray(3, haystack));
+	ok(go.Lang.inArray("5", haystack));
+	ok(go.Lang.inArray(obj1, haystack));
+
+	ok(!go.Lang.inArray(true, haystack));
+	ok(!go.Lang.inArray("3", haystack));
+	ok(!go.Lang.inArray(5, haystack));
+	ok(!go.Lang.inArray(obj2, haystack));
+});

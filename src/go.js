@@ -309,6 +309,27 @@ go("Lang", (function (global) {
 			};
 		},
 
+		/**
+		 * Присутствует ли значение в массиве
+		 * (строгая проверка)
+		 *
+		 * @param mixed needle
+		 *        значение
+		 * @param list haystack
+		 *        порядковый массив
+		 * @return bool
+		 *         находится ли значение в массиве
+		 */
+		'inArray': function (needle, haystack) {
+			var i, len;
+			for (i = 0, len = haystack.length; i < len; i += 1) {
+				if (haystack[i] === needle) {
+					return true;
+				}
+			}
+			return false;
+		},
+
 		'eoc': null
 	};
 
