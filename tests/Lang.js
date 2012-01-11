@@ -320,3 +320,9 @@ tests.test("tryDo", function () {
 	two = false;
 	equal(go.Lang.tryDo(funcs), undef);
 });
+
+tests.test("go.Lang.f", function () {
+
+	equal(go.Lang.f.empty());
+
+});
