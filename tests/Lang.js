@@ -207,3 +207,45 @@ tests.test("each bind", function () {
 
 	deepEqual(go.Lang.each(objV, objF.f, objF), expected);
 });
+
+tests.test("extend", function () {
+	var objDest, objSrc, objPSrc, ConstrSrc, expected;
+
+	objDest = {
+		'a': "dest a",
+		'b': "dest b",
+		'c': "dest c"
+	};
+	objPSrc = {
+		'b': "proto b",
+		'c': "proto c"
+	};
+	ConstrSrc = function () {};
+	ConstrSrc.prototype = objPSrc;
+	objSrc = new ConstrSrc();
+	objSrc.c = "src c";
+	objSrc.d = "src d";
+
+	expected = {
+		'a': "dest a",
+		'b': "dest b",
+		'c': "src c",
+		'd': "src d"
+	};
+	deepEqual(go.Lang.extend(objDest, objSrc), expected, "extend() not deep");
+	deepEqual(objDest, expected);
+
+	objDest = {
+		'a': "dest a",
+		'b': "dest b",
+		'c': "dest c"
+	};
+	expected = {
+		'a': "dest a",
+		'b': "proto b",
+		'c': "src c",
+		'd': "src d"
+	};
+	deepEqual(go.Lang.extend(objDest, objSrc, true), expected, "extend() deep");
+	deepEqual(objDest, expected);
+});

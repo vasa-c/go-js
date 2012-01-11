@@ -256,7 +256,6 @@ go("Lang", (function (global) {
 				result = {};
 				/*jslint forin: true */
 				for (i in iter) {
-
 					if (iter.hasOwnProperty(i) || deep) {
 						result[i] = fn.call(thisArg, iter[i], i, iter);
 					}
@@ -265,6 +264,30 @@ go("Lang", (function (global) {
 			}
 
 			return result;
+		},
+
+		/**
+		 * Расширение объекта свойствами другого
+		 *
+		 * @param object destination
+		 *        исходный объект (расширяется на месте)
+		 * @param object source
+		 *        источник новых свойств
+		 * @param bool deep [optional]
+		 *        обходить прототипы source
+		 * @return object
+		 *         расширенный destination
+		 */
+		'extend': function (destination, source, deep) {
+			var k;
+			/*jslint forin: true */
+			for (k in source) {
+				if (deep || source.hasOwnProperty(k)) {
+					destination[k] = source[k];
+				}
+			}
+			/*jslint forin: false */
+			return destination;
 		},
 
 		'eoc': null
