@@ -290,6 +290,16 @@ go("Lang", (function (global) {
 			return destination;
 		},
 
+		/**
+		 * Каррирование функции
+		 *
+		 * @param function fn
+		 *        исходная функция
+		 * @params mixed args ...
+		 *         запоминаемые аргументы
+		 * @return function
+		 *         каррированная функция
+		 */
 		'curry': function (fn) {
 			var slice = Array.prototype.slice,
 				cargs = slice.call(arguments, 1);
