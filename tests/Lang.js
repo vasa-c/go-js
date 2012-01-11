@@ -282,3 +282,41 @@ tests.test("inArray", function () {
 	ok(!go.Lang.inArray(5, haystack));
 	ok(!go.Lang.inArray(obj2, haystack));
 });
+
+tests.test("tryDo", function () {
+
+	var one, two, undef, funcs;
+
+	function err() {
+		var x = 5;
+		return x(6);
+	}
+
+	function fone() {
+		if (one) {
+			return "one";
+		} else {
+			throw new Error();
+		}
+	}
+
+	function ftwo() {
+		if (two) {
+			return "two";
+		} else {
+			throw new Error();
+		}
+	}
+
+	funcs = [err, fone, ftwo];
+
+	one = true;
+	two = true;
+	equal(go.Lang.tryDo(funcs), "one");
+
+	one = false;
+	equal(go.Lang.tryDo(funcs), "two");
+
+	two = false;
+	equal(go.Lang.tryDo(funcs), undef);
+});

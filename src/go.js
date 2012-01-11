@@ -330,6 +330,26 @@ go("Lang", (function (global) {
 			return false;
 		},
 
+		/**
+		 * Выполнить первую корректную функцию
+		 *
+		 * @param list funcs
+		 *        список функций
+		 * @return mixed
+		 *         результат первой корректно завершившейся
+		 *         ни одна не сработала - undefined
+		 */
+		'tryDo': function (funcs) {
+			var i, len, result;
+			for (i = 0, len = funcs.length; i < len; i += 1) {
+				try {
+					return funcs[i]();
+				} catch (e) {
+				}
+			}
+			return result;
+		},
+
 		'eoc': null
 	};
 
