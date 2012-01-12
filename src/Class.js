@@ -15,8 +15,14 @@ if (!window.go) {
 
 go("Class", (function () {
 
-    function Class() {
+    function Class(props) {
 
+        function Construct() {
+
+        }
+        Construct.prototype = props;
+
+        return Construct;
     }
 
     return Class;
