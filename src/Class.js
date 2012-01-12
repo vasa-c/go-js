@@ -17,10 +17,18 @@ go("Class", (function () {
 
     function Class(props) {
 
+        function FakeConstruct() {
+        }
         function Construct() {
-
+            if (!(this instanceof Construct)) {
+                // @todo когда this может быть внезапно instanceof?
+                var obj = new FakeConstruct();
+                Construct.apply(obj, arguments);
+                return obj;
+            }
         }
         Construct.prototype = props;
+        FakeConstruct.prototype = props;
 
         return Construct;
     }

@@ -42,3 +42,18 @@ tests.test("Create class and instance", function () {
     equal(obj1.getX(), 1);
     equal(obj2.getX(), 2);
 });
+
+tests.test("constructor can be called without new", function () {
+
+    var TestClass, obj;
+
+    TestClass = go.Class({
+        'f': function () {
+            return "f";
+        }
+    });
+
+    obj = TestClass();
+    ok(obj instanceof TestClass);
+    equal(obj.f(), "f");
+});
