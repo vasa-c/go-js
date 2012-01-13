@@ -250,6 +250,27 @@ tests.test("extend", function () {
 	deepEqual(objDest, expected);
 });
 
+tests.test("copy", function () {
+
+    var srcArray  = [1, 2, 3, 4, 5],
+        srcObject = {'x': 5, 'y': 6},
+        copyArray,
+        copyObject;
+
+    copyArray = go.Lang.copy(srcArray);
+    deepEqual(copyArray, srcArray);
+    ok(copyArray !== srcArray);
+    copyArray.push(6);
+    equal(copyArray.length - srcArray.length, 1);
+
+    copyObject = go.Lang.copy(srcObject);
+    deepEqual(copyObject, srcObject);
+    ok(copyObject !== srcObject);
+    copyObject.y = 7;
+    equal(srcObject.y, 6);
+
+});
+
 tests.test("curry", function () {
 
 	var cur, cur2;

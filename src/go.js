@@ -267,6 +267,30 @@ go("Lang", (function (global) {
 		},
 
 		/**
+		 * Копирование объекта или массива
+		 *
+		 * @param mixed source
+		 * @return mixed
+		 */
+		'copy': function (source) {
+		    var result, i, len;
+            if (Lang.isArray(source)) {
+                result = [];
+                for (i = 0, len = source.length; i < len; i += 1) {
+                    result.push(source[i]);
+                }
+            } else {
+                result = {};
+                for (i in source) {
+                    if (source.hasOwnProperty(i)) {
+                        result[i] = source[i];
+                    }
+                }
+            }
+            return result;
+		},
+
+		/**
 		 * Расширение объекта свойствами другого
 		 *
 		 * @param object destination
