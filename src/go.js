@@ -422,7 +422,6 @@ go("Lang", (function (global) {
          */
 		'parseQuery': function (query, sep) {
 		    var result = {}, i, len, v;
-		    sep = sep || "&";
 		    if (typeof query === "undefined") {
 		        query = global.location.split("#", 2)[0].split("?", 2)[1];
 		    } else if (typeof query !== "string") {
@@ -431,7 +430,7 @@ go("Lang", (function (global) {
 		    if (!query) {
 		        return result;
 		    }
-		    query = query.split(sep);
+		    query = query.split(sep || "&");
 		    for (i = 0, len = query.length; i < len; i += 1) {
                 v = query[i].split("=", 2);
                 if (v.length === 2) {
@@ -441,6 +440,51 @@ go("Lang", (function (global) {
                 }
 		    }
 		    return result;
+		},
+
+        /**
+         * Сформировать строку запроса на основе набора переменных
+         *
+         * @param hash vars
+         *        набор переменных (или сразу строка)
+         * @param string sep [optional]
+         *        разделитель (по умолчанию "&")
+         * @return string
+         *         строка запроса
+         */
+		'buildQuery': function (vars, sep) {
+
+            var query = [], buildValue, buildArray, buildHash;
+            if (typeof vars === "string") {
+                return vars;
+            }
+            buildValue = function (name, value) {
+                if (Lang.isHash(value)) {
+                    buildHash(value, name);
+                } else if (Lang.isArray(value)) {
+                    buildArray(value, name);
+                } else {
+                    query.push(name + "=" + encodeURIComponent(value));
+                }
+            };
+            buildArray = function (vars, prefix) {
+                var i, len, name;
+                for (i = 0, len = vars.length; i < len; i += 1) {
+                    name = prefix ? prefix + "[" + i + "]" : i;
+                    buildValue(name, vars[i]);
+                }
+            };
+            buildHash = function (vars, prefix) {
+                var k, name;
+                for (k in vars) {
+                    if (vars.hasOwnProperty(k)) {
+                        name = prefix ? prefix + "[" + k + "]" : k;
+                        buildValue(name, vars[k]);
+                    }
+                }
+            };
+            buildHash(vars, "");
+            return query.join(sep || "&");
 		},
 
 		/**
