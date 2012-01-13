@@ -399,6 +399,14 @@ tests.test("tryDo", function () {
 	equal(go.Lang.tryDo(funcs), undef);
 });
 
+tests.test("parseQuery", function () {
+    deepEqual(go.Lang.parseQuery(""), {});
+    deepEqual(go.Lang.parseQuery("x=1&y=2"), {'x': "1", 'y': "2"});
+    deepEqual(go.Lang.parseQuery("x=one%3Atwo&y=2"), {'x': "one:two", 'y': "2"});
+    deepEqual(go.Lang.parseQuery("12345&x=5"), {'': "12345", 'x': "5"});
+    deepEqual(go.Lang.parseQuery({'x': "5"}), {'x': "5"});
+});
+
 tests.test("go.Lang.f", function () {
 
 	equal(go.Lang.f.empty());

@@ -410,8 +410,41 @@ go("Lang", (function (global) {
 			return result;
 		},
 
+        /**
+         * Разбор GET или POST запроса
+         *
+         * @param string query [optional]
+         *        строка запроса (по умолчанию берётся из window.location)
+         * @param string sep [optional]
+         *        разделитель переменных (по умолчанию "&")
+         * @return hash
+         *         переменные из запроса
+         */
+		'parseQuery': function (query, sep) {
+		    var result = {}, i, len, v;
+		    sep = sep || "&";
+		    if (typeof query === "undefined") {
+		        query = global.location.split("#", 2)[0].split("?", 2)[1];
+		    } else if (typeof query !== "string") {
+		        return query;
+		    }
+		    if (!query) {
+		        return result;
+		    }
+		    query = query.split(sep);
+		    for (i = 0, len = query.length; i < len; i += 1) {
+                v = query[i].split("=", 2);
+                if (v.length === 2) {
+                    result[decodeURIComponent(v[0])] = decodeURIComponent(v[1]);
+                } else {
+                    result[''] = decodeURIComponent(v[0]);
+                }
+		    }
+		    return result;
+		},
+
 		/**
-		 * Вспомагательные функции-заготовки
+		 * Вспомогательные функции-заготовки
 		 */
 		'f': {
 			/**
