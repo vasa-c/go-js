@@ -229,6 +229,17 @@ go("Lang", (function (global) {
 		},
 
 		/**
+		 * Является ли объект простым хэшем
+		 * Под хэшем здесь подразумевается любой объект, не имеющий более специфического типа
+		 *
+		 * @param object value
+		 * @return bool
+		 */
+		'isHash': function (value) {
+		    return (value.constructor === Object);
+		},
+
+		/**
 		 * Итерация объекта
 		 *
 		 * @param object iter

@@ -128,6 +128,14 @@ tests.test("isArray", function () {
 	ok(!go.Lang.isArray(anone2, true));
 });
 
+tests.test("isHash", function () {
+
+    ok(go.Lang.isHash({'a': 1, 'b': 2}));
+    ok(!go.Lang.isHash([1, 2]));
+    ok(!go.Lang.isHash(document.createElement("div")));
+    ok(!go.Lang.isHash(function () {}));
+});
+
 tests.test("each array", function () {
 
 	var iter, fn, expected, div;
