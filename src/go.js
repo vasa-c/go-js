@@ -326,6 +326,31 @@ go("Lang", (function (global) {
 		},
 
 		/**
+		 * Рекурсивное слияние двух объектов на месте
+		 *
+		 * @param hash destination
+		 *        исходных объект (изменяется)
+		 * @param hash source
+		 *        источник новых свойств
+		 * @return hash
+		 *         расширенный destination
+		 */
+		'merge': function (destination, source) {
+		    var k, value;
+		    for (k in source) {
+		        if (source.hasOwnProperty(k)) {
+                    value = source[k];
+                    if (Lang.isHash(value) && Lang.isHash(destination[k])) {
+                        destination[k] = Lang.merge(destination[k], value);
+                    } else {
+                        destination[k] = value;
+                    }
+		        }
+		    }
+		    return destination;
+		},
+
+		/**
 		 * Каррирование функции
 		 *
 		 * @param function fn
