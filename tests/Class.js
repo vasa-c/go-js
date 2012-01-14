@@ -82,7 +82,7 @@ tests.test("constructor/destructor", function () {
             destrCount += 1;
         },
 
-        'getValue': function() {
+        'getValue': function () {
             return this.value;
         },
 

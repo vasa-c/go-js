@@ -170,6 +170,7 @@ go("Class", (function (go) {
                     C.apply(instance, arguments);
                     return instance;
                 }
+                this[C.$settings.names.constructor].apply(this, arguments);
             };
             this.Class.prototype = this.proto;
         },
