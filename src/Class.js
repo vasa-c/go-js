@@ -201,7 +201,7 @@ go("Class", (function (go) {
         creator.__destruct();
         return C;
     };
-    Class.Root = go.Class(null, RootPrototype);
+    Class.Root = Class(null, RootPrototype);
 
     return Class;
 }(go)));
