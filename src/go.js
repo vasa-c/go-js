@@ -229,6 +229,17 @@ go("Lang", (function (global) {
 		},
 
 		/**
+		 * Является ли объект простым хэшем
+		 * Под хэшем здесь подразумевается любой объект, не имеющий более специфического типа
+		 *
+		 * @param object value
+		 * @return bool
+		 */
+		'isHash': function (value) {
+		    return (value.constructor === Object);
+		},
+
+		/**
 		 * Итерация объекта
 		 *
 		 * @param object iter
@@ -267,6 +278,30 @@ go("Lang", (function (global) {
 		},
 
 		/**
+		 * Копирование объекта или массива
+		 *
+		 * @param mixed source
+		 * @return mixed
+		 */
+		'copy': function (source) {
+		    var result, i, len;
+            if (Lang.isArray(source)) {
+                result = [];
+                for (i = 0, len = source.length; i < len; i += 1) {
+                    result.push(source[i]);
+                }
+            } else {
+                result = {};
+                for (i in source) {
+                    if (source.hasOwnProperty(i)) {
+                        result[i] = source[i];
+                    }
+                }
+            }
+            return result;
+		},
+
+		/**
 		 * Расширение объекта свойствами другого
 		 *
 		 * @param object destination
@@ -288,6 +323,31 @@ go("Lang", (function (global) {
 			}
 			/*jslint forin: false */
 			return destination;
+		},
+
+		/**
+		 * Рекурсивное слияние двух объектов на месте
+		 *
+		 * @param hash destination
+		 *        исходных объект (изменяется)
+		 * @param hash source
+		 *        источник новых свойств
+		 * @return hash
+		 *         расширенный destination
+		 */
+		'merge': function (destination, source) {
+		    var k, value;
+		    for (k in source) {
+		        if (source.hasOwnProperty(k)) {
+                    value = source[k];
+                    if (Lang.isHash(value) && Lang.isHash(destination[k])) {
+                        destination[k] = Lang.merge(destination[k], value);
+                    } else {
+                        destination[k] = value;
+                    }
+		        }
+		    }
+		    return destination;
 		},
 
 		/**
@@ -350,8 +410,85 @@ go("Lang", (function (global) {
 			return result;
 		},
 
+        /**
+         * Разбор GET или POST запроса
+         *
+         * @param string query [optional]
+         *        строка запроса (по умолчанию берётся из window.location)
+         * @param string sep [optional]
+         *        разделитель переменных (по умолчанию "&")
+         * @return hash
+         *         переменные из запроса
+         */
+		'parseQuery': function (query, sep) {
+		    var result = {}, i, len, v;
+		    if (typeof query === "undefined") {
+		        query = global.location.split("#", 2)[0].split("?", 2)[1];
+		    } else if (typeof query !== "string") {
+		        return query;
+		    }
+		    if (!query) {
+		        return result;
+		    }
+		    query = query.split(sep || "&");
+		    for (i = 0, len = query.length; i < len; i += 1) {
+                v = query[i].split("=", 2);
+                if (v.length === 2) {
+                    result[decodeURIComponent(v[0])] = decodeURIComponent(v[1]);
+                } else {
+                    result[''] = decodeURIComponent(v[0]);
+                }
+		    }
+		    return result;
+		},
+
+        /**
+         * Сформировать строку запроса на основе набора переменных
+         *
+         * @param hash vars
+         *        набор переменных (или сразу строка)
+         * @param string sep [optional]
+         *        разделитель (по умолчанию "&")
+         * @return string
+         *         строка запроса
+         */
+		'buildQuery': function (vars, sep) {
+
+            var query = [], buildValue, buildArray, buildHash;
+            if (typeof vars === "string") {
+                return vars;
+            }
+            buildValue = function (name, value) {
+                if (Lang.isHash(value)) {
+                    buildHash(value, name);
+                } else if (Lang.isArray(value)) {
+                    buildArray(value, name);
+                } else {
+                    query.push(name + "=" + encodeURIComponent(value));
+                }
+            };
+            buildArray = function (vars, prefix) {
+                var i, len, name;
+                for (i = 0, len = vars.length; i < len; i += 1) {
+                    name = prefix ? prefix + "[" + i + "]" : i;
+                    buildValue(name, vars[i]);
+                }
+            };
+            buildHash = function (vars, prefix) {
+                var k, name;
+                for (k in vars) {
+                    if (vars.hasOwnProperty(k)) {
+                        name = prefix ? prefix + "[" + k + "]" : k;
+                        buildValue(name, vars[k]);
+                    }
+                }
+            };
+            buildHash(vars, "");
+            return query.join(sep || "&");
+		},
+
 		/**
-		 * Вспомагательные функции-заготовки
+		 * Вспомогательные функции-заготовки
 		 */
 		'f': {
 			/**

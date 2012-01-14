@@ -128,6 +128,14 @@ tests.test("isArray", function () {
 	ok(!go.Lang.isArray(anone2, true));
 });
 
+tests.test("isHash", function () {
+
+    ok(go.Lang.isHash({'a': 1, 'b': 2}));
+    ok(!go.Lang.isHash([1, 2]));
+    ok(!go.Lang.isHash(document.createElement("div")));
+    ok(!go.Lang.isHash(function () {}));
+});
+
 tests.test("each array", function () {
 
 	var iter, fn, expected, div;
@@ -208,6 +216,27 @@ tests.test("each bind", function () {
 	deepEqual(go.Lang.each(objV, objF.f, objF), expected);
 });
 
+tests.test("copy", function () {
+
+    var srcArray  = [1, 2, 3, 4, 5],
+        srcObject = {'x': 5, 'y': 6},
+        copyArray,
+        copyObject;
+
+    copyArray = go.Lang.copy(srcArray);
+    deepEqual(copyArray, srcArray);
+    ok(copyArray !== srcArray);
+    copyArray.push(6);
+    equal(copyArray.length - srcArray.length, 1);
+
+    copyObject = go.Lang.copy(srcObject);
+    deepEqual(copyObject, srcObject);
+    ok(copyObject !== srcObject);
+    copyObject.y = 7;
+    equal(srcObject.y, 6);
+
+});
+
 tests.test("extend", function () {
 	var objDest, objSrc, objPSrc, ConstrSrc, expected;
 
@@ -248,6 +277,55 @@ tests.test("extend", function () {
 	};
 	deepEqual(go.Lang.extend(objDest, objSrc, true), expected, "extend() deep");
 	deepEqual(objDest, expected);
+});
+
+tests.test("merge", function () {
+    var
+        destination = {
+            'a': "only in dest",
+            'c': "c-dest",
+            'd': {'x': 5},
+            'e': 1,
+            'f': {
+                'g': 7,
+                'j': {
+                    'x': 1,
+                    'y': 2
+                }
+            }
+        },
+        source = {
+            'b': "only in source",
+            'c': "c-source",
+            'd': [1, 2],
+            'e': {'x': 6},
+            'f': {
+                'h': 8,
+                'j': {
+                    'x': 3,
+                    'z': 4
+                }
+            }
+        },
+        expected = {
+            'a': "only in dest",
+            'b': "only in source",
+            'c': "c-source",
+            'd': [1, 2],
+            'e': {'x': 6},
+            'f': {
+                'g': 7,
+                'h': 8,
+                'j': {
+                    'x': 3,
+                    'y': 2,
+                    'z': 4
+                }
+            }
+        };
+
+    equal(go.Lang.merge(destination, source), destination);
+    deepEqual(destination, expected);
 });
 
 tests.test("curry", function () {
@@ -319,6 +397,29 @@ tests.test("tryDo", function () {
 
 	two = false;
 	equal(go.Lang.tryDo(funcs), undef);
+});
+
+tests.test("parseQuery", function () {
+    deepEqual(go.Lang.parseQuery(""), {});
+    deepEqual(go.Lang.parseQuery("x=1&y=2"), {'x': "1", 'y': "2"});
+    deepEqual(go.Lang.parseQuery("x=one%3Atwo&y=2"), {'x': "one:two", 'y': "2"});
+    deepEqual(go.Lang.parseQuery("12345&x=5"), {'': "12345", 'x': "5"});
+    deepEqual(go.Lang.parseQuery({'x': "5"}), {'x': "5"});
+});
+
+tests.test("buildQuery", function () {
+    var
+        vars = {
+            'one': 1,
+            'two': "two:three",
+            'A': {
+                'x': 5,
+                'y': [1, 2, 3]
+            }
+        },
+        expected = "one=1&two=two%3Athree&A[x]=5&A[y][0]=1&A[y][1]=2&A[y][2]=3";
+    equal(go.Lang.buildQuery(vars), expected);
+    equal(go.Lang.buildQuery(expected), expected);
 });
 
 tests.test("go.Lang.f", function () {
