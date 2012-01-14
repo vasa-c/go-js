@@ -67,3 +67,37 @@ tests.test("go.Class.Root is root class", function () {
     ok(obj instanceof TestClass);
     ok(obj instanceof go.Class.Root);
 });
+
+tests.test("constructor/destructor", function () {
+
+    var TestClass, obj1, obj2, destrCount = 0;
+
+    TestClass = go.Class({
+
+        '__construct': function (value) {
+            this.value = value;
+        },
+
+        '__destruct': function () {
+            destrCount += 1;
+        },
+
+        'getValue': function() {
+            return this.value;
+        },
+
+        'eoc': null
+    });
+
+    obj1 = new TestClass(1);
+    obj2 = new TestClass(2);
+
+    equal(obj1.getValue(), 1);
+    equal(obj2.getValue(), 2);
+
+    equal(destrCount, 0);
+    obj1.destroy();
+    equal(destrCount, 1);
+    obj2.destroy();
+    equal(destrCount, 2);
+});

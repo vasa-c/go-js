@@ -180,6 +180,7 @@ go("Class", (function (go) {
         'fillClassProperties': function () {
             this.Class.Fake = function () {};
             this.Class.Fake.prototype = this.proto;
+            this.Class.$settings = this.settings;
         },
 
         'eoc': null
