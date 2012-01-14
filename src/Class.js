@@ -27,7 +27,7 @@ go("Class", (function (go) {
      */
     RootSettings = {
         'names': {
-            'constructor ': "__construct",
+            'constructor' : "__construct",
             'destructor'  : "__destruct",
             'destroy'     : "destroy",
             'instance_of' : "instance_of"
@@ -48,7 +48,7 @@ go("Class", (function (go) {
     RootPrototype[RootSettings.names.constructor] = function () {};
     RootPrototype[RootSettings.names.destructor] = function () {};
     RootPrototype[RootSettings.names.destroy] = function () {
-        this.__destruct();
+        this.__destruct(); // @todo settings (когда будет self)
     };
     RootPrototype[RootSettings.names.instance_of] = function (C) {
         return (this instanceof C);
