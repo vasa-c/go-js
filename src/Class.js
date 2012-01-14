@@ -41,7 +41,7 @@ go("Class", (function (go) {
     RootPrototype = {
         'go$type'   : "go.object",
         '$settings' : RootSettings,
-        'toString': function() {
+        'toString': function () {
             return "[go.object]";
         }
     };
@@ -50,7 +50,7 @@ go("Class", (function (go) {
     RootPrototype[RootSettings.names.destroy] = function () {
         this.__destruct();
     };
-    RootPrototype[RootSettings.names.instance_of] = function(C) {
+    RootPrototype[RootSettings.names.instance_of] = function (C) {
         return (this instanceof C);
     };
 
@@ -80,7 +80,7 @@ go("Class", (function (go) {
          * @param hash props
          *        набор свойств и методов класса
          */
-        '__construct': function(parents, props) {
+        '__construct': function (parents, props) {
             if (!props) {
                 props = parents;
                 parents = null;
@@ -92,13 +92,13 @@ go("Class", (function (go) {
         /**
          * Деструктор
          */
-        '__destruct': function() {
+        '__destruct': function () {
         },
 
         /**
          * Создание класса
          */
-        'create': function() {
+        'create': function () {
             this.createBlankPrototype();
             this.loadSettings();
             this.createClass();
@@ -156,7 +156,7 @@ go("Class", (function (go) {
             }
             if (this.props.$settings) {
                 go.Lang.extend(this.settings, this.props.$settings);
-                delete this.proto['$settings'];
+                delete this.proto.$settings;
             }
         },
 
@@ -165,7 +165,7 @@ go("Class", (function (go) {
          */
         'createClass': function () {
             this.Class = function C() {
-                if (!(this instanceof C)) {
+                if (!(this instanceof C)) { // @todo проверить все случаи
                     var instance = new C.Fake();
                     C.apply(instance, arguments);
                     return instance;
@@ -177,8 +177,8 @@ go("Class", (function (go) {
         /**
          * Заполнение объекта класса нужными свойствами
          */
-        'fillClassProperties': function() {
-            this.Class.Fake = function() {};
+        'fillClassProperties': function () {
+            this.Class.Fake = function () {};
             this.Class.Fake.prototype = this.proto;
         },
 
@@ -194,13 +194,14 @@ go("Class", (function (go) {
      * @alias go.Class
      */
     Class = function (parents, props) {
-        var creator = new ClassCreatorConstructor(parents, props);
+        var creator, C;
+        creator = new ClassCreatorConstructor(parents, props);
         creator.create();
-        var C = creator.getClass();
+        C = creator.getClass();
         creator.__destruct();
         return C;
     };
-    Class.Root = Class(null, RootPrototype);
+    Class.Root = go.Class(null, RootPrototype);
 
     return Class;
 }(go)));
