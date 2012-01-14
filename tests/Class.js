@@ -57,3 +57,13 @@ tests.test("constructor can be called without new", function () {
     ok(obj instanceof TestClass);
     equal(obj.f(), "f");
 });
+
+tests.test("go.Class.Root is root class", function () {
+
+    var TestClass, obj;
+
+    TestClass = go.Class({});
+    obj = new TestClass();
+    ok(obj instanceof TestClass);
+    ok(obj instanceof go.Class.Root);
+});
