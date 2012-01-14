@@ -101,3 +101,48 @@ tests.test("constructor/destructor", function () {
     obj2.destroy();
     equal(destrCount, 2);
 });
+
+tests.test("inheritance (single)", function () {
+
+    var OneClass, TwoClass, ThreeClass, objTwo, objThree;
+
+    OneClass = go.Class({
+        'func_a': function () {return "one a"; },
+        'func_b': function () {return "one b"; },
+        'func_c': function () {return "one c"; },
+        'eoc': null
+    });
+    TwoClass = go.Class(OneClass, {
+        'func_b': function () {return "two b"; },
+        'func_c': function () {return "two c"; },
+        'eoc': null
+    });
+    ThreeClass = go.Class(TwoClass, {
+        'func_c': function () {return "three c"; },
+        'func_d': function () {return "three d"; },
+        'eoc': null
+    });
+
+    objTwo = new TwoClass();
+    objThree = new ThreeClass();
+
+    ok(objTwo instanceof go.Class.Root);
+    ok(objTwo instanceof OneClass);
+    ok(objTwo instanceof TwoClass);
+    ok(!(objTwo instanceof ThreeClass));
+
+    ok(objThree instanceof go.Class.Root);
+    ok(objThree instanceof OneClass);
+    ok(objThree instanceof TwoClass);
+    ok(objThree instanceof ThreeClass);
+
+    equal(objTwo.func_a(), "one a");
+    equal(objTwo.func_b(), "two b");
+    equal(objTwo.func_c(), "two c");
+    ok(!objTwo.func_d);
+
+    equal(objThree.func_a(), "one a");
+    equal(objThree.func_b(), "two b");
+    equal(objThree.func_c(), "three c");
+    equal(objThree.func_d(), "three d");
+});
