@@ -24,9 +24,11 @@ parent    - основной предок (в примере - AClass)
 otherParents - список остальных предков ([BClass, CClass])
 props     - объект с методами класса (аргумент, переданный в go.Class())
 Fake      - фиктивный конструктор объектов класса (для создания прототипов и т.п.)
-isSubclassOf() - метод, проверяющий, является ли текущий класс наследником другого
 go$type   = "go.class"
-
+isSubclassOf() - метод, проверяющий, является ли текущий класс наследником другого
+__construct(this, ...)
+__destruct(this)
+__method(this, name, ...)
 
 = TestClass.prototype
 
@@ -44,8 +46,11 @@ $self      - TestClass (указание на свой класс, для дос
 
 __construct()
 __destruct()
+__parentConstruct(Class, ...)
+__parentDestruct(Class)
+__parentMethod(Class, methodName, ...)
 destroy()
-instance_of()
+instance_of(Class)
 toString()
 go$type = "go.object"
 

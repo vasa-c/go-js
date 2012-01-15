@@ -27,11 +27,14 @@ go("Class", (function (go) {
      */
     RootSettings = {
         'names': {
-            'constructor' : "__construct",
-            'destructor'  : "__destruct",
-            'settings'    : "__settings",
-            'destroy'     : "destroy",
-            'instance_of' : "instance_of"
+            'constructor'       : "__construct",
+            'destructor'        : "__destruct",
+            'parentConstructor' : "__parentConstruct",
+            'parentDestructor'  : "__parentDestruct",
+            'parentMethod'      : "__parentMethod",
+            'settings'          : "__settings",
+            'destroy'           : "destroy",
+            'instance_of'       : "instance_of"
         }
     };
 
@@ -45,9 +48,24 @@ go("Class", (function (go) {
             return "[go.object]";
         }
     };
+    RootPrototype[RootSettings.names.settings] = RootSettings;
     RootPrototype[RootSettings.names.constructor] = function () {};
     RootPrototype[RootSettings.names.destructor] = function () {};
-    RootPrototype[RootSettings.names.settings] = RootSettings;
+    RootPrototype[RootSettings.names.parentConstructor] = function (C) {
+        var args = Array.prototype.slice.call(arguments);
+        args[0] = this;
+        C.__construct.apply(C, args);
+    };
+    RootPrototype[RootSettings.names.parentDestructor] = function (C) {
+        C.__destruct(this);
+    };
+    RootPrototype[RootSettings.names.parentMethod] = function (C, name) {
+        /*jslint unparam: true */
+        var args = Array.prototype.slice.call(arguments);
+        args[0] = this;
+        /*jslint unparam: false */
+        return C.__method.apply(C, args);
+    };
     RootPrototype[RootSettings.names.destroy] = function () {
         this.__destruct(); // @todo settings (когда будет self)
     };
@@ -211,12 +229,16 @@ go("Class", (function (go) {
          * Заполнение объекта класса нужными свойствами
          */
         'fillClassProperties': function () {
-            this.Class.Fake = function () {};
-            this.Class.Fake.prototype = this.proto;
-            this.Class.settings = this.settings;
-            this.Class.parent = this.parent;
-            this.Class.otherParents = this.otherParents;
-            this.Class.isSubclassOf = this.class__isSubclassOf;
+            var C = this.Class;
+            C.Fake           = function () {};
+            C.Fake.prototype = this.proto;
+            C.settings       = this.settings;
+            C.parent         = this.parent;
+            C.otherParents   = this.otherParents;
+            C.isSubclassOf   = this.class__isSubclassOf;
+            C.__construct    = this.class__construct;
+            C.__destruct     = this.class__destruct;
+            C.__method       = this.class__method;
         },
 
         'class__isSubclassOf': function (wparent) {
@@ -248,6 +270,21 @@ go("Class", (function (go) {
                 }
             }
             return false;
+        },
+
+        'class__construct': function (instance) {
+            var cr = this.prototype[this.settings.names.constructor];
+            cr.call.apply(cr, arguments);
+        },
+
+        'class__destruct': function (instance) {
+            var dr = this.prototype[this.settings.names.destructor];
+            dr.apply(instance);
+        },
+
+        'class__method': function (instance, name) {
+            var args = Array.prototype.slice.call(arguments, 2);
+            return this.prototype[name].apply(instance, args);
         },
 
         'eoc': null

@@ -237,3 +237,72 @@ tests.test("save constructor.prototype", function () {
 
     equal(instance.constructor, TestClass);
 });
+
+tests.test("parent access", function () {
+
+    var OneClass, TwoClass, SideClass, TargetClass, instance, destrs = [];
+
+    OneClass = go.Class({
+        '__construct': function (a) {
+            this.a = a;
+        },
+
+        '__destruct': function () {
+            destrs.push("One");
+        },
+
+        'getValue': function (plus) {
+            return this.a + plus;
+        }
+    });
+
+    TwoClass = go.Class(OneClass, {
+        '__construct': function (a, b) {
+            this.__parentConstruct(OneClass, a);
+            this.b = b;
+        },
+
+        '__destruct': function () {
+            this.__parentDestruct(OneClass);
+            destrs.push("Two");
+        }
+    });
+
+    SideClass = go.Class({
+        '__construct': function (c) {
+            this.c = c;
+        },
+
+        '__destruct': function () {
+            destrs.push("Side");
+        }
+    });
+
+    TargetClass = go.Class([OneClass, TwoClass, SideClass], {
+        '__construct': function (a, b, c, d) {
+            this.__parentConstruct(TwoClass, a, b);
+            this.__parentConstruct(SideClass, c);
+            this.d = d;
+        },
+
+        '__destruct': function () {
+            this.__parentDestruct(TwoClass);
+            this.__parentDestruct(SideClass);
+            destrs.push("Target");
+        },
+
+        'getValue': function (plus) {
+            return this.__parentMethod(TwoClass, 'getValue', plus) * 2;
+        }
+    });
+
+    instance = new TargetClass(1, 2, 3, 4);
+    equal(instance.a, 1);
+    equal(instance.b, 2);
+    equal(instance.c, 3);
+    equal(instance.d, 4);
+    equal(instance.getValue(2), 6);
+
+    instance.destroy();
+    deepEqual(destrs, ["One", "Two", "Side", "Target"]);
+});
