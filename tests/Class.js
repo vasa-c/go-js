@@ -196,8 +196,8 @@ tests.test("inheritance (multi)", function () {
     });
     ResultObject = new ResultClass();
 
-    equal(ResultClass.$parent, OneClass);
-    deepEqual(ResultClass.$otherParents, [TwoClass, ThreeObject, FourHash]);
+    equal(ResultClass.parent, OneClass);
+    deepEqual(ResultClass.otherParents, [TwoClass, ThreeObject, FourHash]);
 
     equal(ResultObject.f_a(), "a: one parent");
     equal(ResultObject.f_b(), "b: one");

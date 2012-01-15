@@ -29,6 +29,7 @@ go("Class", (function (go) {
         'names': {
             'constructor' : "__construct",
             'destructor'  : "__destruct",
+            'settings'    : "__settings",
             'destroy'     : "destroy",
             'instance_of' : "instance_of"
         }
@@ -39,14 +40,14 @@ go("Class", (function (go) {
      * Свойства и методы, доступные во всех объектах
      */
     RootPrototype = {
-        'go$type'   : "go.object",
-        '$settings' : RootSettings,
+        'go$type' : "go.object",
         'toString': function () {
             return "[go.object]";
         }
     };
     RootPrototype[RootSettings.names.constructor] = function () {};
     RootPrototype[RootSettings.names.destructor] = function () {};
+    RootPrototype[RootSettings.names.settings] = RootSettings;
     RootPrototype[RootSettings.names.destroy] = function () {
         this.__destruct(); // @todo settings (когда будет self)
     };
@@ -176,13 +177,15 @@ go("Class", (function (go) {
          * Загрузка настроек класса
          */
         'loadSettings': function () {
+            var propsS;
             if (this.parent) {
-                this.settings = this.parent.$settings;
+                this.settings = this.parent.settings;
             } else {
                 this.settings = {};
             }
-            if (this.props.$settings) {
-                go.Lang.extend(this.settings, this.props.$settings);
+            propsS = this.props[RootSettings.names.settings]; // @todo обдумать
+            if (propsS) {
+                go.Lang.extend(this.settings, propsS);
                 delete this.proto.$settings;
             }
         },
@@ -197,11 +200,11 @@ go("Class", (function (go) {
                     C.apply(instance, arguments);
                     return instance;
                 }
-                this.$self = C; // @todo в нужное место перенести
-                this[C.$settings.names.constructor].apply(this, arguments);
+                this[C.settings.names.constructor].apply(this, arguments);
             };
-            this.Class.prototype = this.proto;
+            this.Class.prototype   = this.proto;
             this.proto.constructor = this.Class;
+            this.proto.$self       = this.Class;
         },
 
         /**
@@ -210,9 +213,9 @@ go("Class", (function (go) {
         'fillClassProperties': function () {
             this.Class.Fake = function () {};
             this.Class.Fake.prototype = this.proto;
-            this.Class.$settings = this.settings;
-            this.Class.$parent = this.parent;
-            this.Class.$otherParents = this.otherParents;
+            this.Class.settings = this.settings;
+            this.Class.parent = this.parent;
+            this.Class.otherParents = this.otherParents;
             this.Class.isSubclassOf = this.class__isSubclassOf;
         },
 
@@ -221,13 +224,13 @@ go("Class", (function (go) {
             if (wparent === this) {
                 return true;
             }
-            if (!this.$parent) {
+            if (!this.parent) {
                 return false;
             }
-            if (this.$parent.isSubclassOf(wparent)) {
+            if (this.parent.isSubclassOf(wparent)) {
                 return true;
             }
-            other = this.$otherParents;
+            other = this.otherParents;
             for (i = 0, len = other.length; i < len; i += 1) {
                 oparent = other[i];
                 if (wparent === oparent) {
