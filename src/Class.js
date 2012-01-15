@@ -201,6 +201,7 @@ go("Class", (function (go) {
                 this[C.$settings.names.constructor].apply(this, arguments);
             };
             this.Class.prototype = this.proto;
+            this.proto.constructor = this.Class;
         },
 
         /**

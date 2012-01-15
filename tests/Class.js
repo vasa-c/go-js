@@ -224,3 +224,16 @@ tests.test("inheritance (multi)", function () {
     NoHierClass = go.Class({});
     ok(!ResultObject.instance_of(NoHierClass));
 });
+
+tests.test("save constructor.prototype", function () {
+
+    var TestClass, instance;
+
+    TestClass = go.Class({
+        'eoc': null
+    });
+
+    instance = new TestClass();
+
+    equal(instance.constructor, TestClass);
+});
