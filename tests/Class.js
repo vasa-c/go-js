@@ -45,16 +45,16 @@ tests.test("Create class and instance", function () {
 
 tests.test("constructor can be called without new", function () {
 
-    var TestClass, obj;
+    var testClass, obj;
 
-    TestClass = go.Class({
+    testClass = go.Class({
         'f': function () {
             return "f";
         }
     });
 
-    obj = TestClass();
-    ok(obj instanceof TestClass);
+    obj = testClass();
+    ok(obj instanceof testClass);
     equal(obj.f(), "f");
 });
 

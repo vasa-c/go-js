@@ -154,7 +154,7 @@ go("Class", (function (go) {
          * Перенести поля второстепенных предков в прототип
          */
         'applyOtherParents': function () {
-            var i, len, parent, k, proto;
+            var i, len, parent, k, proto, undef;
             proto = this.proto;
             for (i = 0, len = this.otherParents.length; i < len; i += 1) {
                 parent = this.otherParents[i];
@@ -164,7 +164,7 @@ go("Class", (function (go) {
                 if (parent) {
                     /*jslint forin: true */
                     for (k in parent) {
-                        if (!(k in proto)) {
+                        if (proto[k] === undef) {
                             proto[k] = parent[k];
                         }
                     }
@@ -269,7 +269,7 @@ go("Class", (function (go) {
         creator.__destruct();
         return C;
     };
-    Class.Root = Class(null, RootPrototype);
+    Class.Root = Class.apply(window, [null, RootPrototype]);
 
     return Class;
 }(go)));
