@@ -1,0 +1,51 @@
+= Служебные свойства классов и объектов
+
+var TestClass = go.Class([AClass, BClass, CClass], props);
+var instance  = new TestClass();
+
+
+= props (свойства и методы класса)
+
+__construct() - пользовательский конструктор, вызывается при инстанцировании класса
+__destruct()  - пользовательский деструктор, вызывается из destroy()
+__settings    - настройки класса (расширяют настройки предкового класса)
+
+
+= go.Class
+
+go.Class.Root - корневой класс
+
+
+= TestClass
+
+prototype - собственно, прототип инстанцируемых объектов
+settings  - настройки класса (формируются на основании настроек предка и props.__settings)
+parent    - основной предок (в примере - AClass)
+otherParents - список остальных предков ([BClass, CClass])
+props     - объект с методами класса (аргумент, переданный в go.Class())
+Fake      - фиктивный конструктор объектов класса (для создания прототипов и т.п.)
+isSubclassOf() - метод, проверяющий, является ли текущий класс наследником другого
+go$type   = "go.class"
+
+
+= TestClass.prototype
+
+constuctor = TestClass (для сохранения цепочки constructor.prototype)
+$self      - TestClass (указание на свой класс, для доступа из объектов по this.$self)
+
++ отфильтрованные методы из props
++ прототип __proto__ указывает на AClass.prototype
+
+
+= instance - поля конкретного экземпляра
+
+
+= go.Class.Root.prototype - прототип корневого класса, базовые реализации методов
+
+__construct()
+__destruct()
+destroy()
+instance_of()
+toString()
+go$type = "go.object"
+
