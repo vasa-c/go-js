@@ -51,7 +51,10 @@ go("Class", (function (go) {
         this.__destruct(); // @todo settings (когда будет self)
     };
     RootPrototype[RootSettings.names.instance_of] = function (C) {
-        return (this instanceof C);
+        if ((typeof C === "function") && (this instanceof C)) {
+            return true;
+        }
+        return this.$self.isSubclassOf(C);
     };
 
     /**
@@ -100,6 +103,7 @@ go("Class", (function (go) {
          */
         'create': function () {
             this.createBlankPrototype();
+            this.applyOtherParents();
             this.loadSettings();
             this.createClass();
             this.fillClassProperties();
@@ -146,6 +150,29 @@ go("Class", (function (go) {
         },
 
         /**
+         * Перенести поля второстепенных предков в прототип
+         */
+        'applyOtherParents': function () {
+            var i, len, parent, k, proto;
+            proto = this.proto;
+            for (i = 0, len = this.otherParents.length; i < len; i += 1) {
+                parent = this.otherParents[i];
+                if (typeof parent === "function") {
+                    parent = parent.prototype;
+                }
+                if (parent) {
+                    /*jslint forin: true */
+                    for (k in parent) {
+                        if (!(k in proto)) {
+                            proto[k] = parent[k];
+                        }
+                    }
+                    /*jslint forin: false */
+                }
+            }
+        },
+
+        /**
          * Загрузка настроек класса
          */
         'loadSettings': function () {
@@ -170,6 +197,7 @@ go("Class", (function (go) {
                     C.apply(instance, arguments);
                     return instance;
                 }
+                this.$self = C; // @todo в нужное место перенести
                 this[C.$settings.names.constructor].apply(this, arguments);
             };
             this.Class.prototype = this.proto;
@@ -182,6 +210,40 @@ go("Class", (function (go) {
             this.Class.Fake = function () {};
             this.Class.Fake.prototype = this.proto;
             this.Class.$settings = this.settings;
+            this.Class.$parent = this.parent;
+            this.Class.$otherParents = this.otherParents;
+            this.Class.isSubclassOf = this.class__isSubclassOf;
+        },
+
+        'class__isSubclassOf': function (wparent) {
+            var i, len, other, oparent;
+            if (wparent === this) {
+                return true;
+            }
+            if (!this.$parent) {
+                return false;
+            }
+            if (this.$parent.isSubclassOf(wparent)) {
+                return true;
+            }
+            other = this.$otherParents;
+            for (i = 0, len = other.length; i < len; i += 1) {
+                oparent = other[i];
+                if (wparent === oparent) {
+                    return true;
+                }
+                if (typeof oparent.isSubclassOf === "function") {
+                    if (oparent.isSubclassOf(wparent)) {
+                        return true;
+                    }
+                }
+                if (typeof wparent === "function") {
+                    if (oparent instanceof wparent) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         },
 
         'eoc': null

@@ -146,3 +146,81 @@ tests.test("inheritance (single)", function () {
     equal(objThree.func_c(), "three c");
     equal(objThree.func_d(), "three d");
 });
+
+tests.test("inheritance (multi)", function () {
+
+    var
+        OneParentClass,
+        OneClass,
+        TwoParentClass,
+        TwoClass,
+        ThreePrototype,
+        ThreeConstructor,
+        ThreeObject,
+        FourHash,
+        ResultClass,
+        ResultObject,
+        NoHierClass;
+
+    OneParentClass = go.Class({
+        'f_a': function () {return "a: one parent"; }
+    });
+    OneClass = go.Class(OneParentClass, {
+        'f_b': function () {return "b: one"; }
+    });
+
+    TwoParentClass = go.Class({
+        'f_c': function () {return "c: two parent"; }
+    });
+    TwoClass = go.Class(TwoParentClass, {
+        'f_a': function () {return "a: two"; },
+        'f_d': function () {return "d: two"; },
+        'f_e': function () {return "e: two"; }
+    });
+
+    ThreePrototype = {
+        'f_d': function () {return "d: three"; },
+        'f_f': function () {return "f: three"; }
+    };
+    ThreeConstructor = function () {};
+    ThreeConstructor.prototype = ThreePrototype;
+    ThreeObject = new ThreeConstructor();
+
+    FourHash = {
+        'f_g': function () {return "g: four"; }
+    };
+
+    ResultClass = go.Class([OneClass, TwoClass, ThreeObject, FourHash], {
+        'f_e': function () {return "e: result"; },
+        'f_h': function () {return "h: result"; }
+    });
+    ResultObject = new ResultClass();
+
+    equal(ResultClass.$parent, OneClass);
+    deepEqual(ResultClass.$otherParents, [TwoClass, ThreeObject, FourHash]);
+
+    equal(ResultObject.f_a(), "a: one parent");
+    equal(ResultObject.f_b(), "b: one");
+    equal(ResultObject.f_c(), "c: two parent");
+    equal(ResultObject.f_d(), "d: two");
+    equal(ResultObject.f_e(), "e: result");
+    equal(ResultObject.f_f(), "f: three");
+    equal(ResultObject.f_g(), "g: four");
+    equal(ResultObject.f_h(), "h: result");
+
+    ok(ResultObject instanceof OneParentClass);
+    ok(ResultObject instanceof OneClass);
+    ok(!(ResultObject instanceof TwoParentClass));
+    ok(!(ResultObject instanceof TwoClass));
+    ok(!(ResultObject instanceof ThreeConstructor));
+
+    ok(ResultObject.instance_of(OneParentClass));
+    ok(ResultObject.instance_of(OneClass));
+    ok(ResultObject.instance_of(TwoParentClass));
+    ok(ResultObject.instance_of(TwoClass));
+    ok(ResultObject.instance_of(ThreeConstructor));
+    ok(ResultObject.instance_of(FourHash));
+
+    NoHierClass = go.Class({});
+    ok(!ResultObject.instance_of(NoHierClass));
+});
