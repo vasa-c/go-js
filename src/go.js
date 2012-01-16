@@ -505,6 +505,38 @@ go("Lang", (function (global) {
 			}
 		},
 
+        /**
+         * Создание собственных "классов исключений"
+         */
+        'Exception': (function () {
+
+            var Base, create;
+
+            create = function (name, parent) {
+                var Exc, Fake;
+                if ((!parent) && (typeof global.Error === "function")) {
+                    parent = global.Error;
+                }
+                Exc = function Exc(message) {
+                    this.name    = name;
+                    this.message = message;
+                };
+                if (parent) {
+                    Fake = function () {};
+                    Fake.prototype = parent.prototype;
+                    Exc.prototype  = new Fake();
+                    Exc.prototype.constructor = Exc;
+                }
+                return Exc;
+            };
+            Base = create("go.Exception");
+
+            Base.create = create;
+            Base.Base   = Base;
+
+            return Base;
+        }()),
+
 		'eoc': null
 	};
 

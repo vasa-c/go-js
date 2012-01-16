@@ -428,3 +428,25 @@ tests.test("go.Lang.f", function () {
 	equal(go.Lang.f.ffalse(), false);
 
 });
+
+tests.test("go.Lang.Exception", function () {
+
+    var
+        OneError = go.Lang.Exception.create("One", go.Lang.Exception),
+        TwoError = go.Lang.Exception.create("Two", OneError),
+        ThreeError = go.Lang.Exception.create("Three", OneError);
+
+    try {
+        throw new TwoError("warning");
+    } catch (e) {
+        ok(e instanceof Error);
+        ok(e instanceof go.Lang.Exception);
+        ok(e instanceof go.Lang.Exception.Base);
+        ok(e instanceof OneError);
+        ok(e instanceof TwoError);
+        ok(!(e instanceof ThreeError));
+
+        equal(e.name, "Two");
+        equal(e.message, "warning");
+    }
+});
