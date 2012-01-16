@@ -332,4 +332,7 @@ tests.test("abstract", function () {
 
     equal(instance.func2(), "f2");
     equal(typeof instance.__abstract, "undefined");
+
+    ok(go.Class.Root.abstract);
+    raises(function () {instance = new go.Class.Root(); }, go.Class.Exceptions.Abstract);
 });

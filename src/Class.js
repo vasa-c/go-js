@@ -50,6 +50,7 @@ go("Class", (function (go) {
         }
     };
     RootPrototype[RootSettings.names.settings] = RootSettings;
+    RootPrototype[RootSettings.names.abstract] = true;
     RootPrototype[RootSettings.names.constructor] = function () {};
     RootPrototype[RootSettings.names.destructor] = function () {};
     RootPrototype[RootSettings.names.parentConstructor] = function (C) {
