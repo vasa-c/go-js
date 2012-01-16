@@ -6,7 +6,7 @@
  * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
  */
 /*jslint node: true, nomen: true */
-/*global window, document, go, tests, ok, equal, notEqual, deepEqual */
+/*global window, document, go, tests, ok, equal, notEqual, deepEqual, raises */
 "use strict";
 
 tests.module("Class");
@@ -319,7 +319,7 @@ tests.test("abstract", function () {
         }
     });
     CClass = go.Class(BaseClass, {
-        'func2': function() {
+        'func2': function () {
             return this.func() + "2";
         }
     });
@@ -327,7 +327,7 @@ tests.test("abstract", function () {
     ok(BaseClass.abstract);
     ok(!CClass.abstract);
 
-    raises(function() {instance = new BaseClass(); }, go.Class.Exceptions.Abstract);
+    raises(function () {instance = new BaseClass(); }, go.Class.Exceptions.Abstract);
     instance = new CClass();
 
     equal(instance.func2(), "f2");

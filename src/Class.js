@@ -326,7 +326,7 @@ go("Class", (function (go) {
             Base = create("go.Class.Exceptions.Base", go.Lang.Exception);
         return {
             'Base': Base,
-            'Abstract': create("go.Class.Exceptions.Abstract", Base),
+            'Abstract': create("go.Class.Exceptions.Abstract", Base)
         };
     }());
 
