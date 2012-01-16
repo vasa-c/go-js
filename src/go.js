@@ -423,7 +423,7 @@ go("Lang", (function (global) {
 		'parseQuery': function (query, sep) {
 		    var result = {}, i, len, v;
 		    if (typeof query === "undefined") {
-		        query = global.location.split("#", 2)[0].split("?", 2)[1];
+		        query = global.location.toString().split("#", 2)[0].split("?", 2)[1];
 		    } else if (typeof query !== "string") {
 		        return query;
 		    }
