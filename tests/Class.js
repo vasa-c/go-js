@@ -336,3 +336,28 @@ tests.test("abstract", function () {
     ok(go.Class.Root.abstract);
     raises(function () {instance = new go.Class.Root(); }, go.Class.Exceptions.Abstract);
 });
+
+tests.test("final", function () {
+
+    var TestClass, instance;
+
+    TestClass = go.Class({
+        '__final': true,
+
+        'func': function () {
+            return "f";
+        }
+    });
+
+    ok(TestClass.final);
+
+    instance = new TestClass();
+    equal(instance.func(), "f");
+
+    function extendTestClass() {
+        var NClass = go.Class(TestClass, {});
+        return new NClass();
+    }
+
+    raises(extendTestClass, go.Class.Exceptions.Final);
+});

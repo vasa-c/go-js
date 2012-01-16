@@ -34,6 +34,7 @@ go("Class", (function (go) {
             'parentMethod'      : "__parentMethod",
             'settings'          : "__settings",
             'abstract'          : "__abstract",
+            'final'             : "__final",
             'destroy'           : "destroy",
             'instance_of'       : "instance_of"
         }
@@ -125,6 +126,9 @@ go("Class", (function (go) {
          * Создание класса
          */
         'create': function () {
+            if (!this.checkParentsNoFinal()) {
+                throw new Class.Exceptions.Final("Cannot extend final class");
+            }
             this.createBlankPrototype();
             this.applyOtherParents();
             this.loadSettings();
@@ -158,6 +162,26 @@ go("Class", (function (go) {
             if ((!this.parent) && Class.Root) {
                 this.parent = Class.Root;
             }
+        },
+
+        /**
+         * Проверить, что среди предков нет финальных
+         */
+        'checkParentsNoFinal': function () {
+            var i, len, parents, parent;
+            if (this.parent && this.parent.final) {
+                return false;
+            }
+            parents = this.otherParents;
+            for (i = 0, len = parents.length; i < len; i += 1) {
+                parent = parents[i];
+                if (typeof parent === "function") {
+                    if (parent.final) {
+                        return false;
+                    }
+                }
+            }
+            return true;
         },
 
         /**
@@ -199,7 +223,7 @@ go("Class", (function (go) {
          * Загрузка настроек класса
          */
         'loadSettings': function () {
-            var propsS, propAbstract;
+            var propsS, propAbstract, propFinal;
             if (this.parent) {
                 this.settings = this.parent.settings;
             } else {
@@ -217,6 +241,12 @@ go("Class", (function (go) {
                 delete this.proto[this.settings.names.abstract];
             }
             this.abstract = propAbstract ? true : false;
+
+            propFinal = this.props[this.settings.names.final];
+            if (typeof propFinal !== "undefined") {
+                delete this.proto[this.settings.names.final];
+            }
+            this.final = propFinal ? true : false;
         },
 
         /**
@@ -251,6 +281,7 @@ go("Class", (function (go) {
             C.otherParents   = this.otherParents;
             C.isSubclassOf   = this.class__isSubclassOf;
             C.abstract       = this.abstract;
+            C.final          = this.final;
             C.__construct    = this.class__construct;
             C.__destruct     = this.class__destruct;
             C.__method       = this.class__method;
@@ -326,8 +357,9 @@ go("Class", (function (go) {
         var create = go.Lang.Exception.create,
             Base = create("go.Class.Exceptions.Base", go.Lang.Exception);
         return {
-            'Base': Base,
-            'Abstract': create("go.Class.Exceptions.Abstract", Base)
+            'Base'     : Base,
+            'Abstract' : create("go.Class.Exceptions.Abstract", Base),
+            'Final'    : create("go.Class.Exceptions.Final", Base)
         };
     }());
 
