@@ -13,7 +13,31 @@
 		var tests;
 		(function () {
 			var modules = [null, "Lang", "Class"];
-			tests = new go.Tests(modules, "./");
+			var cmodules = (function (go, modules) {
+				var result,
+					smods,
+					smod,
+					i,
+					len,
+					params = go.Lang.parseQuery();
+				if (params.m) {
+					result = [];
+					smods  = params.m.split(",");
+					for (i = 0, len = smods.length; i < len; i += 1) {
+						smod = smods[i];
+						if (smod) {
+							if (smod === "core") {
+								smod = null;
+							}
+							result.push(smod);
+						}
+					}
+				} else {
+					result = modules;
+				}
+				return result;
+			}(go, modules));
+			tests = new go.Tests(cmodules, "./");
 		    $(document).ready(function () {
 				tests.run();
 				tests.destroy();
