@@ -306,3 +306,30 @@ tests.test("parent access", function () {
     instance.destroy();
     deepEqual(destrs, ["One", "Two", "Side", "Target"]);
 });
+
+tests.test("abstract", function () {
+
+    var BaseClass, CClass, instance;
+
+    BaseClass = go.Class({
+        '__abstract': true,
+
+        'func': function () {
+            return "f";
+        }
+    });
+    CClass = go.Class(BaseClass, {
+        'func2': function() {
+            return this.func() + "2";
+        }
+    });
+
+    ok(BaseClass.abstract);
+    ok(!CClass.abstract);
+
+    raises(function() {instance = new BaseClass(); }, go.Class.Exceptions.Abstract);
+    instance = new CClass();
+
+    equal(instance.func2(), "f2");
+    equal(typeof instance.__abstract, "undefined");
+});

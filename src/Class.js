@@ -33,6 +33,7 @@ go("Class", (function (go) {
             'parentDestructor'  : "__parentDestruct",
             'parentMethod'      : "__parentMethod",
             'settings'          : "__settings",
+            'abstract'          : "__abstract",
             'destroy'           : "destroy",
             'instance_of'       : "instance_of"
         }
@@ -91,6 +92,8 @@ go("Class", (function (go) {
      *      список дополнительных предков
      * @var hash settings
      *      настройки класса
+     * @var bool abstract
+     *      абстрактный ли класс
      */
     ClassCreatorPrototype = {
 
@@ -195,7 +198,7 @@ go("Class", (function (go) {
          * Загрузка настроек класса
          */
         'loadSettings': function () {
-            var propsS;
+            var propsS, propAbstract;
             if (this.parent) {
                 this.settings = this.parent.settings;
             } else {
@@ -204,8 +207,15 @@ go("Class", (function (go) {
             propsS = this.props[RootSettings.names.settings]; // @todo обдумать
             if (propsS) {
                 go.Lang.extend(this.settings, propsS);
-                delete this.proto.$settings;
+                delete this.proto[RootSettings.names.settings];
             }
+
+            /* @todo в другое место */
+            propAbstract = this.props[this.settings.names.abstract];
+            if (typeof propAbstract !== "undefined") {
+                delete this.proto[this.settings.names.abstract];
+            }
+            this.abstract = propAbstract ? true : false;
         },
 
         /**
@@ -213,6 +223,9 @@ go("Class", (function (go) {
          */
         'createClass': function () {
             this.Class = function C() {
+                if (C.abstract) {
+                    throw new Class.Exceptions.Abstract("Cannot instantiate abstract class");
+                }
                 if (!(this instanceof C)) { // @todo проверить все случаи
                     var instance = new C.Fake();
                     C.apply(instance, arguments);
@@ -236,6 +249,7 @@ go("Class", (function (go) {
             C.parent         = this.parent;
             C.otherParents   = this.otherParents;
             C.isSubclassOf   = this.class__isSubclassOf;
+            C.abstract       = this.abstract;
             C.__construct    = this.class__construct;
             C.__destruct     = this.class__destruct;
             C.__method       = this.class__method;
@@ -309,9 +323,10 @@ go("Class", (function (go) {
     Class.Root = Class.apply(window, [null, RootPrototype]);
     Class.Exceptions = (function () {
         var create = go.Lang.Exception.create,
-            Base = create("go.Class.Base", go.Lang.Exception);
+            Base = create("go.Class.Exceptions.Base", go.Lang.Exception);
         return {
-            'Base': Base
+            'Base': Base,
+            'Abstract': create("go.Class.Exceptions.Abstract", Base),
         };
     }());
 
