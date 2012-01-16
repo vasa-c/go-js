@@ -307,6 +307,13 @@ go("Class", (function (go) {
         return C;
     };
     Class.Root = Class.apply(window, [null, RootPrototype]);
+    Class.Exceptions = (function () {
+        var create = go.Lang.Exception.create,
+            Base = create("go.Class.Base", go.Lang.Exception);
+        return {
+            'Base': Base
+        };
+    }());
 
     return Class;
 }(go)));
