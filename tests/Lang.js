@@ -83,7 +83,7 @@ tests.test("bind() user defined", function () {
 
 tests.test("getType", function () {
 
-	var undef, div, spans;
+	var undef, div, spans, fgotype;
 
 	equal(go.Lang.getType(undef), "undefined");
 	equal(go.Lang.getType(null), "null");
@@ -91,7 +91,6 @@ tests.test("getType", function () {
 	equal(go.Lang.getType(3), "number");
 	equal(go.Lang.getType(-3.3), "number");
 	equal(go.Lang.getType("str"), "string");
-	equal(go.Lang.getType(function () {}), "function");
 	equal(go.Lang.getType({'x': 5}), "object");
 	equal(go.Lang.getType([1, 2, 3]), "array");
 	equal(go.Lang.getType(arguments), "arguments");
@@ -105,6 +104,10 @@ tests.test("getType", function () {
 	equal(go.Lang.getType(spans), "collection");
 
 	equal(go.Lang.getType({'go$type': 'user'}), "user");
+	fgotype = function () {};
+	equal(go.Lang.getType(fgotype), "function");
+	fgotype.go$type = "fuser";
+	equal(go.Lang.getType(fgotype), "fuser");
 });
 
 tests.test("isArray", function () {

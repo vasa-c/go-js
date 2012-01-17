@@ -186,6 +186,9 @@ go("Lang", (function (global) {
 		'getType': function (value) {
 			var type = typeof value;
 			if (type !== "object") {
+			    if ((type === "function") && value.go$type) {
+			        return value.go$type;
+			    }
 				return type;
 			} else if (value === null) {
 				return "null";
