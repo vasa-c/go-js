@@ -35,6 +35,7 @@ go("Class", (function (go) {
             'settings'          : "__settings",
             'abstract'          : "__abstract",
             'final'             : "__final",
+            'classname'         : "__classname",
             'destroy'           : "destroy",
             'instance_of'       : "instance_of"
         }
@@ -47,9 +48,10 @@ go("Class", (function (go) {
     RootPrototype = {
         'go$type' : "go.object",
         'toString': function () {
-            return "[go.object]";
+            return "instance of [" + (this.$self && this.$self.classname) + "]";
         }
     };
+    RootPrototype[RootSettings.names.classname] = "go.Class.Root";
     RootPrototype[RootSettings.names.settings] = RootSettings;
     RootPrototype[RootSettings.names.abstract] = true;
     RootPrototype[RootSettings.names.constructor] = function () {};
@@ -223,7 +225,7 @@ go("Class", (function (go) {
          * Загрузка настроек класса
          */
         'loadSettings': function () {
-            var propsS, propAbstract, propFinal;
+            var propsS, propAbstract, propFinal, propClassname;
             if (this.parent) {
                 this.settings = this.parent.settings;
             } else {
@@ -247,6 +249,12 @@ go("Class", (function (go) {
                 delete this.proto[this.settings.names.final];
             }
             this.final = propFinal ? true : false;
+
+            propClassname = this.props[this.settings.names.classname];
+            if (typeof propClassname !== "undefined") {
+                delete this.proto[this.settings.names.classname];
+            }
+            this.classname = propClassname || "go.class";
         },
 
         /**
@@ -285,6 +293,11 @@ go("Class", (function (go) {
             C.__construct    = this.class__construct;
             C.__destruct     = this.class__destruct;
             C.__method       = this.class__method;
+            C.go$type        = "go.class";
+            C.classname      = this.classname;
+            C.toString       = function () {
+                return "class [" + C.classname + "]";
+            };
         },
 
         'class__isSubclassOf': function (wparent) {

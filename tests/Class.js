@@ -361,3 +361,28 @@ tests.test("final", function () {
 
     raises(extendTestClass, go.Class.Exceptions.Final);
 });
+
+tests.test("type and toString", function () {
+
+    var OneClass, TwoClass, oneInstance, twoInstance;
+
+    OneClass = go.Class({
+
+    });
+
+    TwoClass = go.Class({
+        '__classname': "TwoClass"
+    });
+
+    oneInstance = new OneClass();
+    twoInstance = new TwoClass();
+
+    equal(go.Lang.getType(OneClass), "go.class");
+    equal(go.Lang.getType(oneInstance), "go.object");
+
+    equal(":" + OneClass, ":class [go.class]");
+    equal(":" + TwoClass, ":class [TwoClass]");
+    equal(":" + go.Class.Root, ":class [go.Class.Root]");
+    equal(":" + oneInstance, ":instance of [go.class]");
+    equal(":" + twoInstance, ":instance of [TwoClass]");
+});
