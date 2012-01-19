@@ -66,14 +66,10 @@ go("Class", (function (go) {
      *
      * @var function Class
      *      итоговая функция-конструктор
-     * @var hash proto
-     *      объект, служащий в качестве прототипа для класса
      * @var hash props
      *      переданные в качестве аргумента поля класса
      * @var mixed cparents
      *      переданные в качестве аргумента предки класса
-     * @var bool abstract
-     *      абстрактный ли класс
      */
     ClassCreatorPrototype = {
 
@@ -109,7 +105,7 @@ go("Class", (function (go) {
             if (!this.checkParentsNoFinal()) {
                 throw new Class.Exceptions.Final("Cannot extend final class");
             }
-            this.createBlankPrototype();
+            this.createPrototype();
             this.loadProperties();
             this.applyOtherParents();
             this.fillClassProperties();
@@ -183,20 +179,18 @@ go("Class", (function (go) {
         },
 
         /**
-         * Создание заготовки прототипа
+         * Создание объекта прототипа
          */
-        'createBlankPrototype': function () {
-            var C = this.Class, proto;
+        'createPrototype': function () {
+            var C = this.Class;
             if (C.parent) {
-                proto = new C.parent.Fake();
+                C.prototype = new C.parent.Fake();
             } else {
-                proto = {};
+                C.prototype = {};
             }
-            go.Lang.extend(proto, this.props);
-            this.proto        = proto;
-            C.prototype       = proto;
-            proto.constructor = this.Class;
-            proto.$self       = this.Class;
+            go.Lang.extend(C.prototype, this.props);
+            C.prototype.constructor = C;
+            C.prototype.$self       = C;
         },
 
         /**
@@ -204,7 +198,7 @@ go("Class", (function (go) {
          */
         'applyOtherParents': function () {
             var oparents = this.Class.otherParents,
-                proto    = this.proto,
+                proto    = this.Class.prototype,
                 parent,
                 i,
                 len,
@@ -233,21 +227,22 @@ go("Class", (function (go) {
          */
         'loadProperties': function () {
             var props = this.props,
-                C = this.Class;
+                C = this.Class,
+                proto = C.prototype;
 
             this.abstract = props.__abstract ? true : false;
             if (props.hasOwnProperty("__abstract") !== "undefined") {
-                delete this.proto.__abstract;
+                delete proto.__abstract;
             }
 
             this.final = props.__final ? true : false;
             if (props.hasOwnProperty("__final") !== "undefined") {
-                delete this.proto.__final;
+                delete proto.__final;
             }
 
             this.classname = props.__classname || "go.class";
             if (props.hasOwnProperty("__classname") !== "undefined") {
-                delete this.proto.__classname;
+                delete proto.__classname;
             }
 
         },
@@ -258,7 +253,7 @@ go("Class", (function (go) {
         'fillClassProperties': function () {
             var C = this.Class;
             C.Fake           = function () {};
-            C.Fake.prototype = this.proto;
+            C.Fake.prototype = C.prototype;
             C.abstract       = this.abstract;
             C.final          = this.final;
             C.go$type        = "go.class";
