@@ -107,9 +107,8 @@ go("Class", (function (go) {
                 throw new Class.Exceptions.Final("Cannot extend final class");
             }
             this.createPrototype();
-            this.loadProperties();
             this.applyOtherParents();
-            this.fillClassProperties();
+            this.fillClass();
         },
 
         /**
@@ -132,6 +131,7 @@ go("Class", (function (go) {
                     C.apply(instance, arguments);
                     return instance;
                 }
+                C.__fillInstance(this);
                 this.__construct.apply(this, arguments);
             };
         },
@@ -189,7 +189,6 @@ go("Class", (function (go) {
             } else {
                 C.prototype = {};
             }
-            go.Lang.extend(C.prototype, this.props);
             C.prototype.constructor = C;
             C.prototype.__self      = C;
         },
@@ -223,6 +222,19 @@ go("Class", (function (go) {
         },
 
         /**
+         * Заполнение класса и прототипа нужными свойствами
+         */
+        'fillClass': function () {
+            var C = this.Class;
+            go.Lang.extend(C.prototype, this.props);
+            this.loadProperties();
+            C.__Fake           = function () {};
+            C.__Fake.prototype = C.prototype;
+            C.go$type          = "go.class";
+            go.Lang.extend(C, this.classMethods);
+        },
+
+        /**
          * Загрузка некоторых переменных
          * @todo в мутаторы
          */
@@ -246,17 +258,6 @@ go("Class", (function (go) {
                 delete proto.__classname;
             }
 
-        },
-
-        /**
-         * Заполнение объекта класса нужными свойствами
-         */
-        'fillClassProperties': function () {
-            var C = this.Class;
-            C.__Fake           = function () {};
-            C.__Fake.prototype = C.prototype;
-            C.go$type          = "go.class";
-            go.Lang.extend(C, this.classMethods);
         },
 
         /**
@@ -332,6 +333,16 @@ go("Class", (function (go) {
             '__method': function (instance, name) {
                 var args = Array.prototype.slice.call(arguments, 2);
                 return this.prototype[name].apply(instance, args);
+            },
+
+            /**
+             * Заполнение экземпляра объекта нужными свойствами
+             * На этапе конструирования до вызова __construct()
+             *
+             * @param go.object instance
+             */
+            '__fillInstance': function (instance) {
+
             },
 
             'toString': function () {
