@@ -17,68 +17,48 @@ go("Class", (function (go) {
 
     var
         Class,
-        RootSettings,
         RootPrototype,
         ClassCreatorPrototype,
         ClassCreatorConstructor;
-
-    /**
-     * Настройки корневого класса
-     */
-    RootSettings = {
-        'names': {
-            'constructor'       : "__construct",
-            'destructor'        : "__destruct",
-            'parentConstructor' : "__parentConstruct",
-            'parentDestructor'  : "__parentDestruct",
-            'parentMethod'      : "__parentMethod",
-            'settings'          : "__settings",
-            'abstract'          : "__abstract",
-            'final'             : "__final",
-            'classname'         : "__classname",
-            'destroy'           : "destroy",
-            'instance_of'       : "instance_of"
-        }
-    };
 
     /**
      * Прототип корневого класса
      * Свойства и методы, доступные во всех объектах
      */
     RootPrototype = {
-        'go$type' : "go.object",
+        'go$type'     : "go.object",
+        '__classname' : "go.Class.Root",
+        '__abstract'  : true,
+        '__final'     : false,
+        '__construct' : function () {},
+        '__destruct'  : function () {},
+        '__parentConstruct': function (C) {
+            var args = Array.prototype.slice.call(arguments);
+            args[0] = this;
+            C.__construct.apply(C, args);
+        },
+        '__parentDestruct': function (C) {
+            C.__destruct(this);
+        },
+        '__parentMethod': function (C, name) {
+            /*jslint unparam: true */
+            var args = Array.prototype.slice.call(arguments);
+            args[0] = this;
+            /*jslint unparam: false */
+            return C.__method.apply(C, args);
+        },
+        'destroy': function () {
+            this.__destruct();
+        },
+        'instance_of': function (C) {
+            if ((typeof C === "function") && (this instanceof C)) {
+                return true;
+            }
+            return this.$self.isSubclassOf(C);
+        },
         'toString': function () {
             return "instance of [" + (this.$self && this.$self.classname) + "]";
         }
-    };
-    RootPrototype[RootSettings.names.classname] = "go.Class.Root";
-    RootPrototype[RootSettings.names.settings] = RootSettings;
-    RootPrototype[RootSettings.names.abstract] = true;
-    RootPrototype[RootSettings.names.constructor] = function () {};
-    RootPrototype[RootSettings.names.destructor] = function () {};
-    RootPrototype[RootSettings.names.parentConstructor] = function (C) {
-        var args = Array.prototype.slice.call(arguments);
-        args[0] = this;
-        C.__construct.apply(C, args);
-    };
-    RootPrototype[RootSettings.names.parentDestructor] = function (C) {
-        C.__destruct(this);
-    };
-    RootPrototype[RootSettings.names.parentMethod] = function (C, name) {
-        /*jslint unparam: true */
-        var args = Array.prototype.slice.call(arguments);
-        args[0] = this;
-        /*jslint unparam: false */
-        return C.__method.apply(C, args);
-    };
-    RootPrototype[RootSettings.names.destroy] = function () {
-        this.__destruct(); // @todo settings (когда будет self)
-    };
-    RootPrototype[RootSettings.names.instance_of] = function (C) {
-        if ((typeof C === "function") && (this instanceof C)) {
-            return true;
-        }
-        return this.$self.isSubclassOf(C);
     };
 
     /**
@@ -92,8 +72,6 @@ go("Class", (function (go) {
      *      переданные в качестве аргумента поля класса
      * @var mixed cparents
      *      переданные в качестве аргумента предки класса
-     * @var hash settings
-     *      настройки класса
      * @var bool abstract
      *      абстрактный ли класс
      */
@@ -132,8 +110,8 @@ go("Class", (function (go) {
                 throw new Class.Exceptions.Final("Cannot extend final class");
             }
             this.createBlankPrototype();
+            this.loadProperties();
             this.applyOtherParents();
-            this.loadSettings();
             this.fillClassProperties();
         },
 
@@ -157,7 +135,7 @@ go("Class", (function (go) {
                     C.apply(instance, arguments);
                     return instance;
                 }
-                this[C.settings.names.constructor].apply(this, arguments);
+                this.__construct.apply(this, arguments);
             };
         },
 
@@ -250,39 +228,28 @@ go("Class", (function (go) {
         },
 
         /**
-         * Загрузка настроек класса
+         * Загрузка некоторых переменных
+         * @todo в мутаторы
          */
-        'loadSettings': function () {
-            var propsS, propAbstract, propFinal, propClassname, C = this.Class;
-            if (C.parent) {
-                this.settings = C.parent.settings;
-            } else {
-                this.settings = {};
-            }
-            propsS = this.props[RootSettings.names.settings]; // @todo обдумать
-            if (propsS) {
-                go.Lang.extend(this.settings, propsS);
-                delete this.proto[RootSettings.names.settings];
+        'loadProperties': function () {
+            var props = this.props,
+                C = this.Class;
+
+            this.abstract = props.__abstract ? true : false;
+            if (props.hasOwnProperty("__abstract") !== "undefined") {
+                delete this.proto.__abstract;
             }
 
-            /* @todo в другое место */
-            propAbstract = this.props[this.settings.names.abstract];
-            if (typeof propAbstract !== "undefined") {
-                delete this.proto[this.settings.names.abstract];
+            this.final = props.__final ? true : false;
+            if (props.hasOwnProperty("__final") !== "undefined") {
+                delete this.proto.__final;
             }
-            this.abstract = propAbstract ? true : false;
 
-            propFinal = this.props[this.settings.names.final];
-            if (typeof propFinal !== "undefined") {
-                delete this.proto[this.settings.names.final];
+            this.classname = props.__classname || "go.class";
+            if (props.hasOwnProperty("__classname") !== "undefined") {
+                delete this.proto.__classname;
             }
-            this.final = propFinal ? true : false;
 
-            propClassname = this.props[this.settings.names.classname];
-            if (typeof propClassname !== "undefined") {
-                delete this.proto[this.settings.names.classname];
-            }
-            this.classname = propClassname || "go.class";
         },
 
         /**
@@ -292,7 +259,6 @@ go("Class", (function (go) {
             var C = this.Class;
             C.Fake           = function () {};
             C.Fake.prototype = this.proto;
-            C.settings       = this.settings;
             C.abstract       = this.abstract;
             C.final          = this.final;
             C.go$type        = "go.class";
@@ -352,7 +318,7 @@ go("Class", (function (go) {
              * @params mixed аргументы конструктора
              */
             '__construct': function (instance) {
-                var cr = this.prototype[this.settings.names.constructor];
+                var cr = this.prototype.__construct;
                 cr.call.apply(cr, arguments);
             },
 
@@ -362,8 +328,7 @@ go("Class", (function (go) {
              * @param go.object instance
              */
             '__destruct': function (instance) {
-                var dr = this.prototype[this.settings.names.destructor];
-                dr.apply(instance);
+                this.prototype.__destruct.apply(instance);
             },
 
             /**
