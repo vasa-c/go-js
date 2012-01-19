@@ -281,69 +281,97 @@ go("Class", (function (go) {
          * Заполнение объекта класса нужными свойствами
          */
         'fillClassProperties': function () {
-            var C = this.Class;
+            var C  = this.Class;
             C.Fake           = function () {};
             C.Fake.prototype = this.proto;
             C.settings       = this.settings;
             C.parent         = this.parent;
             C.otherParents   = this.otherParents;
-            C.isSubclassOf   = this.class__isSubclassOf;
             C.abstract       = this.abstract;
             C.final          = this.final;
-            C.__construct    = this.class__construct;
-            C.__destruct     = this.class__destruct;
-            C.__method       = this.class__method;
             C.go$type        = "go.class";
             C.classname      = this.classname;
             C.toString       = function () {
                 return "class [" + C.classname + "]";
             };
+            go.Lang.extend(C, this.classMethods);
         },
 
-        'class__isSubclassOf': function (wparent) {
-            var i, len, other, oparent;
-            if (wparent === this) {
-                return true;
-            }
-            if (!this.parent) {
-                return false;
-            }
-            if (this.parent.isSubclassOf(wparent)) {
-                return true;
-            }
-            other = this.otherParents;
-            for (i = 0, len = other.length; i < len; i += 1) {
-                oparent = other[i];
-                if (wparent === oparent) {
+        /**
+         * Базовые статические методы класса
+         */
+        'classMethods': {
+
+            /**
+             * Является ли класс, подклассом указанного
+             *
+             * @param go.class wparent
+             * @return bool
+             */
+            'isSubclassOf': function (wparent) {
+                var i, len, other, oparent;
+                if (wparent === this) {
                     return true;
                 }
-                if (typeof oparent.isSubclassOf === "function") {
-                    if (oparent.isSubclassOf(wparent)) {
+                if (!this.parent) {
+                    return false;
+                }
+                if (this.parent.isSubclassOf(wparent)) {
+                    return true;
+                }
+                other = this.otherParents;
+                for (i = 0, len = other.length; i < len; i += 1) {
+                    oparent = other[i];
+                    if (wparent === oparent) {
                         return true;
                     }
-                }
-                if (typeof wparent === "function") {
-                    if (oparent instanceof wparent) {
-                        return true;
+                    if (typeof oparent.isSubclassOf === "function") {
+                        if (oparent.isSubclassOf(wparent)) {
+                            return true;
+                        }
+                    }
+                    if (typeof wparent === "function") {
+                        if (oparent instanceof wparent) {
+                            return true;
+                        }
                     }
                 }
+                return false;
+            },
+
+            /**
+             * Вызов конструктора данного класса для объекта
+             *
+             * @param go.object instance
+             * @params mixed аргументы конструктора
+             */
+            '__construct': function (instance) {
+                var cr = this.prototype[this.settings.names.constructor];
+                cr.call.apply(cr, arguments);
+            },
+
+            /**
+             * Вызов деструктора данного класса для объекта
+             *
+             * @param go.object instance
+             */
+            '__destruct': function (instance) {
+                var dr = this.prototype[this.settings.names.destructor];
+                dr.apply(instance);
+            },
+
+            /**
+             * Вызов метода данного класса для объекта
+             *
+             * @param go.object instance
+             * @param string name
+             * @params mixed аргументы метода
+             * @return mixed
+             */
+            '__method': function (instance, name) {
+                var args = Array.prototype.slice.call(arguments, 2);
+                return this.prototype[name].apply(instance, args);
             }
-            return false;
-        },
-
-        'class__construct': function (instance) {
-            var cr = this.prototype[this.settings.names.constructor];
-            cr.call.apply(cr, arguments);
-        },
-
-        'class__destruct': function (instance) {
-            var dr = this.prototype[this.settings.names.destructor];
-            dr.apply(instance);
-        },
-
-        'class__method': function (instance, name) {
-            var args = Array.prototype.slice.call(arguments, 2);
-            return this.prototype[name].apply(instance, args);
         },
 
         'eoc': null
