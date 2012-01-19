@@ -196,8 +196,8 @@ tests.test("inheritance (multi)", function () {
     });
     ResultObject = new ResultClass();
 
-    equal(ResultClass.parent, OneClass);
-    deepEqual(ResultClass.otherParents, [TwoClass, ThreeObject, FourHash]);
+    equal(ResultClass.__parent, OneClass);
+    deepEqual(ResultClass.__otherParents, [TwoClass, ThreeObject, FourHash]);
 
     equal(ResultObject.f_a(), "a: one parent");
     equal(ResultObject.f_b(), "b: one");
@@ -324,8 +324,8 @@ tests.test("abstract", function () {
         }
     });
 
-    ok(BaseClass.abstract);
-    ok(!CClass.abstract);
+    ok(BaseClass.__abstract);
+    ok(!CClass.__abstract);
 
     raises(function () {instance = new BaseClass(); }, go.Class.Exceptions.Abstract);
     instance = new CClass();
@@ -333,7 +333,7 @@ tests.test("abstract", function () {
     equal(instance.func2(), "f2");
     equal(typeof instance.__abstract, "undefined");
 
-    ok(go.Class.Root.abstract);
+    ok(go.Class.Root.__abstract);
     raises(function () {instance = new go.Class.Root(); }, go.Class.Exceptions.Abstract);
 });
 
@@ -349,7 +349,7 @@ tests.test("final", function () {
         }
     });
 
-    ok(TestClass.final);
+    ok(TestClass.__final);
 
     instance = new TestClass();
     equal(instance.func(), "f");

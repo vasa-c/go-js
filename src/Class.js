@@ -54,10 +54,11 @@ go("Class", (function (go) {
             if ((typeof C === "function") && (this instanceof C)) {
                 return true;
             }
-            return this.$self.isSubclassOf(C);
+            return this.__self.isSubclassOf(C);
         },
         'toString': function () {
-            return "instance of [" + (this.$self && this.$self.classname) + "]";
+            var classname = this.__self ? this.__self.__classname : "undefined";
+            return "instance of [" + classname + "]";
         }
     };
 
@@ -123,11 +124,11 @@ go("Class", (function (go) {
          */
         'createClass': function () {
             this.Class = function C() {
-                if (C.abstract) {
+                if (C.__abstract) {
                     throw new Class.Exceptions.Abstract("Cannot instantiate abstract class");
                 }
                 if (!(this instanceof C)) { // @todo проверить все случаи
-                    var instance = new C.Fake();
+                    var instance = new C.__Fake();
                     C.apply(instance, arguments);
                     return instance;
                 }
@@ -144,17 +145,17 @@ go("Class", (function (go) {
             var cparents = this.cparents,
                 C = this.Class;
             if (!cparents) {
-                C.parent       = null;
-                C.otherParents = [];
+                C.__parent       = null;
+                C.__otherParents = [];
             } else if (typeof cparents === "function") {
-                C.parent       = cparents;
-                C.otherParents = [];
+                C.__parent       = cparents;
+                C.__otherParents = [];
             } else {
-                C.parent       = cparents[0];
-                C.otherParents = cparents.slice(1);
+                C.__parent       = cparents[0];
+                C.__otherParents = cparents.slice(1);
             }
-            if ((!C.parent) && Class.Root) {
-                C.parent = Class.Root;
+            if ((!C.__parent) && Class.Root) {
+                C.__parent = Class.Root;
             }
         },
 
@@ -163,14 +164,14 @@ go("Class", (function (go) {
          */
         'checkParentsNoFinal': function () {
             var i, len, parents, parent, C = this.Class;
-            if (C.parent && C.parent.final) {
+            if (C.__parent && C.__parent.__final) {
                 return false;
             }
-            parents = C.otherParents;
+            parents = C.__otherParents;
             for (i = 0, len = parents.length; i < len; i += 1) {
                 parent = parents[i];
                 if (typeof parent === "function") {
-                    if (parent.final) {
+                    if (parent.__final) {
                         return false;
                     }
                 }
@@ -183,21 +184,21 @@ go("Class", (function (go) {
          */
         'createPrototype': function () {
             var C = this.Class;
-            if (C.parent) {
-                C.prototype = new C.parent.Fake();
+            if (C.__parent) {
+                C.prototype = new C.__parent.__Fake();
             } else {
                 C.prototype = {};
             }
             go.Lang.extend(C.prototype, this.props);
             C.prototype.constructor = C;
-            C.prototype.$self       = C;
+            C.prototype.__self      = C;
         },
 
         /**
          * Перенести поля второстепенных предков в прототип
          */
         'applyOtherParents': function () {
-            var oparents = this.Class.otherParents,
+            var oparents = this.Class.__otherParents,
                 proto    = this.Class.prototype,
                 parent,
                 i,
@@ -230,17 +231,17 @@ go("Class", (function (go) {
                 C = this.Class,
                 proto = C.prototype;
 
-            this.abstract = props.__abstract ? true : false;
+            C.__abstract = props.__abstract ? true : false;
             if (props.hasOwnProperty("__abstract") !== "undefined") {
                 delete proto.__abstract;
             }
 
-            this.final = props.__final ? true : false;
+            C.__final = props.__final ? true : false;
             if (props.hasOwnProperty("__final") !== "undefined") {
                 delete proto.__final;
             }
 
-            this.classname = props.__classname || "go.class";
+            C.__classname = props.__classname || "go.class";
             if (props.hasOwnProperty("__classname") !== "undefined") {
                 delete proto.__classname;
             }
@@ -252,15 +253,9 @@ go("Class", (function (go) {
          */
         'fillClassProperties': function () {
             var C = this.Class;
-            C.Fake           = function () {};
-            C.Fake.prototype = C.prototype;
-            C.abstract       = this.abstract;
-            C.final          = this.final;
-            C.go$type        = "go.class";
-            C.classname      = this.classname;
-            C.toString       = function () {
-                return "class [" + C.classname + "]";
-            };
+            C.__Fake           = function () {};
+            C.__Fake.prototype = C.prototype;
+            C.go$type          = "go.class";
             go.Lang.extend(C, this.classMethods);
         },
 
@@ -280,13 +275,13 @@ go("Class", (function (go) {
                 if (wparent === this) {
                     return true;
                 }
-                if (!this.parent) {
+                if (!this.__parent) {
                     return false;
                 }
-                if (this.parent.isSubclassOf(wparent)) {
+                if (this.__parent.isSubclassOf(wparent)) {
                     return true;
                 }
-                other = this.otherParents;
+                other = this.__otherParents;
                 for (i = 0, len = other.length; i < len; i += 1) {
                     oparent = other[i];
                     if (wparent === oparent) {
@@ -337,6 +332,10 @@ go("Class", (function (go) {
             '__method': function (instance, name) {
                 var args = Array.prototype.slice.call(arguments, 2);
                 return this.prototype[name].apply(instance, args);
+            },
+
+            'toString': function () {
+                return "class [" + this.__classname + "]";
             }
         },
 
