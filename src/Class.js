@@ -89,11 +89,9 @@ go("Class", (function (go) {
      * @var hash proto
      *      объект, служащий в качестве прототипа для класса
      * @var hash props
-     *      переданные в класс поля
-     * @var Class parent
-     *      основной предок класса
-     * @var Class[] otherParents
-     *      список дополнительных предков
+     *      переданные в качестве аргумента поля класса
+     * @var mixed cparents
+     *      переданные в качестве аргумента предки класса
      * @var hash settings
      *      настройки класса
      * @var bool abstract
@@ -114,8 +112,8 @@ go("Class", (function (go) {
                 props = parents;
                 parents = null;
             }
-            this.props = props;
-            this.separateParents(parents);
+            this.props    = props;
+            this.cparents = parents;
         },
 
         /**
@@ -128,13 +126,14 @@ go("Class", (function (go) {
          * Создание класса
          */
         'create': function () {
+            this.createClass();
+            this.separateParents();
             if (!this.checkParentsNoFinal()) {
                 throw new Class.Exceptions.Final("Cannot extend final class");
             }
             this.createBlankPrototype();
             this.applyOtherParents();
             this.loadSettings();
-            this.createClass();
             this.fillClassProperties();
         },
 
@@ -146,23 +145,42 @@ go("Class", (function (go) {
         },
 
         /**
+         * Создание функции-конструктора
+         */
+        'createClass': function () {
+            this.Class = function C() {
+                if (C.abstract) {
+                    throw new Class.Exceptions.Abstract("Cannot instantiate abstract class");
+                }
+                if (!(this instanceof C)) { // @todo проверить все случаи
+                    var instance = new C.Fake();
+                    C.apply(instance, arguments);
+                    return instance;
+                }
+                this[C.settings.names.constructor].apply(this, arguments);
+            };
+        },
+
+        /**
          * Разделение предков на основные и второстепенные
          *
          * @param mixed parents
          */
-        'separateParents': function (parents) {
-            if (!parents) {
-                this.parent = null;
-                this.otherParents = [];
-            } else if (typeof parents === "function") {
-                this.parent = parents;
-                this.otherParents = [];
+        'separateParents': function () {
+            var cparents = this.cparents,
+                C = this.Class;
+            if (!cparents) {
+                C.parent       = null;
+                C.otherParents = [];
+            } else if (typeof cparents === "function") {
+                C.parent       = cparents;
+                C.otherParents = [];
             } else {
-                this.parent = parents[0];
-                this.otherParents = parents.slice(1);
+                C.parent       = cparents[0];
+                C.otherParents = cparents.slice(1);
             }
-            if ((!this.parent) && Class.Root) {
-                this.parent = Class.Root;
+            if ((!C.parent) && Class.Root) {
+                C.parent = Class.Root;
             }
         },
 
@@ -170,11 +188,11 @@ go("Class", (function (go) {
          * Проверить, что среди предков нет финальных
          */
         'checkParentsNoFinal': function () {
-            var i, len, parents, parent;
-            if (this.parent && this.parent.final) {
+            var i, len, parents, parent, C = this.Class;
+            if (C.parent && C.parent.final) {
                 return false;
             }
-            parents = this.otherParents;
+            parents = C.otherParents;
             for (i = 0, len = parents.length; i < len; i += 1) {
                 parent = parents[i];
                 if (typeof parent === "function") {
@@ -190,22 +208,32 @@ go("Class", (function (go) {
          * Создание заготовки прототипа
          */
         'createBlankPrototype': function () {
-            if (this.parent) {
-                this.proto = new this.parent.Fake();
+            var C = this.Class, proto;
+            if (C.parent) {
+                proto = new C.parent.Fake();
             } else {
-                this.proto = {};
+                proto = {};
             }
-            go.Lang.extend(this.proto, this.props);
+            go.Lang.extend(proto, this.props);
+            this.proto        = proto;
+            C.prototype       = proto;
+            proto.constructor = this.Class;
+            proto.$self       = this.Class;
         },
 
         /**
          * Перенести поля второстепенных предков в прототип
          */
         'applyOtherParents': function () {
-            var i, len, parent, k, proto, undef;
-            proto = this.proto;
-            for (i = 0, len = this.otherParents.length; i < len; i += 1) {
-                parent = this.otherParents[i];
+            var oparents = this.Class.otherParents,
+                proto    = this.proto,
+                parent,
+                i,
+                len,
+                k,
+                undef;
+            for (i = 0, len = oparents.length; i < len; i += 1) {
+                parent = oparents[i];
                 if (typeof parent === "function") {
                     parent = parent.prototype;
                 }
@@ -225,9 +253,9 @@ go("Class", (function (go) {
          * Загрузка настроек класса
          */
         'loadSettings': function () {
-            var propsS, propAbstract, propFinal, propClassname;
-            if (this.parent) {
-                this.settings = this.parent.settings;
+            var propsS, propAbstract, propFinal, propClassname, C = this.Class;
+            if (C.parent) {
+                this.settings = C.parent.settings;
             } else {
                 this.settings = {};
             }
@@ -258,35 +286,13 @@ go("Class", (function (go) {
         },
 
         /**
-         * Создание функции-конструктора
-         */
-        'createClass': function () {
-            this.Class = function C() {
-                if (C.abstract) {
-                    throw new Class.Exceptions.Abstract("Cannot instantiate abstract class");
-                }
-                if (!(this instanceof C)) { // @todo проверить все случаи
-                    var instance = new C.Fake();
-                    C.apply(instance, arguments);
-                    return instance;
-                }
-                this[C.settings.names.constructor].apply(this, arguments);
-            };
-            this.Class.prototype   = this.proto;
-            this.proto.constructor = this.Class;
-            this.proto.$self       = this.Class;
-        },
-
-        /**
          * Заполнение объекта класса нужными свойствами
          */
         'fillClassProperties': function () {
-            var C  = this.Class;
+            var C = this.Class;
             C.Fake           = function () {};
             C.Fake.prototype = this.proto;
             C.settings       = this.settings;
-            C.parent         = this.parent;
-            C.otherParents   = this.otherParents;
             C.abstract       = this.abstract;
             C.final          = this.final;
             C.go$type        = "go.class";
