@@ -19,7 +19,9 @@ go("Class", (function (go) {
         Class,
         RootPrototype,
         ClassCreatorPrototype,
-        ClassCreatorConstructor;
+        ClassCreatorConstructor,
+        MutatorsListPrototype,
+        MutatorsListConstructor;
 
     /**
      * Прототип корневого класса
@@ -107,6 +109,7 @@ go("Class", (function (go) {
                 throw new Class.Exceptions.Final("Cannot extend final class");
             }
             this.createPrototype();
+            this.createMutators();
             this.applyOtherParents();
             this.fillClass();
         },
@@ -191,6 +194,17 @@ go("Class", (function (go) {
             }
             C.prototype.constructor = C;
             C.prototype.__self      = C;
+        },
+
+        /**
+         * Создание списка мутаторов
+         */
+        'createMutators': function () {
+            var C = this.Class,
+                mutators = new MutatorsListConstructor(C);
+            C.__mutators = mutators;
+            mutators.create();
+            mutators.processClass();
         },
 
         /**
@@ -342,7 +356,7 @@ go("Class", (function (go) {
              * @param go.object instance
              */
             '__fillInstance': function (instance) {
-
+                this.__mutators.processInstance(instance);
             },
 
             'toString': function () {
@@ -356,6 +370,53 @@ go("Class", (function (go) {
         this.__construct(parents, props);
     };
     ClassCreatorConstructor.prototype = ClassCreatorPrototype;
+
+    /**
+     * Прототип объектов, представляющих списки мутаторов конкретных классов
+     *
+     * @var go.class Class
+     *      объект целевого класса
+     */
+    MutatorsListPrototype = {
+
+        /**
+         * Конструктор
+         *
+         * @param go.class C
+         */
+        '__construct': function (C) {
+            this.Class = C;
+        },
+
+        /**
+         * Создание списка мутаторов для данного класса
+         */
+        'create': function () {
+            // @todo
+        },
+
+        /**
+         * Формирование данных на этапе формирования класса
+         */
+        'processClass': function () {
+            // @todo
+        },
+
+        /**
+         * Обработка создаваемого экземпляра класса
+         *
+         * @param go.object instance
+         */
+        'processInstance': function (instance) {
+            // @todo
+        },
+
+        'eoc': null
+    };
+    MutatorsListConstructor = function (C) {
+        MutatorsListPrototype.__construct(C);
+    };
+    MutatorsListConstructor.prototype = MutatorsListPrototype;
 
     /**
      * Функция создания нового класса
