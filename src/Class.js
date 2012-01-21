@@ -376,6 +376,12 @@ go("Class", (function (go) {
      *
      * @var go.class Class
      *      объект целевого класса
+     * @var object proto
+     *      прототип класса
+     * @var hash props
+     *      поля класса
+     * @var hash mutators
+     *      набор мутаторов (имя => объект мутатора)
      */
     MutatorsListPrototype = {
 
@@ -386,13 +392,17 @@ go("Class", (function (go) {
          */
         '__construct': function (C) {
             this.Class = C;
+            this.proto = C.prototype;
+            this.props = go.Lang.copy(C.props);
         },
 
         /**
          * Создание списка мутаторов для данного класса
          */
         'create': function () {
-            // @todo
+            this.mutators = {};
+            this.createDirectLine();
+            this.mergeColBranch();
         },
 
         /**
@@ -410,6 +420,128 @@ go("Class", (function (go) {
         'processInstance': function (instance) {
             // @todo
         },
+
+        /**
+         * Создание мутаторов из прямой ветки (без множественного наследования)
+         */
+        'createDirectLine': function () {
+            var C = this.Class,
+                mutators = this.mutators,
+                mprops   = this.props.__mutators || {},
+                mparents = C.parent ? C.parent.__mutators.mutators : {},
+                k,
+                mutator;
+            for (k in mparents) {
+                if (mparents.hasOwnProperty(k)) {
+                    mutator = mparents[k];
+                    if (mprops.hasOwnProperty(k)) {
+                        if (mprops[k]) {
+                            mutators[k] = this.extendMutator(k, mutator, mprops[k]);
+                        } else {
+                            mutators[k] = null;
+                        }
+                    } else {
+                        mutators[k] = this.copyMutator(k, mutator);
+                    }
+                }
+            }
+            for (k in mprops) {
+                if (mprops.hasOwnProperty(k)) {
+                    if (!mutators.hasOwnProperty(k)) {
+                        if (mprops[k]) {
+                            mutators[k] = this.createNewMutator(k, mprops[k]);
+                        } else {
+                            mutators[k] = null;
+                        }
+                    }
+                }
+            }
+        },
+
+        /**
+         * Слияние с мутаторами из второстепенных предков
+         */
+        'mergeColBranch': function () {
+            // @todo
+        },
+
+        /**
+         * Создать новый мутатор
+         *
+         * @param string name
+         * @param hash props
+         * @param object bproto [optional]
+         * @return Mutator
+         */
+        'createNewMutator': function (name, props, bproto) {
+            var Fake, proto, Constr;
+            Fake = function () {};
+            Fake.prototype = bproto || this.Mutator.prototype;
+            proto = new Fake();
+            go.Lang.extend(proto, props);
+            Constr = function (name, C) {
+                this.__construct(name, C);
+            };
+            Constr.prototype = proto;
+            proto.constructor = Constr;
+            return new Constr(name, this.Class);
+        },
+
+        /**
+         * Раширить предковый мутатор
+         *
+         * @param string name
+         * @param Mutator mparent
+         * @param hash props
+         * @return Mutator
+         */
+        'extendMutator': function (name, mparent, props) {
+            return this.createNewMutator(name, props, mparent.constructor.prototype);
+        },
+
+        /**
+         * Скопировать предковый мутатор
+         *
+         * @param string name
+         * @param Mutator mparent
+         * @return Mutator
+         */
+        'copyMutator': function (name, mparent) {
+            return new mparent.constructor(name, this.Class);
+        },
+
+        /**
+         * Базовый "класс" мутаторов
+         *
+         * @var string name
+         *      название мутатора
+         * @var go.class Class
+         *      класс, к которому привязан
+         */
+        'Mutator': (function () {
+
+            var Construct = function (name, C) {
+                this.__construct(name, C);
+            };
+            Construct.prototype = {
+
+                /**
+                 * Конструктор мутатора
+                 *
+                 * @param string name
+                 * @param go.class C
+                 */
+                '__construct': function (name, C) {
+                    this.name  = name;
+                    this.Class = C;
+                },
+
+                'eoc': null
+            };
+            Construct.prototype.constructor = Construct;
+
+            return Construct;
+        }()),
 
         'eoc': null
     };
