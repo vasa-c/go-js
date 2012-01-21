@@ -241,13 +241,13 @@ go("Class", (function (go) {
         'fillClass': function () {
             var C = this.Class,
                 props = go.Lang.copy(this.props);
+            C.go$type = "go.class";
+            C.__Fake  = function () {};
+            C.__Fake.prototype = C.prototype;
+            go.Lang.extend(C, this.classMethods);
             C.__mutators.processClass(props);
             go.Lang.extend(C.prototype, props);
             this.loadProperties();
-            C.__Fake           = function () {};
-            C.__Fake.prototype = C.prototype;
-            C.go$type          = "go.class";
-            go.Lang.extend(C, this.classMethods);
         },
 
         /**
@@ -378,7 +378,7 @@ go("Class", (function (go) {
      *
      * @var go.class Class
      *      объект целевого класса
-     * @var hash mutators
+     * @var Mutator{} mutators
      *      набор мутаторов (имя => объект мутатора)
      */
     MutatorsListPrototype = {
@@ -407,7 +407,15 @@ go("Class", (function (go) {
          * @param hash props
          */
         'processClass': function (props) {
-            // @todo
+            var mutators = this.mutators,
+                k;
+            delete props.__mutators;
+            for (k in mutators) {
+                if (mutators.hasOwnProperty(k)) {
+                    mutators[k].processClass(props);
+                }
+            }
+            return props;
         },
 
         /**
@@ -416,7 +424,13 @@ go("Class", (function (go) {
          * @param go.object instance
          */
         'processInstance': function (instance) {
-            // @todo
+            var mutators = this.mutators,
+                k;
+            for (k in mutators) {
+                if (mutators.hasOwnProperty(k)) {
+                    mutators[k].processInstance(instance);
+                }
+            }
         },
 
         /**
@@ -515,6 +529,8 @@ go("Class", (function (go) {
          *      название мутатора
          * @var go.class Class
          *      класс, к которому привязан
+         * @var hash fields
+         *      сохраняемые поля
          */
         'Mutator': (function () {
 
@@ -530,8 +546,109 @@ go("Class", (function (go) {
                  * @param go.class C
                  */
                 '__construct': function (name, C) {
-                    this.name  = name;
-                    this.Class = C;
+                    this.name   = name;
+                    this.Class  = C;
+                    this.fields = {};
+                    this.loadFromParents();
+                },
+
+                /**
+                 * Обработка полей на этапе создания класса
+                 *
+                 * @param hash props
+                 */
+                'processClass': function (props) {
+                    var fields = this.fields, k, prop, mut;
+                    for (k in props) {
+                        if (props.hasOwnProperty(k)) {
+                            prop = props[k];
+                            if ((typeof prop === "function") || (!this.onlyMethods)) {
+                                mut = this.eachForClass(k, prop);
+                                if (mut) {
+                                    fields[k] = mut;
+                                    delete props[k];
+                                }
+                            }
+                        }
+                    }
+                },
+
+                /**
+                 * Заполнение экземпляра класса
+                 *
+                 * @param go.object instance
+                 */
+                'processInstance': function (instance) {
+                    var fields = this.fields, k;
+                    for (k in fields) {
+                        if (fields.hasOwnProperty(k)) {
+                            this.eachForInstance(instance, k, fields[k]);
+                        }
+                    }
+                },
+
+                /**
+                 * Подгрузка полей из предков
+                 */
+                'loadFromParents': function () {
+                    var C = this.Class,
+                        parent = C.__parent,
+                        oparents = C.__otherParents,
+                        oparent,
+                        i;
+                    for (i = oparents.length; i > 0; i -= 1) {
+                        oparent = oparents[i - 1];
+                        if ((typeof oparent === "function") && oparent.go$type) {
+                            this.loadFromSingleParent(oparent);
+                        }
+                    }
+                    if (parent) {
+                        this.loadFromSingleParent(parent);
+                    }
+                },
+
+                /**
+                 * Подгрузка полей из одного предка
+                 *
+                 * @param go.class parent
+                 */
+                'loadFromSingleParent': function (parent) {
+                    var mutators;
+                    mutators = parent.__mutators;
+                    if (!mutators) {
+                        return;
+                    }
+                    mutators = mutators.mutators;
+                    if (!mutators.hasOwnProperty(this.name)) {
+                        return;
+                    }
+                    go.Lang.extend(this.fields, mutators[this.name].fields);
+                },
+
+                /**
+                 * eachForClass должен перебирать только методы
+                 */
+                'onlyMethods': true,
+
+                /**
+                 * Перебор всех элементов на этапе создания класса
+                 *
+                 * @param string name
+                 * @param mixed prop
+                 */
+                'eachForClass': function (name, prop) {
+                    return;
+                },
+
+                /**
+                 * Перебор сохранённых полей на этапе создания объекта
+                 *
+                 * @param go.object instance
+                 * @param string name
+                 * @param mixed prop
+                 */
+                'eachForInstance': function (instance, name, prop) {
+                    instance[name] = prop;
                 },
 
                 'eoc': null

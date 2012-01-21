@@ -386,3 +386,64 @@ tests.test("type and toString", function () {
     equal(":" + oneInstance, ":instance of [go.class]");
     equal(":" + twoInstance, ":instance of [TwoClass]");
 });
+
+tests.test("Mutators", function () {
+
+    var OneClass, TwoClass, twoInstance;
+
+    OneClass = go.Class({
+
+        '__mutators': {
+            'mul': {
+                'value': 2,
+                'eachForClass': function (name, prop) {
+                    var value;
+                    if (name.split("_")[0] === "mul") {
+                        value = this.value;
+                        return function (x) {
+                            return prop(x) * value;
+                        };
+                    }
+                }
+            }
+        },
+
+        'norm': function (x) {
+            return x;
+        },
+
+        'mul_one': function (x) {
+            return x + 1;
+        },
+
+        'mul_two': function (x) {
+            return x + 2;
+        }
+
+    });
+
+    TwoClass = go.Class(OneClass, {
+
+        '__mutators': {
+            'mul': {
+                'value': 3
+            }
+        },
+
+        'mul_two': function (x) {
+            return x + 4;
+        },
+
+        'mul_three': function (x) {
+            return x + 3;
+        }
+
+    });
+
+    twoInstance = new TwoClass();
+
+    equal(twoInstance.norm(1), 1);
+    equal(twoInstance.mul_one(1), 4); // (x+1) * 2
+    equal(twoInstance.mul_two(1), 15); // (x+4) * 3
+    equal(twoInstance.mul_three(1), 12); // (x+3) * 3
+});
