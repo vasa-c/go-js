@@ -137,6 +137,7 @@ go("Class", (function (go) {
                 C.__fillInstance(this);
                 this.__construct.apply(this, arguments);
             };
+            this.Class.__props = this.props;
         },
 
         /**
@@ -204,7 +205,6 @@ go("Class", (function (go) {
                 mutators = new MutatorsListConstructor(C);
             C.__mutators = mutators;
             mutators.create();
-            mutators.processClass();
         },
 
         /**
@@ -239,8 +239,10 @@ go("Class", (function (go) {
          * Заполнение класса и прототипа нужными свойствами
          */
         'fillClass': function () {
-            var C = this.Class;
-            go.Lang.extend(C.prototype, this.props);
+            var C = this.Class,
+                props = go.Lang.copy(this.props);
+            C.__mutators.processClass(props);
+            go.Lang.extend(C.prototype, props);
             this.loadProperties();
             C.__Fake           = function () {};
             C.__Fake.prototype = C.prototype;
@@ -376,10 +378,6 @@ go("Class", (function (go) {
      *
      * @var go.class Class
      *      объект целевого класса
-     * @var object proto
-     *      прототип класса
-     * @var hash props
-     *      поля класса
      * @var hash mutators
      *      набор мутаторов (имя => объект мутатора)
      */
@@ -392,8 +390,6 @@ go("Class", (function (go) {
          */
         '__construct': function (C) {
             this.Class = C;
-            this.proto = C.prototype;
-            this.props = go.Lang.copy(C.props);
         },
 
         /**
@@ -407,8 +403,10 @@ go("Class", (function (go) {
 
         /**
          * Формирование данных на этапе формирования класса
+         *
+         * @param hash props
          */
-        'processClass': function () {
+        'processClass': function (props) {
             // @todo
         },
 
@@ -427,8 +425,8 @@ go("Class", (function (go) {
         'createDirectLine': function () {
             var C = this.Class,
                 mutators = this.mutators,
-                mprops   = this.props.__mutators || {},
-                mparents = C.parent ? C.parent.__mutators.mutators : {},
+                mprops   = C.__props.__mutators || {},
+                mparents = C.__parent ? C.__parent.__mutators.mutators : {},
                 k,
                 mutator;
             for (k in mparents) {
