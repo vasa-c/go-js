@@ -474,7 +474,31 @@ go("Class", (function (go) {
          * Слияние с мутаторами из второстепенных предков
          */
         'mergeColBranch': function () {
-            // @todo
+            var oparents = this.Class.__otherParents,
+                oparent,
+                mutators = this.mutators,
+                pmutators,
+                i,
+                len,
+                k;
+            for (i = 0, len = oparents.length; i < len; i += 1) {
+                oparent = oparents[i];
+                if (typeof oparent === "function") {
+                    pmutators = oparent.__mutators && oparent.__mutators.mutators;
+                    if (pmutators) {
+                        for (k in pmutators) {
+                            if (pmutators.hasOwnProperty(k)) {
+                                if (!mutators.hasOwnProperty(k)) {
+                                    mutators[k] = this.copyMutator(k, pmutators[k]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (len) {
+                console.log(this.mutators);
+            }
         },
 
         /**
