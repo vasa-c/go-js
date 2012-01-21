@@ -447,3 +447,71 @@ tests.test("Mutators", function () {
     equal(twoInstance.mul_two(1), 15); // (x+4) * 3
     equal(twoInstance.mul_three(1), 12); // (x+3) * 3
 });
+
+tests.test("Static", function () {
+
+    var OneClass, TwoClass, oneInstance, twoInstance;
+
+    OneClass = go.Class({
+
+        '__static': {
+
+            'value': 1,
+
+            'getInstance': function () {
+                if (!this.instance) {
+                    this.instance = new this();
+                }
+                return this.instance;
+            },
+
+            'getValue': function () {
+                return this.value;
+            },
+
+            'getPhrase': function () {
+                return "one";
+            }
+        },
+
+        'method': function () {
+            return "instance";
+        }
+
+    });
+
+    TwoClass = go.Class(OneClass, {
+
+        '__static': {
+
+            'value': 2,
+
+            'getPhrase': function () {
+                return "two";
+            }
+
+        }
+
+    });
+
+    oneInstance = OneClass.getInstance();
+    twoInstance = TwoClass.getInstance();
+
+    ok(oneInstance.instance_of(OneClass));
+    ok(!oneInstance.instance_of(TwoClass));
+    ok(twoInstance.instance_of(OneClass));
+    ok(twoInstance.instance_of(TwoClass));
+
+    notEqual(oneInstance, twoInstance);
+    equal(oneInstance, OneClass.getInstance());
+    equal(twoInstance, TwoClass.getInstance());
+
+    equal(twoInstance.method(), "instance");
+    ok(!oneInstance.__static);
+    ok(!twoInstance.__static);
+
+    equal(OneClass.getValue(), 1);
+    equal(TwoClass.getValue(), 2);
+    equal(OneClass.getPhrase(), "one");
+    equal(TwoClass.getPhrase(), "two");
+});

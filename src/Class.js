@@ -61,6 +61,29 @@ go("Class", (function (go) {
         'toString': function () {
             var classname = this.__self ? this.__self.__classname : "undefined";
             return "instance of [" + classname + "]";
+        },
+        '__mutators': {
+            /**
+             * Мутатор "static" - перенос статических полей в класс из объекта
+             */
+            'static': {
+                'processClass': function (props) {
+                    var C  = this.Class,
+                        st = props.__static,
+                        fields,
+                        k;
+                    if (st) {
+                        fields = this.fields;
+                        go.Lang.extend(fields, st);
+                        for (k in fields) {
+                            if (fields.hasOwnProperty(k)) {
+                                C[k] = fields[k];
+                            }
+                        }
+                        delete props.__static;
+                    }
+                }
+            }
         }
     };
 
@@ -495,9 +518,6 @@ go("Class", (function (go) {
                         }
                     }
                 }
-            }
-            if (len) {
-                console.log(this.mutators);
             }
         },
 
