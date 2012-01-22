@@ -14,7 +14,7 @@ if (!window.go) {
     throw new Error("go.core is not found");
 }
 
-go("Tests", (function (go, global) {
+go("Tests", function (go, global) {
 
     /**
      * Прототип объектов тестирования.
@@ -135,4 +135,4 @@ go("Tests", (function (go, global) {
     TestsConstructor.prototype = TestsPrototype;
 
     return TestsConstructor;
-}(go, window)));
+});

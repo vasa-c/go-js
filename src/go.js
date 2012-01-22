@@ -74,6 +74,7 @@ var go = (function (global) {
      *        объект модуля
      */
     go.appendModule = function (name, module) {
+        module = module(go, global);
         go[name] = module;
         loading[name] = module;
     };
@@ -128,7 +129,7 @@ var go = (function (global) {
  * @subpackage Lang
  * @namespace go.Lang
  */
-go("Lang", (function (global) {
+go("Lang", function (go, global) {
 
     var Lang = {
 
@@ -544,4 +545,4 @@ go("Lang", (function (global) {
     };
 
     return Lang;
-}(window)));
+});

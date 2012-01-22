@@ -13,7 +13,7 @@ if (!window.go) {
     throw new Error("go.core is not found");
 }
 
-go("Class", (function (go) {
+go("Class", function (go) {
 
     var
         Class,
@@ -850,4 +850,4 @@ go("Class", (function (go) {
     }());
 
     return Class;
-}(go)));
+});
