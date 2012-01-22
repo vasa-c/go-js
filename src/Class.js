@@ -333,6 +333,8 @@ go("Class", (function (go) {
 
         /**
          * Перенести поля второстепенных предков в прототип
+         *
+         * @todo ref
          */
         'applyOtherParents': function () {
             var oparents = this.Class.__otherParents,
