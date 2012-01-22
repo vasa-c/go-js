@@ -401,8 +401,9 @@ go("Class", (function (go) {
              * @params mixed аргументы конструктора
              */
             '__construct': function (instance) {
-                var cr = this.prototype.__construct;
-                cr.call.apply(cr, arguments);
+                var args = [instance, "__construct"];
+                args = args.concat(Array.prototype.slice.call(arguments, 1));
+                this.__method.apply(this, args);
             },
 
             /**
@@ -411,7 +412,7 @@ go("Class", (function (go) {
              * @param go.object instance
              */
             '__destruct': function (instance) {
-                this.prototype.__destruct.apply(instance);
+                this.__method.call(this, instance, "__destruct");
             },
 
             /**
