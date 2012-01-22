@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-	<head>
+    <head>
         <meta http-equiv="content-type" content="text/html; charset=utf-8" />
         <title>go.js &mdash; testing</title>
         <link rel="stylesheet" href="./qunit/qunit.css" type="text/css" media="screen" />
@@ -8,49 +8,50 @@
         <script type="text/javascript" src="./qunit/qunit.js"></script>
         <script type="text/javascript" src="../src/go.js?l=Tests"></script>
         <script type="text/javascript">
-		"use strict";
-		/*global go, $, document */
-		var tests;
-		(function () {
-			var modules = [null, "Lang", "Class"], cmodules;
-			cmodules = (function (go, modules) {
-				var result,
-					smods,
-					smod,
-					i,
-					len,
-					params = go.Lang.parseQuery();
-				if (params.m) {
-					result = [];
-					smods  = params.m.split(",");
-					for (i = 0, len = smods.length; i < len; i += 1) {
-						smod = smods[i];
-						if (smod) {
-							if (smod === "core") {
-								smod = null;
-							}
-							result.push(smod);
-						}
-					}
-				} else {
-					result = modules;
-				}
-				return result;
-			}(go, modules));
-			tests = new go.Tests(cmodules, "./");
-		    $(document).ready(function () {
-				tests.run();
-				tests.destroy();
-		    });
-		}());
+        /*jslint node: true, nomen: true */
+        /*global go, $, document */
+        "use strict";
+        var tests;
+        (function () {
+            var modules = [null, "Lang", "Class"], cmodules;
+            cmodules = (function (go, modules) {
+                var result,
+                    smods,
+                    smod,
+                    i,
+                    len,
+                    params = go.Lang.parseQuery();
+                if (params.m) {
+                    result = [];
+                    smods  = params.m.split(",");
+                    for (i = 0, len = smods.length; i < len; i += 1) {
+                        smod = smods[i];
+                        if (smod) {
+                            if (smod === "core") {
+                                smod = null;
+                            }
+                            result.push(smod);
+                        }
+                    }
+                } else {
+                    result = modules;
+                }
+                return result;
+            }(go, modules));
+            tests = new go.Tests(cmodules, "./");
+            $(document).ready(function () {
+                tests.run();
+                tests.destroy();
+            });
+        }());
         </script>
-	</head>
-	<body>
+    </head>
+    <body>
         <h1 id="qunit-header">Testing <a href="https://github.com/vasa-c/go-js">go.js</a></h1>
         <h2 id="qunit-banner"></h2>
         <div id="qunit-testrunner-toolbar"></div>
         <h2 id="qunit-userAgent"></h2>
         <ol id="qunit-tests"></ol>
         <div id="qunit-fixture">test markup, will be hidden</div>
-	</body>
+    </body>
 </html>

@@ -4,12 +4,13 @@
  * @package go.js
  * @author  Григорьев Олег aka vasa_c (http://blgo.ru/)
  */
+/*jslint node: true, nomen: true */
+/*global go, tests, ok */
 "use strict";
 
-/*global go, tests, ok */
 
 tests.module("core");
 
 tests.test("go.VERSION", function () {
-	ok(go && go.VERSION);
+    ok(go && go.VERSION);
 });
