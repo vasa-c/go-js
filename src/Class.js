@@ -64,6 +64,31 @@ go("Class", (function (go) {
         },
         '__mutators': {
             /**
+             * Мутатор "sysvars" - перенос системных переменных в класс
+             */
+            'sysvars': {
+                'vars' : {
+                    '__abstract'  : false,
+                    '__final'     : false,
+                    '__classname' : "go.class"
+                },
+                'processClass': function (props) {
+                    var C = this.Class,
+                        vars = this.vars,
+                        name;
+                    for (name in vars) {
+                        if (vars.hasOwnProperty(name)) {
+                            if (props.hasOwnProperty(name)) {
+                                C[name] = props[name];
+                                delete props[name];
+                            } else {
+                                C[name] = vars[name];
+                            }
+                        }
+                    }
+                }
+            },
+            /**
              * Мутатор "static" - перенос статических полей в класс из объекта
              */
             'static': {
@@ -270,33 +295,6 @@ go("Class", (function (go) {
             go.Lang.extend(C, this.classMethods);
             C.__mutators.processClass(props);
             go.Lang.extend(C.prototype, props);
-            this.loadProperties();
-        },
-
-        /**
-         * Загрузка некоторых переменных
-         * @todo в мутаторы
-         */
-        'loadProperties': function () {
-            var props = this.props,
-                C = this.Class,
-                proto = C.prototype;
-
-            C.__abstract = props.__abstract ? true : false;
-            if (props.hasOwnProperty("__abstract") !== "undefined") {
-                delete proto.__abstract;
-            }
-
-            C.__final = props.__final ? true : false;
-            if (props.hasOwnProperty("__final") !== "undefined") {
-                delete proto.__final;
-            }
-
-            C.__classname = props.__classname || "go.class";
-            if (props.hasOwnProperty("__classname") !== "undefined") {
-                delete proto.__classname;
-            }
-
         },
 
         /**
