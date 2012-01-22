@@ -609,3 +609,38 @@ tests.test("bind", function () {
     equal(fake.onOther(), "onother instance");
     equal(fake.onLoad(),  "onload instance");
 });
+
+tests.test("destroy", function () {
+
+    var TestClass, instance, destr = 0;
+
+    TestClass = go.Class({
+
+        '__construct': function (x) {
+            this.x = x;
+            this.y = x * 2;
+            this.z = x * 3;
+        },
+
+        '__destruct': function () {
+            destr += 1;
+        },
+
+        'eoc': null
+    });
+
+    instance = new TestClass(1);
+
+    equal(instance.z, 3);
+    ok(!instance.__destroyed);
+
+    instance.destroy();
+    ok(!instance.x);
+    ok(!instance.y);
+    ok(!instance.z);
+    equal(destr, 1);
+    ok(instance.__destroyed);
+
+    instance.destroy();
+    equal(destr, 1);
+});

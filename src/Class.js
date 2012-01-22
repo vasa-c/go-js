@@ -32,6 +32,7 @@ go("Class", (function (go) {
         '__classname' : "go.Class.Root",
         '__abstract'  : true,
         '__final'     : false,
+        '__destroyed' : false,
         '__construct' : function () {},
         '__destruct'  : function () {},
         '__parentConstruct': function (C) {
@@ -50,7 +51,17 @@ go("Class", (function (go) {
             return C.__method.apply(C, args);
         },
         'destroy': function () {
+            var k, undef;
+            if (this.__destroyed) {
+                return;
+            }
             this.__destruct();
+            for (k in this) {
+                if (this.hasOwnProperty(k)) {
+                    this[k] = undef;
+                }
+            }
+            this.__destroyed = true;
         },
         'instance_of': function (C) {
             if ((typeof C === "function") && (this instanceof C)) {
