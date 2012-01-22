@@ -97,6 +97,7 @@ go("Class", (function (go) {
                             }
                         }
                     }
+                    delete props.eoc;
                 }
             },
             /**
