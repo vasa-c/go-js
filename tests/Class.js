@@ -644,3 +644,26 @@ tests.test("destroy", function () {
     instance.destroy();
     equal(destr, 1);
 });
+
+tests.test("this-var for python style instantiation", function () {
+
+    var TestClass, instance1, instance2;
+
+    TestClass = go.Class({
+
+        '__construct': function (value) {
+            this.value = value;
+        },
+
+        'createInstance': function (value) {
+            return this.__self(value);
+        }
+
+    });
+
+    instance1 = new TestClass(1);
+    instance2 = instance1.createInstance(2);
+
+    equal(go.Lang.getType(instance2), "go.object");
+    equal(instance2.value, 2);
+});

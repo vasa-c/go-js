@@ -32,7 +32,6 @@ go("Class", (function (go) {
         '__classname' : "go.Class.Root",
         '__abstract'  : true,
         '__final'     : false,
-        '__destroyed' : false,
         '__construct' : function () {},
         '__destruct'  : function () {},
         '__parentConstruct': function (C) {
@@ -253,12 +252,13 @@ go("Class", (function (go) {
                 if (C.__abstract) {
                     throw new Class.Exceptions.Abstract("Cannot instantiate abstract class");
                 }
-                if (!(this instanceof C)) { // @todo проверить все случаи
+                if ((!(this instanceof C)) || (this.hasOwnProperty("__destroyed"))) {
                     var instance = new C.__Fake();
                     C.apply(instance, arguments);
                     return instance;
                 }
                 C.__fillInstance(this);
+                this.__destroyed = false;
                 this.__construct.apply(this, arguments);
             };
             this.Class.__props = this.props;
