@@ -240,7 +240,13 @@ tests.test("save constructor.prototype", function () {
 
 tests.test("parent access", function () {
 
-    var OneClass, TwoClass, SideClass, TargetClass, instance, destrs = [];
+    var OneClass,
+        TwoClass,
+        SideClass,
+        TargetClass,
+        instance,
+        destrs = [],
+        onClick;
 
     OneClass = go.Class({
         '__construct': function (a) {
@@ -253,6 +259,10 @@ tests.test("parent access", function () {
 
         'getValue': function (plus) {
             return this.a + plus;
+        },
+
+        'onClick': function () {
+            return "onclick " + this.a;
         }
     });
 
@@ -293,6 +303,10 @@ tests.test("parent access", function () {
 
         'getValue': function (plus) {
             return this.__parentMethod(TwoClass, 'getValue', plus) * 2;
+        },
+
+        'onClick': function () {
+            return this.__parentMethod(TwoClass, 'onClick') + " x";
         }
     });
 
@@ -302,6 +316,8 @@ tests.test("parent access", function () {
     equal(instance.c, 3);
     equal(instance.d, 4);
     equal(instance.getValue(2), 6);
+    onClick = instance.onClick;
+    equal(onClick(), "onclick 1 x");
 
     instance.destroy();
     deepEqual(destrs, ["One", "Two", "Side", "Target"]);

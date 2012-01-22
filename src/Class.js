@@ -141,6 +141,12 @@ go("Class", (function (go) {
                         }
                     }
                 },
+                'getMethod': function (name, instance) {
+                    var fn;
+                    if (this.fields.hasOwnProperty(name)) {
+                        return go.Lang.bind(this.fields[name], instance);
+                    }
+                },
                 'getMethodsNames': function (props) {
                     var names,
                         k,
@@ -424,8 +430,17 @@ go("Class", (function (go) {
              * @return mixed
              */
             '__method': function (instance, name) {
-                var args = Array.prototype.slice.call(arguments, 2);
-                return this.prototype[name].apply(instance, args);
+                var args = Array.prototype.slice.call(arguments, 2),
+                    fn = this.prototype[name],
+                    message;
+                if (!fn) {
+                    fn = this.__mutators.getMethod(name, instance);
+                    if (!fn) {
+                        message = "Method " + name + " is not found";
+                        throw new Class.Exceptions.Method(message);
+                    }
+                }
+                return fn.apply(instance, args);
             },
 
             /**
@@ -506,6 +521,26 @@ go("Class", (function (go) {
             for (k in mutators) {
                 if (mutators.hasOwnProperty(k)) {
                     mutators[k].processInstance(instance);
+                }
+            }
+        },
+
+        /**
+         * Получить метод, сохранённый в мутаторах
+         *
+         * @param string name
+         * @param go.object instance
+         */
+        'getMethod': function (name, instance) {
+            var mutators = this.mutators,
+                k,
+                method;
+            for (k in mutators) {
+                if (mutators.hasOwnProperty(k)) {
+                    method = mutators[k].getMethod(name, instance);
+                    if (method) {
+                        return method;
+                    }
                 }
             }
         },
@@ -686,6 +721,16 @@ go("Class", (function (go) {
                 },
 
                 /**
+                 * Получить метод, если он сохранён в данном мутаторе
+                 *
+                 * @param string name
+                 * @param go.object instance
+                 */
+                'getMethod': function (name, instance) {
+                    // переопределяется в потомках
+                },
+
+                /**
                  * Подгрузка полей из предков
                  */
                 'loadFromParents': function () {
@@ -782,7 +827,8 @@ go("Class", (function (go) {
         return {
             'Base'     : Base,
             'Abstract' : create("go.Class.Exceptions.Abstract", Base),
-            'Final'    : create("go.Class.Exceptions.Final", Base)
+            'Final'    : create("go.Class.Exceptions.Final", Base),
+            'Method'   : create("go.Class.Exceptions.Method", Base)
         };
     }());
 
