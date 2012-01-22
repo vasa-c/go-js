@@ -108,6 +108,61 @@ go("Class", (function (go) {
                         delete props.__static;
                     }
                 }
+            },
+            /**
+             * Мутатор "bind" - связь методов с объектом
+             */
+            'bind': {
+                'regexp': /^on[A-Z_]/,
+                'bindvar': "__bind",
+                'processClass': function (props) {
+                    var names = this.getMethodsNames(props),
+                        fields = this.fields,
+                        i,
+                        len,
+                        name,
+                        fn;
+                    for (i = 0, len = names.length; i < len; i += 1) {
+                        name = names[i];
+                        fn = props[name];
+                        if (typeof fn === "function") {
+                            delete props[name];
+                            fields[name] = fn;
+                        }
+                    }
+                },
+                'processInstance': function (instance) {
+                    var bind = go.Lang.bind,
+                        fields = this.fields,
+                        k;
+                    for (k in fields) {
+                        if (fields.hasOwnProperty(k)) {
+                            instance[k] = bind(fields[k], instance);
+                        }
+                    }
+                },
+                'getMethodsNames': function (props) {
+                    var names,
+                        k,
+                        reg = this.regexp;
+                    if (props.hasOwnProperty(this.bindvar)) {
+                        names = props[this.bindvar];
+                        if (!names) {
+                            names = [];
+                        }
+                        delete props[this.bindvars];
+                    } else {
+                        names = [];
+                        for (k in props) {
+                            if (props.hasOwnProperty(k)) {
+                                if (reg.test(k)) {
+                                    names.push(k);
+                                }
+                            }
+                        }
+                    }
+                    return names;
+                }
             }
         }
     };

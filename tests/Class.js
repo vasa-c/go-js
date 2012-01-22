@@ -515,3 +515,81 @@ tests.test("Static", function () {
     equal(OneClass.getPhrase(), "one");
     equal(TwoClass.getPhrase(), "two");
 });
+
+tests.test("bind", function () {
+
+    var OneClass, TwoClass, ThreeClass, OtherClass, instance, fake;
+
+    OneClass = go.Class({
+
+        '__construct': function (name) {
+            this.name = name;
+        },
+
+        'getName': function () {
+            return this.name;
+        },
+
+        'onClick': function () {
+            return "onclick " + this.name;
+        },
+
+        'onPress': function () {
+            return "onpress " + this.name;
+        }
+    });
+
+    TwoClass = go.Class(OneClass, {
+
+        '__bind': ["two"],
+
+        'two': function () {
+            return "two " + this.name;
+        },
+
+        'onTwo': function () {
+            return "ontwo " + this.name;
+        }
+
+    });
+
+    OtherClass = go.Class({
+
+        'onOther': function () {
+            return "onother " + this.name;
+        }
+
+    });
+
+    ThreeClass = go.Class([TwoClass, OtherClass], {
+
+        'onPress': function () {
+            return "onpress-3 " + this.name;
+        },
+
+        'onLoad': function () {
+            return "onload " + this.name;
+        }
+
+    });
+
+    instance = new ThreeClass("instance");
+    fake = {
+        'name'    : "fake",
+        'getName' : instance.getName,
+        'onClick' : instance.onClick,
+        'onPress' : instance.onPress,
+        'two'     : instance.two,
+        'onTwo'   : instance.onTwo,
+        'onOther' : instance.onOther,
+        'onLoad'  : instance.onLoad
+    };
+
+    equal(fake.getName(), "fake");
+    equal(fake.onClick(), "onclick instance");
+    equal(fake.onPress(), "onpress-3 instance");
+    equal(fake.two(),     "two instance");
+    equal(fake.onTwo(),   "ontwo fake");
+    equal(fake.onOther(), "onother instance");
+    equal(fake.onLoad(),  "onload instance");
+});
