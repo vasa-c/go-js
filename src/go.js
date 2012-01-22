@@ -79,6 +79,115 @@ var go = (function (global) {
         loading[name] = module;
     };
 
+    go.__Loader = (function () {
+
+        var LoaderPrototype, LoaderConstructor;
+
+        LoaderPrototype = {
+
+            '__construct': function (params) {
+                var k;
+                for (k in params) {
+                    if (params.hasOwnProperty(k)) {
+                        this[k] = params[k];
+                    }
+                }
+                this.reqs      = {};
+                this.loaded    = {};
+                this.created   = {};
+                this.listeners = {};
+            },
+
+            'include': function (names, listener) {
+                var i, len, name;
+                if (typeof names === "string") {
+                    names = [names];
+                }
+                for (i = 0, len = names.length; i < len; i += 1) {
+                    name = names[i];
+                    if (!this.reqs[name]) {
+                        this.reqs[name] = true;
+                        this.requestModule(name);
+                    }
+                }
+                if (listener) {
+                    this.addListener(names, listener);
+                }
+            },
+
+            'addListener': function (names, listener) {
+                var L = {'l': 0, 'fn': listener},
+                    name,
+                    i,
+                    len;
+                for (i = 0, len = names.length; i < len; i += 1) {
+                    name = names[i];
+                    if (!this.created[name]) {
+                        if (!this.listeners[name]) {
+                            this.listeners[name] = [];
+                        }
+                        L.l += 1;
+                        this.listeners[name].push(L);
+                    }
+                }
+                if (L.l === 0) {
+                    listener();
+                }
+            },
+
+            'appendModule': function (name, reqs, fmodule) {
+                var lreqs = [], i, len, _this = this, f;
+                if (!reqs) {
+                    reqs = [];
+                }
+                for (i = 0, len = reqs.length; i < len; i += 1) {
+                    if (!this.created[reqs[i]]) {
+                        lreqs.push(reqs[i]);
+                    }
+                }
+                f = function () {
+                    _this.createModule(name, fmodule);
+                    _this.onload(name);
+                };
+                if (lreqs.length > 0) {
+                    this.include(lreqs, f);
+                } else {
+                    f();
+                }
+            },
+
+            'requestModule': function (name) {
+
+            },
+
+            'createModule': function (name, fmodule) {
+
+            },
+
+            'onload': function (name) {
+                var listeners = this.listeners[name], i, len, listener;
+                this.created[name] = true;
+                if (!listeners) {
+                    return;
+                }
+                for (i = 0, len = listeners.length; i < len; i += 1) {
+                    listener = listeners[i];
+                    listener.l -= 1;
+                    if (listener.l <= 0) {
+                        listener.fn.call(global);
+                    }
+                }
+            }
+        };
+        LoaderConstructor = function () {
+            this.__construct.apply(this, arguments);
+        };
+        LoaderConstructor.prototype = LoaderPrototype;
+
+
+        return LoaderConstructor;
+    }());
+
     /**
      * Инициализация библиотеки
      * - вычисление каталога с go.js
