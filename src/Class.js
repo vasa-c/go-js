@@ -43,11 +43,15 @@ go("Class", (function (go) {
         '__parentDestruct': function (C) {
             C.__destruct(this);
         },
-        '__parentMethod': function (C, name) {
-            /*jslint unparam: true */
+        /**
+         * @param go.Class Class
+         * @param string name
+         * @params mixed args
+         * @return mixed
+         */
+        '__parentMethod': function (C) {
             var args = Array.prototype.slice.call(arguments);
             args[0] = this;
-            /*jslint unparam: false */
             return C.__method.apply(C, args);
         },
         'destroy': function () {
@@ -154,7 +158,6 @@ go("Class", (function (go) {
                     }
                 },
                 'getMethod': function (name, instance) {
-                    var fn;
                     if (this.fields.hasOwnProperty(name)) {
                         return go.Lang.bind(this.fields[name], instance);
                     }
@@ -738,7 +741,7 @@ go("Class", (function (go) {
                  * @param string name
                  * @param go.object instance
                  */
-                'getMethod': function (name, instance) {
+                'getMethod': function () {
                     // переопределяется в потомках
                 },
 
@@ -791,7 +794,7 @@ go("Class", (function (go) {
                  * @param string name
                  * @param mixed prop
                  */
-                'eachForClass': function (name, prop) {
+                'eachForClass': function () {
                     return;
                 },
 
