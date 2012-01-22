@@ -25,18 +25,18 @@ var go = (function (global) {
          */
         GO_DIR,
 
+        doc = global.document,
+
         /**
-         * Список модулей, для которых уже инициирована загрузка
+         * Загрузчик модулей
          *
-         * @var hash (имя => true)
+         * @var go.__Loader
          */
-        loading = {},
+        loader;
 
-        doc = global.document;
-
-    function go(name, module) {
+    function go(name, reqs, fmodule) {
         if (name) {
-            go.appendModule(name, module);
+            go.appendModule(name, reqs, fmodule);
         }
         return go;
     }
@@ -48,20 +48,11 @@ var go = (function (global) {
      *
      * @param string[] names
      *        имя нужного модуля или список из нескольких имён
+     * @param function listener [optional]
+     *        обработчик загрузки всех указанных модулей
      */
-    go.include = function (names) {
-        var i, len, name, src;
-        if (typeof names !== "object") {
-            names = [names];
-        }
-        for (i = 0, len = names.length; i < len; i += 1) {
-            name = names[i];
-            if (!loading[name]) {
-                src = GO_DIR + names[i] + ".js";
-                doc.write('<script type="text/javascript" src="' + src + '"></script>');
-                loading[name] = true;
-            }
-        }
+    go.include = function (names, listener) {
+        loader.include(names, listener);
     };
 
     /**
@@ -70,13 +61,16 @@ var go = (function (global) {
      *
      * @param string name
      *        имя модуля
-     * @param object module
-     *        объект модуля
+     * @param list reqs [optional]
+     * @param function fmodule
+     *        функция-конструктор модуля
      */
-    go.appendModule = function (name, module) {
-        module = module(go, global);
-        go[name] = module;
-        loading[name] = module;
+    go.appendModule = function (name, reqs, fmodule) {
+        if (!fmodule) {
+            fmodule = reqs;
+            reqs = [];
+        }
+        loader.appendModule(name, reqs, fmodule);
     };
 
     go.__Loader = (function () {
@@ -87,9 +81,11 @@ var go = (function (global) {
 
             '__construct': function (params) {
                 var k;
-                for (k in params) {
-                    if (params.hasOwnProperty(k)) {
-                        this[k] = params[k];
+                if (params) {
+                    for (k in params) {
+                        if (params.hasOwnProperty(k)) {
+                            this[k] = params[k];
+                        }
                     }
                 }
                 this.reqs      = {};
@@ -137,6 +133,7 @@ var go = (function (global) {
 
             'appendModule': function (name, reqs, fmodule) {
                 var lreqs = [], i, len, _this = this, f;
+                this.reqs[name] = true;
                 if (!reqs) {
                     reqs = [];
                 }
@@ -157,11 +154,12 @@ var go = (function (global) {
             },
 
             'requestModule': function (name) {
-
+                var src = GO_DIR + name + ".js";
+                doc.write('<script type="text/javascript" src="' + src + '"></script>');
             },
 
             'createModule': function (name, fmodule) {
-
+                go[name] = fmodule(go, global);
             },
 
             'onload': function (name) {
@@ -184,9 +182,9 @@ var go = (function (global) {
         };
         LoaderConstructor.prototype = LoaderPrototype;
 
-
         return LoaderConstructor;
     }());
+    loader = new go.__Loader();
 
     /**
      * Инициализация библиотеки
