@@ -347,7 +347,7 @@ go("Lang", function (go, global) {
          * @return bool
          */
         'isHash': function (value) {
-            return (value.constructor === Object);
+            return (value && (value.constructor === Object));
         },
 
         /**

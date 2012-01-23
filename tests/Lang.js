@@ -137,6 +137,9 @@ tests.test("isHash", function () {
     ok(!go.Lang.isHash([1, 2]));
     ok(!go.Lang.isHash(document.createElement("div")));
     ok(!go.Lang.isHash(function () {}));
+    ok(!go.Lang.isHash(1));
+    ok(!go.Lang.isHash(null));
+    ok(!go.Lang.isHash());
 });
 
 tests.test("each array", function () {
