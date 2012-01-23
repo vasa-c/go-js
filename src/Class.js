@@ -577,12 +577,12 @@ go("Class", function (go) {
                     mutator = mparents[k];
                     if (mprops.hasOwnProperty(k)) {
                         if (mprops[k]) {
-                            mutators[k] = this.extendMutator(k, mutator, mprops[k]);
+                            mutators[k] = this.extendMutator(k, mutator, mprops[k], C.__parent);
                         } else {
                             mutators[k] = null;
                         }
                     } else {
-                        mutators[k] = this.copyMutator(k, mutator);
+                        mutators[k] = this.copyMutator(k, mutator, C.__parent);
                     }
                 }
             }
@@ -618,7 +618,7 @@ go("Class", function (go) {
                         for (k in pmutators) {
                             if (pmutators.hasOwnProperty(k)) {
                                 if (!mutators.hasOwnProperty(k)) {
-                                    mutators[k] = this.copyMutator(k, pmutators[k]);
+                                    mutators[k] = this.copyMutator(k, pmutators[k], oparent);
                                 }
                             }
                         }
@@ -633,20 +633,21 @@ go("Class", function (go) {
          * @param string name
          * @param hash props
          * @param object bproto [optional]
+         * @param go.class parent [optional]
          * @return Mutator
          */
-        'createNewMutator': function (name, props, bproto) {
+        'createNewMutator': function (name, props, bproto, parent) {
             var Fake, proto, Constr;
             Fake = function () {};
             Fake.prototype = bproto || this.Mutator.prototype;
             proto = new Fake();
             go.Lang.extend(proto, props);
-            Constr = function (name, C) {
-                this.__construct(name, C);
+            Constr = function (name, C, parent) {
+                this.__construct(name, C, parent);
             };
             Constr.prototype = proto;
             proto.constructor = Constr;
-            return new Constr(name, this.Class);
+            return new Constr(name, this.Class, parent);
         },
 
         /**
@@ -655,10 +656,11 @@ go("Class", function (go) {
          * @param string name
          * @param Mutator mparent
          * @param hash props
+         * @param go.class parent [optional]
          * @return Mutator
          */
-        'extendMutator': function (name, mparent, props) {
-            return this.createNewMutator(name, props, mparent.constructor.prototype);
+        'extendMutator': function (name, mparent, props, parent) {
+            return this.createNewMutator(name, props, mparent.constructor.prototype, parent);
         },
 
         /**
@@ -666,10 +668,11 @@ go("Class", function (go) {
          *
          * @param string name
          * @param Mutator mparent
+         * @param go.class parent
          * @return Mutator
          */
-        'copyMutator': function (name, mparent) {
-            return new mparent.constructor(name, this.Class);
+        'copyMutator': function (name, mparent, parent) {
+            return new mparent.constructor(name, this.Class, parent);
         },
 
         /**
@@ -679,13 +682,15 @@ go("Class", function (go) {
          *      название мутатора
          * @var go.class Class
          *      класс, к которому привязан
+         * @var go.class parent
+         *      класс-пердок от которого наследован мутатор
          * @var hash fields
          *      сохраняемые поля
          */
         'Mutator': (function () {
 
-            var Construct = function (name, C) {
-                this.__construct(name, C);
+            var Construct = function (name, C, parent) {
+                this.__construct(name, C, parent);
             };
             Construct.prototype = {
 
@@ -694,11 +699,13 @@ go("Class", function (go) {
                  *
                  * @param string name
                  * @param go.class C
+                 * @param go.class parent [optional]
                  */
-                '__construct': function (name, C) {
+                '__construct': function (name, C, parent) {
                     this.name   = name;
                     this.Class  = C;
                     this.fields = {};
+                    this.parent = parent;
                     this.loadFromParents();
                 },
 
