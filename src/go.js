@@ -308,10 +308,12 @@ go("Lang", function (go, global) {
                 return "element";
             } else if (value.nodeType === 3) {
                 return "textnode";
-            } else if (typeof value.item === "function") {
-                return "collection";
-            } else if (typeof value.length !== "undefined") {
-                return "arguments";
+            } else if (typeof value.length === "number") {
+                if ('callee' in value) { // @todo
+                    return "arguments";
+                } else {
+                    return "collection";
+                }
             }
             return "object";
         },

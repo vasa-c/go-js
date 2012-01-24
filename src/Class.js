@@ -248,7 +248,7 @@ go("Class", function (go) {
          * Создание функции-конструктора
          */
         'createClass': function () {
-            this.Class = function C() {
+            var C = function () {
                 if (C.__abstract) {
                     throw new Class.Exceptions.Abstract("Cannot instantiate abstract class");
                 }
@@ -261,7 +261,8 @@ go("Class", function (go) {
                 this.__destroyed = false;
                 this.__construct.apply(this, arguments);
             };
-            this.Class.__props = this.props;
+            C.__props = this.props;
+            this.Class = C;
         },
 
         /**
@@ -371,6 +372,7 @@ go("Class", function (go) {
             C.__Fake  = function () {};
             C.__Fake.prototype = C.prototype;
             go.Lang.extend(C, this.classMethods);
+            C.toString = this.classMethods.toString; // IE не копирует toString
             C.__mutators.processClass(props);
             go.Lang.extend(C.prototype, props);
         },
@@ -845,6 +847,7 @@ go("Class", function (go) {
         return C;
     };
     Class.Root = Class.apply(window, [null, RootPrototype]);
+    Class.Root.prototype.toString = RootPrototype.toString; // IE !!!
     Class.Exceptions = (function () {
         var create = go.Lang.Exception.create,
             Base = create("go.Class.Exceptions.Base", go.Lang.Exception);
