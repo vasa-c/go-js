@@ -14,7 +14,7 @@ if (!window.go) {
     throw new Error("go.core is not found");
 }
 
-go("Ext", ["Class"], function (go) {
+go("Ext", ["Class"], function (go, global) {
 
     var Ext = {};
 
@@ -35,8 +35,6 @@ go("Ext", ["Class"], function (go) {
 
             /**
              * Мутатор "options" - подгрузка предковых настроек
-             *
-             * @todo оптимизировать (отложенное копирование)
              */
             'options' : {
                 'processClass': function (props) {
@@ -184,7 +182,35 @@ go("Ext", ["Class"], function (go) {
         '__abstract': true,
 
         '__mutators': {
-
+            /**
+             * Мутатор "nodes" - подгрузка предковых списков нод
+             */
+            'nodes' : {
+                'processClass': function (props) {
+                    var parnodes;
+                    if (this.parent) {
+                        parnodes = this.parent.__mutators.mutators.nodes.nodes;
+                    }
+                    if (props.nodes) {
+                        if (parnodes) {
+                            this.nodes = go.Lang.copy(parnodes);
+                            go.Lang.merge(this.nodes, props.nodes);
+                        } else {
+                            this.nodes = props.nodes;
+                        }
+                    } else {
+                        if (this.parent) {
+                            this.nodes = parnodes;
+                        } else {
+                            this.nodes = {};
+                        }
+                    }
+                    props.nodes = this.nodes;
+                },
+                'loadFromParents': function () {
+                    return;
+                }
+            }
         },
 
         /**
@@ -209,10 +235,71 @@ go("Ext", ["Class"], function (go) {
          *
          * @param mixed node
          *        указатель на основной контейнер объекта
+         * @todo протестировать лучше
          */
         'initNodes': function (node) {
-            this.node = jQuery(node);
+            var nodes = {},
+                nnode,
+                lnodes = this.nodes,
+                lnode,
+                k,
+                _this = this;
+            function create(lnode) {
+                var nnode,
+                    parent,
+                    events,
+                    k,
+                    handler;
+                if (!lnode) {
+                    return;
+                }
+                if ((typeof lnode === "object") && (typeof lnode.length !== "undefined")) {
+                    return lnode;
+                }
+                if (typeof lnode === "function") {
+                    lnode = {
+                        'creator': lnode
+                    };
+                } else if (typeof lnode === "string") {
+                    lnode = {
+                        'selector': lnode
+                    };
+                }
+                if (lnode.selector) {
+                    parent = lnode.global ? jQuery(global) : node;
+                    nnode = parent.find(lnode.selector);
+                } else if (lnode.creator) {
+                    nnode = lnode.creator.call(_this, node, lnode);
+                    nnode = create(nnode);
+                }
+                events = lnode.events;
+                if (events) {
+                    for (k in events) {
+                        if (events.hasOwnProperty(k)) {
+                            if (typeof events[k] === "function") {
+                                handler = events[k];
+                            } else {
+                                handler = _this[events[k]];
+                            }
+                            _this.bind(nnode, k, handler);
+                        }
+                    }
+                }
+                return nnode;
+            } // create()
+            node = node ? jQuery(node) : jQuery(global);
+            this.node = node;
             this.nodesListeners = [];
+            for (k in lnodes) {
+                if (lnodes.hasOwnProperty(k)) {
+                    lnode = lnodes[k];
+                    nnode = create(lnode);
+                    if (nnode) {
+                        nodes[k] = nnode;
+                    }
+                }
+            }
+            this.nodes = nodes;
         },
 
         /**

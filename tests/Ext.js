@@ -179,3 +179,76 @@ tests.test("Nodes class: bind/unbind", function () {
     twoSpan.trigger("click");
     deepEqual([oneClick, twoClick], [2, 3]);
 });
+
+tests.test("Nodes class: load nodes", function () {
+
+    var ParentClass,
+        TestClass,
+        instance,
+        html,
+        div,
+        events = [],
+        expected,
+        span,
+        li;
+
+    ParentClass = go.Class([null, go.Ext.Nodes], {
+        'nodes': {
+            'lis'  : "ul li",
+            'span' : {
+                'selector': ".sp",
+                'events': {
+                    'click': "onClickSpan"
+                }
+            }
+        }
+    });
+
+    TestClass = go.Class(ParentClass, {
+
+        'nodes': {
+            'secondLi': function (node) {
+                var li = node.find("li").eq(1);
+                this.bind(li, "mouseover", this.onMouseOverLi);
+                return li;
+            }
+        },
+
+        '__construct': function (node) {
+            this.initNodes(node);
+        },
+
+        'onClickSpan': function () {
+            events.push("click span");
+        },
+
+        'onMouseOverLi': function () {
+            events.push("over li");
+        },
+
+        'eoc': null
+    });
+
+    html = "<div><ul><li>1</li><li>2</li><li>3</li></ul><span class='sp'>sp</span></div>";
+    div  = $(html);
+
+    instance = new TestClass(div);
+    equal(instance.nodes.lis.length, 3);
+    equal(instance.nodes.span.length, 1);
+    equal(instance.nodes.secondLi.length, 1);
+
+    span = div.find("span");
+    li = div.find("li").eq(1);
+
+    span.trigger("click");
+    li.trigger("click");
+    span.trigger("click");
+    li.trigger("mouseover");
+
+    expected = ["click span", "click span", "over li"];
+    deepEqual(events, expected);
+
+    instance.unbindAll();
+    span.trigger("click");
+    deepEqual(events, expected);
+});
