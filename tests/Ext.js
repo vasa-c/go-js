@@ -29,7 +29,7 @@ tests.test("Options class", function () {
 
         '__construct': function (x, options) {
             this.x = x;
-            this.constructOptions(options);
+            this.initOptions(options);
         }
 
     });

@@ -74,7 +74,7 @@ go("Ext", ["Class"], function (go) {
          *        уникальные настройки объекта
          */
         '__construct': function (options) {
-            this.constructOptions(options);
+            this.initOptions(options);
         },
 
         /**
@@ -82,7 +82,7 @@ go("Ext", ["Class"], function (go) {
          *
          * @param hash options
          */
-        'constructOptions': function (options) {
+        'initOptions': function (options) {
             if (options) {
                 this.options = go.Lang.copy(this.__self.prototype.options);
                 go.Lang.merge(this.options, options);
