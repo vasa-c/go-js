@@ -6,7 +6,7 @@
  * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
  */
 /*jslint node: true, nomen: true */
-/*global window, document, go, tests, ok, equal, notEqual, deepEqual, raises */
+/*global window, document, go, tests, ok, equal, notEqual, deepEqual, raises, $ */
 "use strict";
 
 tests.module("Ext");
@@ -111,4 +111,71 @@ tests.test("Options class and lazy copy", function () {
     equal(one.getOption("x"), 2);
     equal(two.getOption("x"), 3);
     equal(three.getOption("x"), 1);
+});
+
+tests.test("Nodes class: bind/unbind", function () {
+
+    var TestClass,
+        instance,
+        html,
+        node,
+        oneClick = 0,
+        twoClick = 0,
+        oneSpan,
+        twoSpan;
+
+    TestClass = go.Class([null, go.Ext.Nodes], {
+
+        '__construct': function (node) {
+            this.initNodes(node);
+            this.oneSpan = this.node.find("#one");
+            this.twoSpan = this.node.find("#two");
+            this.bind(this.oneSpan, "click", this.onClickOne);
+            this.bind(this.twoSpan, "click", "onClickTwo");
+        },
+
+        'onClickOne': function () {
+            oneClick += 1;
+        },
+
+        'onClickTwo': function () {
+            twoClick += 1;
+        },
+
+        'unbindOne': function () {
+            this.unbind(this.oneSpan, "click", this.onClickOne);
+        },
+
+        'eoc': null
+    });
+
+    html = "<div><span id='one'>qwe</span><span id='two'></span></div>";
+    node = $(html);
+    instance = new TestClass(node);
+
+    oneSpan = node.find("#one");
+    twoSpan = node.find("#two");
+
+    deepEqual([oneClick, twoClick], [0, 0]);
+
+    oneSpan.trigger("click");
+    deepEqual([oneClick, twoClick], [1, 0]);
+    twoSpan.trigger("click");
+    deepEqual([oneClick, twoClick], [1, 1]);
+    oneSpan.trigger("click");
+    deepEqual([oneClick, twoClick], [2, 1]);
+    twoSpan.trigger("click");
+    deepEqual([oneClick, twoClick], [2, 2]);
+
+    instance.unbindOne();
+    oneSpan.trigger("click");
+    deepEqual([oneClick, twoClick], [2, 2]);
+    twoSpan.trigger("click");
+    deepEqual([oneClick, twoClick], [2, 3]);
+
+    instance.unbindAll();
+    oneSpan.trigger("click");
+    deepEqual([oneClick, twoClick], [2, 3]);
+    twoSpan.trigger("click");
+    deepEqual([oneClick, twoClick], [2, 3]);
 });

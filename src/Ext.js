@@ -7,7 +7,7 @@
  * @uses       go.Class
  */
 /*jslint node: true, nomen: true */
-/*global go, window */
+/*global go, window, jQuery */
 "use strict";
 
 if (!window.go) {
@@ -150,13 +150,124 @@ go("Ext", ["Class"], function (go) {
                     hash = hash[path[i]];
                 }
             }
-        }
+        },
 
+        'eoc': null
     });
 
     Ext.Options.Exceptions = {
         'NotFound' : go.Lang.Exception.create("go.Ext.Options.Exceptions.NotFound", go.Lang.Exception)
     };
+
+    /**
+     * Ext.Nodes - класс, обрабатывающий DOM-элементы
+     *
+     * @uses jQuery
+     *
+     * @var jQuery node
+     *      основная нода объекта
+     * @var hash nodes
+     *      список загруженных нод
+     * @var list nodesListeners
+     *      список установленных слушателей событий
+     */
+    Ext.Nodes = go.Class({
+
+        /**
+         * Список указателей на ноды
+         * Переопределяется у потомков
+         *
+         * @var hash
+         */
+        'nodes': {},
+
+        '__abstract': true,
+
+        '__mutators': {
+
+        },
+
+        /**
+         * Конструктор
+         *
+         * @param mixed node
+         *        указатель на основной контейнер объекта
+         */
+        '__construct': function (node) {
+            this.initNodes(node);
+        },
+
+        /**
+         * Деструктор
+         */
+        '__destruct': function () {
+            this.doneNodes();
+        },
+
+        /**
+         * Инициализация нод
+         *
+         * @param mixed node
+         *        указатель на основной контейнер объекта
+         */
+        'initNodes': function (node) {
+            this.node = jQuery(node);
+            this.nodesListeners = [];
+        },
+
+        /**
+         * Очищение структур данных
+         */
+        'doneNodes': function () {
+            this.unbindAll();
+        },
+
+        /**
+         * Установить обработчик события
+         *
+         * @param mixed node
+         *        указатель на ноду
+         * @param string eventType
+         *        тип события
+         * @param function(e)|string handler
+         *        обработчик - функция или имя метода данного объекта
+         */
+        'bind': function (node, eventType, handler) {
+            if (typeof handler !== "function") {
+                handler = this[handler];
+            }
+            jQuery(node).bind(eventType, handler);
+            this.nodesListeners.push([node, eventType, handler]);
+        },
+
+        /**
+         * Снять обработчик события
+         *
+         * @param mixed node
+         * @param string eventType
+         * @param function(e)|string handler
+         */
+        'unbind': function (node, eventType, handler) {
+            if (typeof handler !== "function") {
+                handler = this[handler];
+            }
+            jQuery(node).unbind(eventType, handler);
+        },
+
+        /**
+         * Снять все обработчики, установленные ранее через bind()
+         */
+        'unbindAll': function () {
+            var listeners = this.nodesListeners,
+                listener;
+            while (listeners.length > 0) {
+                listener = listeners.pop();
+                this.unbind.apply(this, listener);
+            }
+        },
+
+        'eoc': null
+    });
 
     return Ext;
 });
