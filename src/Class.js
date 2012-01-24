@@ -372,6 +372,7 @@ go("Class", function (go) {
             C.__Fake  = function () {};
             C.__Fake.prototype = C.prototype;
             go.Lang.extend(C, this.classMethods);
+            C.toString = this.classMethods.toString; // IE не копирует toString
             C.__mutators.processClass(props);
             go.Lang.extend(C.prototype, props);
         },
