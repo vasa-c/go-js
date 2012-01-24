@@ -847,6 +847,7 @@ go("Class", function (go) {
         return C;
     };
     Class.Root = Class.apply(window, [null, RootPrototype]);
+    Class.Root.prototype.toString = RootPrototype.toString; // IE !!!
     Class.Exceptions = (function () {
         var create = go.Lang.Exception.create,
             Base = create("go.Class.Exceptions.Base", go.Lang.Exception);
