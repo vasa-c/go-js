@@ -195,7 +195,7 @@ var go = (function (global) {
      */
     (function () {
 
-        var SRC_PATTERN = new RegExp("^(.*\\/)?go\\.js(\\?.*?l=(.*?))?$"),
+        var SRC_PATTERN = new RegExp("^(.*\\/)?go\\.js(#(.*?))?$"),
             matches;
 
         if (doc.currentScript) {
