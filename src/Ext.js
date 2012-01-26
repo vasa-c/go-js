@@ -356,5 +356,139 @@ go("Ext", ["Class"], function (go, global) {
         'eoc': null
     });
 
+    /**
+     * Ext.Events - класс, генерирующий события, на которые можно подписываться
+     *
+     * @var hash eventListeners
+     *      тип события => список подписчиков
+     */
+    Ext.Events = go.Class({
+
+        /**
+         * Добавить обработчик события
+         *
+         * @param string eventType [optional]
+         *        тип события
+         * @param function listener
+         *        обработчик события
+         * @return number
+         *         идентификатор слушателя
+         */
+        'addEventListener': function (eventType, listener) {
+            var elisteners;
+            if (!listener) {
+                listener  = eventType;
+                eventType = "";
+            }
+            if (!this.eventListeners) {
+                this.eventListeners = {};
+            }
+            elisteners = this.eventListeners;
+            if (elisteners[eventType]) {
+                elisteners[eventType].push(listener);
+            } else {
+                elisteners[eventType] = [listener];
+            }
+        },
+
+        /**
+         * Удалить обработчик события
+         *
+         * @param string eventType [optional]
+         *        тип события
+         * @param function|number listener
+         *        обработчик или его идентификатор
+         * @return bool
+         *         был ли обработчик найден и удалён
+         */
+        'removeEventListener': function (eventType, listener) {
+            var elisteners = this.eventListeners, i, len;
+            if (!elisteners) {
+                return false;
+            }
+            elisteners = elisteners[eventType];
+            if (!elisteners) {
+                return false;
+            }
+            for (i = 0, len = elisteners.length; i < len; i += 1) {
+                if (listener === elisteners[i]) {
+                    elisteners[i] = null;
+                    return true;
+                }
+            }
+            return false;
+        },
+
+        /**
+         * Удалить все обработчики одного события
+         *
+         * @param string eventType [optional]
+         *        тип события
+         */
+        'removeEventAllListeners': function (eventType) {
+            this.eventListeners[eventType] = [];
+        },
+
+        /**
+         * Сброс всех обработчиков всех событий
+         */
+        'resetEventListeners': function () {
+            this.eventListeners = {};
+        },
+
+        /**
+         * Генерация события
+         *
+         * @param string|object event
+         *        объект события или его тип
+         * @param mixed eventData
+         *        данные события (если event - строка)
+         */
+        'fireEvent': function (event, eventData) {
+            var listeners, listener, i, len;
+            if ((!event) || (typeof event !== "object")) {
+                event = new Ext.Events.Event(event, eventData);
+            }
+            listeners = this.eventListeners && this.eventListeners[event.type];
+            if (!listeners) {
+                return;
+            }
+            for (i = 0, len = listeners.length; i < len; i += 1) {
+                listener = listeners[i];
+                if (listener) {
+                    listener(event);
+                }
+            }
+        },
+
+        /**
+         * Деструктор
+         */
+        '__destruct': function () {
+            this.resetEventListeners();
+        },
+
+        'eoc': null
+    });
+
+    /**
+     * Конструктор объектов-событий для go.Ext.Events
+     */
+    Ext.Events.Event = (function () {
+
+        var EventPrototype = {
+            'toString': function () {
+                return "[Event " + this.type + "]";
+            }
+        };
+        function EventConstructor(eventType, eventData) {
+            this.type = eventType;
+            this.data = eventData;
+        }
+        EventConstructor.prototype = EventPrototype;
+
+        return EventConstructor;
+    }());
+
     return Ext;
 });
