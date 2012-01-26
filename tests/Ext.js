@@ -252,3 +252,71 @@ tests.test("Nodes class: load nodes", function () {
     span.trigger("click");
     deepEqual(events, expected);
 });
+
+tests.test("", function () {
+
+    var TestClass, f1, f2, f3, instance1, instance2, result = [], expected;
+
+    TestClass = go.Class([null, go.Ext.Events], {
+
+        '__construct': function (value) {
+            this.value = value;
+        },
+
+        'clk': function (m) {
+            if (m % 2) {
+                this.fireEvent("odd", this.value);
+            } else {
+                this.fireEvent("even", this.value);
+            }
+        },
+
+        'eoc': null
+    });
+
+    f1 = function (e) {
+        result.push("f1 " + e.type + " " + e.data);
+    };
+    f2 = function (e) {
+        result.push("f2 " + e.type + " " + e.data);
+    };
+    f3 = function (e) {
+        result.push("f3 " + e.type + " " + e.data);
+    };
+
+    instance1 = new TestClass(1);
+    instance2 = new TestClass(2);
+
+    instance1.addEventListener("odd", f1);
+    instance1.addEventListener("even", f2);
+    instance2.addEventListener("odd", f3);
+
+    instance1.clk(1);
+    instance2.clk(1);
+    instance1.clk(2);
+    instance2.clk(2);
+    instance1.clk(3);
+    instance2.clk(3);
+    instance1.fireEvent("unknown", 5);
+
+    expected = [
+        "f1 odd 1",
+        "f3 odd 2",
+        "f2 even 1",
+        "f1 odd 1",
+        "f3 odd 2"
+    ];
+    deepEqual(result, expected);
+
+    result = [];
+    instance1.removeEventListener("even", f2);
+    instance1.clk(1);
+    instance2.clk(1);
+    instance1.clk(2);
+    instance2.clk(2);
+    expected = [
+        "f1 odd 1",
+        "f3 odd 2"
+    ];
+    deepEqual(result, expected);
+});
