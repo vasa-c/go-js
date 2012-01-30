@@ -608,6 +608,9 @@ tests.test("bind", function () {
     equal(fake.onTwo(),   "ontwo fake");
     equal(fake.onOther(), "onother instance");
     equal(fake.onLoad(),  "onload instance");
+
+    notEqual(instance.onLoad, ThreeClass.__props.onLoad);
+    equal(instance.onLoad.__original, ThreeClass.__props.onLoad);
 });
 
 tests.test("destroy", function () {
