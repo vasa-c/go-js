@@ -153,6 +153,7 @@ go("Class", function (go) {
                     for (k in fields) {
                         if (fields.hasOwnProperty(k)) {
                             instance[k] = bind(fields[k], instance);
+                            instance[k].__original = fields[k];
                         }
                     }
                 },
