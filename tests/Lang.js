@@ -440,7 +440,8 @@ tests.test("go.Lang.Exception", function () {
     var
         OneError = go.Lang.Exception.create("One", go.Lang.Exception),
         TwoError = go.Lang.Exception.create("Two", OneError),
-        ThreeError = go.Lang.Exception.create("Three", OneError);
+        ThreeError = go.Lang.Exception.create("Three", OneError),
+        MessageError = go.Lang.Exception.create("Message", null, "default");
 
     try {
         throw new TwoError("warning");
@@ -454,5 +455,17 @@ tests.test("go.Lang.Exception", function () {
 
         equal(e.name, "Two");
         equal(e.message, "warning");
+    }
+
+    try {
+        throw new MessageError("msg");
+    } catch (e2) {
+        equal(e2.message, "msg");
+    }
+
+    try {
+        throw new MessageError();
+    } catch (e3) {
+        equal(e3.message, "default");
     }
 });
