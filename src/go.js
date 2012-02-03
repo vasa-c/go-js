@@ -633,6 +633,10 @@ go("Lang", function (go, global) {
                 Exc = function Exc(message) {
                     this.name    = name;
                     this.message = message;
+                    this.stack = (new Error()).stack;
+                    if (this.stack) {
+                        this.stack = this.stack.replace(/^.*?\n/, ""); // @todo
+                    }
                 };
                 if (parent) {
                     Fake = function () {};
