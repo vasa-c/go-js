@@ -382,11 +382,13 @@ tests.test("final", function () {
 
     function extendTestClass() {
         var NClass = go.Class(TestClass, {});
+        return new NClass();
     }
     raises(extendTestClass, go.Class.Exceptions.Final, "Can't extend final class");
 
     function extendMulti() {
         var NClass = go.Class([null, TestClass], {});
+        return new NClass();
     }
     raises(extendMulti, go.Class.Exceptions.Final, "Can't extend final class (multi-inherit)");
 });
