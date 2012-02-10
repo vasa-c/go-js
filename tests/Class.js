@@ -365,17 +365,20 @@ tests.test("final", function () {
         }
     });
 
-    ok(TestClass.__final);
+    ok(TestClass.__final, "TestClass is final");
 
     instance = new TestClass();
-    equal(instance.func(), "f");
+    equal(instance.func(), "f", "");
 
     function extendTestClass() {
         var NClass = go.Class(TestClass, {});
-        return new NClass();
     }
+    raises(extendTestClass, go.Class.Exceptions.Final, "Can't extend final class");
 
-    raises(extendTestClass, go.Class.Exceptions.Final);
+    function extendMulti() {
+        var NClass = go.Class([null, TestClass], {})
+    }
+    raises(extendTestClass, go.Class.Exceptions.Final, "Can't extend final class (multi-inherit)");
 });
 
 tests.test("type and toString", function () {
