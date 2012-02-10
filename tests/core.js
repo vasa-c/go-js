@@ -17,7 +17,7 @@ tests.test("go.VERSION", function () {
 
 tests.test("Loader", function () {
 
-    var loader, modules = {}, reqs, l123, l34;
+    var loader, modules = {}, reqs, l123, l34, l67;
 
     loader = new go.__Loader({
 
@@ -103,4 +103,23 @@ tests.test("Loader", function () {
     ok(l123, "Two created - exec listener");
 
     deepEqual(reqs, {}, "new requests was not");
+
+    l67 = false;
+    loader.addListener(["Six", "Seven"], function () {
+        l67 = true;
+    });
+    ok(!l67);
+    loader.appendModule("Six", null, function () {
+        return "MSix";
+    });
+    loader.appendModule("Seven", null, function () {
+        return "MSeven";
+    });
+    ok(l67);
+
+    l67 = true;
+    loader.addListener(["Six", "Seven"], function () {
+        l67 = true;
+    });
+    ok(l67, "listener call immediately");
 });

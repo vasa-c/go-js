@@ -619,20 +619,35 @@ go("Lang", function (go, global) {
         },
 
         /**
-         * Создание собственных "классов исключений"
+         * Создание собственных "классов" исключений
          */
         'Exception': (function () {
 
             var Base, create;
 
-            create = function (name, parent) {
+            /**
+             * go.Lang.Exception.create - создание "класса" исключения
+             *
+             * @param string name
+             *        название класса
+             * @param function parent [optional]
+             *        родительский класс (конструктор), по умолчанию - Error
+             * @param string defmessage [optional]
+             *        сообщение по умолчанию
+             */
+            create = function (name, parent, defmessage) {
                 var Exc, Fake;
                 if ((!parent) && (typeof global.Error === "function")) {
                     parent = global.Error;
                 }
+                defmessage = defmessage || "";
                 Exc = function Exc(message) {
                     this.name    = name;
-                    this.message = message;
+                    this.message = message || defmessage;
+                    this.stack = (new Error()).stack;
+                    if (this.stack) {
+                        this.stack = this.stack.replace(/^[^n]*\n/, ""); // @todo
+                    }
                 };
                 if (parent) {
                     Fake = function () {};
