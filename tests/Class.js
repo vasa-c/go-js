@@ -307,6 +307,10 @@ tests.test("parent access", function () {
 
         'onClick': function () {
             return this.__parentMethod(TwoClass, 'onClick') + " x";
+        },
+
+        'undefinedMethod': function () {
+            return this.__parentMethod(TwoClass, "undef");
         }
     });
 
@@ -319,8 +323,14 @@ tests.test("parent access", function () {
     onClick = instance.onClick;
     equal(onClick(), "onclick 1 x");
 
+    function undefinedMethod() {
+        instance.undefinedMethod();
+    }
+    raises(undefinedMethod, go.Class.Exceptions.Method);
+
     instance.destroy();
     deepEqual(destrs, ["One", "Two", "Side", "Target"]);
+
 });
 
 tests.test("abstract", function () {
