@@ -534,7 +534,7 @@ tests.test("Static", function () {
 
 tests.test("bind", function () {
 
-    var OneClass, TwoClass, ThreeClass, OtherClass, instance, fake;
+    var OneClass, TwoClass, ThreeClass, OtherClass, NoBindClass, instance, fake, f;
 
     OneClass = go.Class({
 
@@ -611,6 +611,20 @@ tests.test("bind", function () {
 
     notEqual(instance.onLoad, ThreeClass.__props.onLoad);
     equal(instance.onLoad.__original, ThreeClass.__props.onLoad);
+
+    NoBindClass = go.Class({
+
+        '__bind': null,
+
+        'onGetThis': function () {
+            return this;
+        }
+
+    });
+
+    instance = new NoBindClass();
+    f = instance.onGetThis;
+    notEqual(f(), instance, "cancel all bind");
 });
 
 tests.test("destroy", function () {
