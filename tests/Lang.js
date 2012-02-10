@@ -81,6 +81,27 @@ tests.test("bind() user defined", function () {
     equal(f2(), "bind");
 });
 
+tests.test("bind() no builtin Function.bind", function () {
+    var
+        obj1 = {
+            'x': 1,
+            'f': function () {
+                return this.x;
+            }
+        },
+        obj2 = {
+            'x': 2
+        };
+
+    obj1.f.bind = null;
+
+    obj2.f_norm = obj1.f;
+    obj2.f_bind = go.Lang.bind(obj1.f, obj1);
+
+    equal(obj2.f_norm(), 2);
+    equal(obj2.f_bind(), 1);
+});
+
 tests.test("getType", function () {
 
     var undef, div, spans, fgotype;
