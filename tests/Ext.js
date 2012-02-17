@@ -258,7 +258,7 @@ tests.test("Nodes class: load nodes", function () {
     deepEqual(events, expected);
 });
 
-tests.test("", function () {
+tests.test("Events class", function () {
 
     var TestClass, f1, f2, f3, instance1, instance2, result = [], expected;
 
