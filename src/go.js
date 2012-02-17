@@ -154,7 +154,7 @@ var go = (function (global) {
             },
 
             'requestModule': function (name) {
-                var src = GO_DIR + name + ".js";
+                var src = GO_DIR + name + ".js" + loader._anticache;
                 doc.write('<script type="text/javascript" src="' + src + '"></script>');
             },
 
@@ -195,7 +195,7 @@ var go = (function (global) {
      */
     (function () {
 
-        var SRC_PATTERN = new RegExp("^(.*\\/)?go\\.js(#(.*?))?$"),
+        var SRC_PATTERN = new RegExp("^(.*\\/)?go\\.js(\\?[^#]*)?(#(.*?))?$"),
             matches;
 
         if (doc.currentScript) {
@@ -216,15 +216,16 @@ var go = (function (global) {
                 }
             }());
         }
-
         if (!matches) {
             throw new Error("go.js is not found in DOM");
         }
 
         GO_DIR = matches[1];
 
-        if (matches[3]) {
-            go.include(matches[3].split(","));
+        loader._anticache = matches[2] || "";
+
+        if (matches[4]) {
+            go.include(matches[4].split(","));
         }
 
     }());
