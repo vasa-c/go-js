@@ -129,11 +129,15 @@ tests.test("Nodes class: bind/unbind", function () {
     TestClass = go.Class([null, go.Ext.Nodes], {
 
         '__construct': function (node) {
-            this.initNodes(node);
+            go.Ext.Nodes.__construct(this, node); // this.initNodes(node);
             this.oneSpan = this.node.find("#one");
             this.twoSpan = this.node.find("#two");
             this.bind(this.oneSpan, "click", this.onClickOne);
             this.bind(this.twoSpan, "click", "onClickTwo");
+        },
+
+        '__destruct': function () {
+            go.Ext.Nodes.__destruct(this); // this.doneNodes()
         },
 
         'onClickOne': function () {
@@ -180,6 +184,8 @@ tests.test("Nodes class: bind/unbind", function () {
     deepEqual([oneClick, twoClick], [2, 3]);
     twoSpan.trigger("click");
     deepEqual([oneClick, twoClick], [2, 3]);
+
+    instance.destroy();
 });
 
 tests.test("Nodes class: load nodes", function () {
