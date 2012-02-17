@@ -29,7 +29,7 @@ tests.test("Options class", function () {
 
         '__construct': function (x, options) {
             this.x = x;
-            this.initOptions(options);
+            go.Ext.Options.__construct(this, options); // this.initOptions(options);
         }
 
     });
@@ -202,18 +202,20 @@ tests.test("Nodes class: load nodes", function () {
                 'events': {
                     'click': "onClickSpan"
                 }
-            }
+            },
+            'par' : "ul li"
         }
     });
 
     TestClass = go.Class(ParentClass, {
 
         'nodes': {
-            'secondLi': function (node) {
+            'secondLi' : function (node) {
                 var li = node.find("li").eq(1);
                 this.bind(li, "mouseover", this.onMouseOverLi);
                 return li;
-            }
+            },
+            'par' : null
         },
 
         '__construct': function (node) {
@@ -238,6 +240,7 @@ tests.test("Nodes class: load nodes", function () {
     equal(instance.nodes.lis.length, 3);
     equal(instance.nodes.span.length, 1);
     equal(instance.nodes.secondLi.length, 1);
+    equal(typeof instance.nodes.par, "undefined");
 
     span = div.find("span");
     li = div.find("li").eq(1);
