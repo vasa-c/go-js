@@ -206,7 +206,8 @@ tests.test("Nodes class: load nodes", function () {
             'span' : {
                 'selector': ".sp",
                 'events': {
-                    'click': "onClickSpan"
+                    'click': "onClickSpan",
+                    'mouseover': (function () {events.push("mouseover span");})
                 }
             },
             'par' : "ul li"
@@ -253,10 +254,11 @@ tests.test("Nodes class: load nodes", function () {
 
     span.trigger("click");
     li.trigger("click");
+    span.trigger("mouseover");
     span.trigger("click");
     li.trigger("mouseover");
 
-    expected = ["click span", "click span", "over li"];
+    expected = ["click span", "mouseover span", "click span", "over li"];
     deepEqual(events, expected);
 
     instance.unbindAll();
