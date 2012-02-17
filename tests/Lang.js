@@ -81,10 +81,29 @@ tests.test("bind() user defined", function () {
     equal(f2(), "bind");
 });
 
+tests.test("bind() no builtin Function.bind", function () {
+    var
+        obj1 = {
+            'x': 1,
+            'f': function () {
+                return this.x;
+            }
+        },
+        obj2 = {
+            'x': 2
+        };
+
+    obj1.f.bind = null;
+
+    obj2.f_norm = obj1.f;
+    obj2.f_bind = go.Lang.bind(obj1.f, obj1);
+
+    equal(obj2.f_norm(), 2);
+    equal(obj2.f_bind(), 1);
+});
+
 tests.test("getType", function () {
-
     var undef, div, spans, fgotype;
-
     equal(go.Lang.getType(undef), "undefined");
     equal(go.Lang.getType(null), "null");
     equal(go.Lang.getType(true), "boolean");
@@ -440,7 +459,8 @@ tests.test("go.Lang.Exception", function () {
     var
         OneError = go.Lang.Exception.create("One", go.Lang.Exception),
         TwoError = go.Lang.Exception.create("Two", OneError),
-        ThreeError = go.Lang.Exception.create("Three", OneError);
+        ThreeError = go.Lang.Exception.create("Three", OneError),
+        MessageError = go.Lang.Exception.create("Message", null, "default");
 
     try {
         throw new TwoError("warning");
@@ -454,5 +474,17 @@ tests.test("go.Lang.Exception", function () {
 
         equal(e.name, "Two");
         equal(e.message, "warning");
+    }
+
+    try {
+        throw new MessageError("msg");
+    } catch (e2) {
+        equal(e2.message, "msg");
+    }
+
+    try {
+        throw new MessageError();
+    } catch (e3) {
+        equal(e3.message, "default");
     }
 });

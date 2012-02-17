@@ -154,7 +154,7 @@ var go = (function (global) {
             },
 
             'requestModule': function (name) {
-                var src = GO_DIR + name + ".js";
+                var src = GO_DIR + name + ".js" + loader._anticache;
                 doc.write('<script type="text/javascript" src="' + src + '"></script>');
             },
 
@@ -195,7 +195,7 @@ var go = (function (global) {
      */
     (function () {
 
-        var SRC_PATTERN = new RegExp("^(.*\\/)?go\\.js(#(.*?))?$"),
+        var SRC_PATTERN = new RegExp("^(.*\\/)?go\\.js(\\?[^#]*)?(#(.*?))?$"),
             matches;
 
         if (doc.currentScript) {
@@ -216,15 +216,16 @@ var go = (function (global) {
                 }
             }());
         }
-
         if (!matches) {
             throw new Error("go.js is not found in DOM");
         }
 
         GO_DIR = matches[1];
 
-        if (matches[3]) {
-            go.include(matches[3].split(","));
+        loader._anticache = matches[2] || "";
+
+        if (matches[4]) {
+            go.include(matches[4].split(","));
         }
 
     }());
@@ -294,8 +295,13 @@ go("Lang", function (go, global) {
         'getType': function (value) {
             var type = typeof value;
             if (type !== "object") {
-                if ((type === "function") && value.go$type) {
-                    return value.go$type;
+                if (type === "function") {
+                    if (value.toString() === "[object NodeList]") { // @todo safari
+                        return "collection";
+                    }
+                    if (value.go$type) {
+                        return value.go$type;
+                    }
                 }
                 return type;
             } else if (value === null) {
@@ -309,10 +315,21 @@ go("Lang", function (go, global) {
             } else if (value.nodeType === 3) {
                 return "textnode";
             } else if (typeof value.length === "number") {
-                if ('callee' in value) { // @todo
-                    return "arguments";
-                } else {
+                switch (Object.prototype.toString.call(value)) {
+                case "[object NodeList]":
+                case "[object HTMLCollection]":
                     return "collection";
+                case "[object Arguments]":
+                    return "arguments";
+                }
+                if (typeof value.item === "function") {
+                    return "collection";
+                }
+                if (typeof value.constructor !== "function") { // @todo IE
+                    return "collection";
+                }
+                if (typeof value.push !== "function") {
+                    return "arguments";
                 }
             }
             return "object";
@@ -619,20 +636,37 @@ go("Lang", function (go, global) {
         },
 
         /**
-         * Создание собственных "классов исключений"
+         * Создание собственных "классов" исключений
          */
         'Exception': (function () {
 
             var Base, create;
 
-            create = function (name, parent) {
+            /**
+             * go.Lang.Exception.create - создание "класса" исключения
+             *
+             * @param string name
+             *        название класса
+             * @param function parent [optional]
+             *        родительский класс (конструктор), по умолчанию - Error
+             * @param string defmessage [optional]
+             *        сообщение по умолчанию
+             */
+            create = function (name, parent, defmessage) {
                 var Exc, Fake;
                 if ((!parent) && (typeof global.Error === "function")) {
                     parent = global.Error;
                 }
+                defmessage = defmessage || "";
                 Exc = function Exc(message) {
                     this.name    = name;
-                    this.message = message;
+                    this.message = message || defmessage;
+                    this.stack = (new Error()).stack;
+                    if (this.stack) {
+                        /*jslint regexp: true */
+                        this.stack = this.stack.replace(/^[^n]*\n/, ""); // @todo
+                        /*jslint regexp: false */
+                    }
                 };
                 if (parent) {
                     Fake = function () {};

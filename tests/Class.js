@@ -307,6 +307,10 @@ tests.test("parent access", function () {
 
         'onClick': function () {
             return this.__parentMethod(TwoClass, 'onClick') + " x";
+        },
+
+        'undefinedMethod': function () {
+            return this.__parentMethod(TwoClass, "undef");
         }
     });
 
@@ -319,8 +323,14 @@ tests.test("parent access", function () {
     onClick = instance.onClick;
     equal(onClick(), "onclick 1 x");
 
+    function undefinedMethod() {
+        instance.undefinedMethod();
+    }
+    raises(undefinedMethod, go.Class.Exceptions.Method);
+
     instance.destroy();
     deepEqual(destrs, ["One", "Two", "Side", "Target"]);
+
 });
 
 tests.test("abstract", function () {
@@ -365,17 +375,22 @@ tests.test("final", function () {
         }
     });
 
-    ok(TestClass.__final);
+    ok(TestClass.__final, "TestClass is final");
 
     instance = new TestClass();
-    equal(instance.func(), "f");
+    equal(instance.func(), "f", "");
 
     function extendTestClass() {
         var NClass = go.Class(TestClass, {});
         return new NClass();
     }
+    raises(extendTestClass, go.Class.Exceptions.Final, "Can't extend final class");
 
-    raises(extendTestClass, go.Class.Exceptions.Final);
+    function extendMulti() {
+        var NClass = go.Class([null, TestClass], {});
+        return new NClass();
+    }
+    raises(extendMulti, go.Class.Exceptions.Final, "Can't extend final class (multi-inherit)");
 });
 
 tests.test("type and toString", function () {
@@ -534,7 +549,7 @@ tests.test("Static", function () {
 
 tests.test("bind", function () {
 
-    var OneClass, TwoClass, ThreeClass, OtherClass, instance, fake;
+    var OneClass, TwoClass, ThreeClass, OtherClass, NoBindClass, instance, fake, f;
 
     OneClass = go.Class({
 
@@ -611,6 +626,20 @@ tests.test("bind", function () {
 
     notEqual(instance.onLoad, ThreeClass.__props.onLoad);
     equal(instance.onLoad.__original, ThreeClass.__props.onLoad);
+
+    NoBindClass = go.Class({
+
+        '__bind': null,
+
+        'onGetThis': function () {
+            return this;
+        }
+
+    });
+
+    instance = new NoBindClass();
+    f = instance.onGetThis;
+    notEqual(f(), instance, "cancel all bind");
 });
 
 tests.test("destroy", function () {
