@@ -295,8 +295,13 @@ go("Lang", function (go, global) {
         'getType': function (value) {
             var type = typeof value;
             if (type !== "object") {
-                if ((type === "function") && value.go$type) {
-                    return value.go$type;
+                if (type === "function") {
+                    if (value.toString() === "[object NodeList]") { // @todo safari
+                        return "collection";
+                    }
+                    if (value.go$type) {
+                        return value.go$type;
+                    }
                 }
                 return type;
             } else if (value === null) {
@@ -310,10 +315,21 @@ go("Lang", function (go, global) {
             } else if (value.nodeType === 3) {
                 return "textnode";
             } else if (typeof value.length === "number") {
-                if ('callee' in value) { // @todo
-                    return "arguments";
-                } else {
+                switch (Object.prototype.toString.call(value)) {
+                case "[object NodeList]":
+                case "[object HTMLCollection]":
                     return "collection";
+                case "[object Arguments]":
+                    return "arguments";
+                }
+                if (typeof value.item === "function") {
+                    return "collection";
+                }
+                if (typeof value.constructor !== "function") { // @todo IE
+                    return "collection";
+                }
+                if (typeof value.push !== "function") {
+                    return "arguments";
                 }
             }
             return "object";

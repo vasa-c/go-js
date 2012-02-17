@@ -103,9 +103,7 @@ tests.test("bind() no builtin Function.bind", function () {
 });
 
 tests.test("getType", function () {
-
     var undef, div, spans, fgotype;
-
     equal(go.Lang.getType(undef), "undefined");
     equal(go.Lang.getType(null), "null");
     equal(go.Lang.getType(true), "boolean");
