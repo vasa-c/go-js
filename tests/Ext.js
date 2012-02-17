@@ -13,7 +13,7 @@ tests.module("Ext");
 
 tests.test("Options class", function () {
 
-    var OneClass, TwoClass, options, instance, expected;
+    var OneClass, NClass, TwoClass, options, instance, expected;
 
     OneClass = go.Class([null, go.Ext.Options], {
 
@@ -29,12 +29,14 @@ tests.test("Options class", function () {
 
         '__construct': function (x, options) {
             this.x = x;
-            this.initOptions(options);
+            go.Ext.Options.__construct(this, options); // this.initOptions(options);
         }
 
     });
 
-    TwoClass = go.Class(OneClass, {
+    NClass = go.Class(OneClass, {});
+
+    TwoClass = go.Class(NClass, {
 
         'options' : {
             'one' : {
@@ -127,11 +129,15 @@ tests.test("Nodes class: bind/unbind", function () {
     TestClass = go.Class([null, go.Ext.Nodes], {
 
         '__construct': function (node) {
-            this.initNodes(node);
+            go.Ext.Nodes.__construct(this, node); // this.initNodes(node);
             this.oneSpan = this.node.find("#one");
             this.twoSpan = this.node.find("#two");
             this.bind(this.oneSpan, "click", this.onClickOne);
             this.bind(this.twoSpan, "click", "onClickTwo");
+        },
+
+        '__destruct': function () {
+            go.Ext.Nodes.__destruct(this); // this.doneNodes()
         },
 
         'onClickOne': function () {
@@ -178,6 +184,8 @@ tests.test("Nodes class: bind/unbind", function () {
     deepEqual([oneClick, twoClick], [2, 3]);
     twoSpan.trigger("click");
     deepEqual([oneClick, twoClick], [2, 3]);
+
+    instance.destroy();
 });
 
 tests.test("Nodes class: load nodes", function () {
@@ -196,22 +204,27 @@ tests.test("Nodes class: load nodes", function () {
         'nodes': {
             'lis'  : "ul li",
             'span' : {
-                'selector': ".sp",
-                'events': {
-                    'click': "onClickSpan"
+                'selector' : ".sp",
+                'events'   : {
+                    'click'     : "onClickSpan",
+                    'mouseover' : function () {
+                        events.push("mouseover span");
+                    }
                 }
-            }
+            },
+            'par' : "ul li"
         }
     });
 
     TestClass = go.Class(ParentClass, {
 
         'nodes': {
-            'secondLi': function (node) {
+            'secondLi' : function (node) {
                 var li = node.find("li").eq(1);
                 this.bind(li, "mouseover", this.onMouseOverLi);
                 return li;
-            }
+            },
+            'par' : null
         },
 
         '__construct': function (node) {
@@ -236,16 +249,18 @@ tests.test("Nodes class: load nodes", function () {
     equal(instance.nodes.lis.length, 3);
     equal(instance.nodes.span.length, 1);
     equal(instance.nodes.secondLi.length, 1);
+    equal(typeof instance.nodes.par, "undefined");
 
     span = div.find("span");
     li = div.find("li").eq(1);
 
     span.trigger("click");
     li.trigger("click");
+    span.trigger("mouseover");
     span.trigger("click");
     li.trigger("mouseover");
 
-    expected = ["click span", "click span", "over li"];
+    expected = ["click span", "mouseover span", "click span", "over li"];
     deepEqual(events, expected);
 
     instance.unbindAll();
@@ -253,7 +268,7 @@ tests.test("Nodes class: load nodes", function () {
     deepEqual(events, expected);
 });
 
-tests.test("", function () {
+tests.test("Events class", function () {
 
     var TestClass, f1, f2, f3, instance1, instance2, result = [], expected;
 
