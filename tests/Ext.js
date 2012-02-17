@@ -204,10 +204,12 @@ tests.test("Nodes class: load nodes", function () {
         'nodes': {
             'lis'  : "ul li",
             'span' : {
-                'selector': ".sp",
-                'events': {
-                    'click': "onClickSpan",
-                    'mouseover': (function () {events.push("mouseover span");})
+                'selector' : ".sp",
+                'events'   : {
+                    'click'     : "onClickSpan",
+                    'mouseover' : function () {
+                        events.push("mouseover span");
+                    }
                 }
             },
             'par' : "ul li"
