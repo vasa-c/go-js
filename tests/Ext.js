@@ -13,7 +13,7 @@ tests.module("Ext");
 
 tests.test("Options class", function () {
 
-    var OneClass, TwoClass, options, instance, expected;
+    var OneClass, NClass, TwoClass, options, instance, expected;
 
     OneClass = go.Class([null, go.Ext.Options], {
 
@@ -34,7 +34,9 @@ tests.test("Options class", function () {
 
     });
 
-    TwoClass = go.Class(OneClass, {
+    NClass = go.Class(OneClass, {});
+
+    TwoClass = go.Class(NClass, {
 
         'options' : {
             'one' : {
