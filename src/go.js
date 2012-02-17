@@ -647,7 +647,9 @@ go("Lang", function (go, global) {
                     this.message = message || defmessage;
                     this.stack = (new Error()).stack;
                     if (this.stack) {
+                        /*jslint regexp: true */
                         this.stack = this.stack.replace(/^[^n]*\n/, ""); // @todo
+                        /*jslint regexp: false */
                     }
                 };
                 if (parent) {
