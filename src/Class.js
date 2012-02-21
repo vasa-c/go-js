@@ -524,7 +524,9 @@ go("Class", function (go) {
             delete props.__mutators;
             for (k in mutators) {
                 if (mutators.hasOwnProperty(k)) {
-                    mutators[k].processClass(props);
+                    if (mutators[k]) {
+                        mutators[k].processClass(props);
+                    }
                 }
             }
             return props;
@@ -540,7 +542,9 @@ go("Class", function (go) {
                 k;
             for (k in mutators) {
                 if (mutators.hasOwnProperty(k)) {
-                    mutators[k].processInstance(instance);
+                    if (mutators[k]) {
+                        mutators[k].processInstance(instance);
+                    }
                 }
             }
         },

@@ -420,7 +420,7 @@ tests.test("type and toString", function () {
 
 tests.test("Mutators", function () {
 
-    var OneClass, TwoClass, twoInstance;
+    var OneClass, TwoClass, ThreeClass, twoInstance, threeInstance;
 
     OneClass = go.Class({
 
@@ -458,7 +458,8 @@ tests.test("Mutators", function () {
         '__mutators': {
             'mul': {
                 'value': 3
-            }
+            },
+            'x': null
         },
 
         'mul_two': function (x) {
@@ -471,12 +472,29 @@ tests.test("Mutators", function () {
 
     });
 
+    ThreeClass = go.Class(TwoClass, {
+
+        '__mutators': {
+            'mul': null,
+            'x': null
+        },
+
+        'mul_four': function (x) {
+            return x + 4;
+        }
+
+    });
+
     twoInstance = new TwoClass();
 
     equal(twoInstance.norm(1), 1);
     equal(twoInstance.mul_one(1), 4); // (x+1) * 2
     equal(twoInstance.mul_two(1), 15); // (x+4) * 3
     equal(twoInstance.mul_three(1), 12); // (x+3) * 3
+
+    threeInstance = new ThreeClass();
+    ok(!threeInstance.mul_three); // tofix ?
+    equal(threeInstance.mul_four(1), 5); // 1 + 4 (no mutation)
 });
 
 tests.test("Static", function () {
