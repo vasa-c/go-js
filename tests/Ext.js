@@ -123,6 +123,7 @@ tests.test("Nodes class: bind/unbind", function () {
         node,
         oneClick = 0,
         twoClick = 0,
+        threeClick = 0,
         oneSpan,
         twoSpan;
 
@@ -134,6 +135,7 @@ tests.test("Nodes class: bind/unbind", function () {
             this.twoSpan = this.node.find("#two");
             this.bind(this.oneSpan, "click", this.onClickOne);
             this.bind(this.twoSpan, "click", "onClickTwo");
+            this.bind(this.oneSpan, "click", "onClickThree");
         },
 
         '__destruct': function () {
@@ -148,8 +150,16 @@ tests.test("Nodes class: bind/unbind", function () {
             twoClick += 1;
         },
 
+        'onClickThree': function () {
+            threeClick += 1;
+        },
+
         'unbindOne': function () {
             this.unbind(this.oneSpan, "click", this.onClickOne);
+        },
+
+        'unbindThree': function () {
+            this.unbind(this.oneSpan, "click", "onClickThree");
         },
 
         'eoc': null
@@ -162,28 +172,31 @@ tests.test("Nodes class: bind/unbind", function () {
     oneSpan = node.find("#one");
     twoSpan = node.find("#two");
 
-    deepEqual([oneClick, twoClick], [0, 0]);
+    deepEqual([oneClick, twoClick, threeClick], [0, 0, 0]);
 
     oneSpan.trigger("click");
-    deepEqual([oneClick, twoClick], [1, 0]);
+    deepEqual([oneClick, twoClick, threeClick], [1, 0, 1]);
     twoSpan.trigger("click");
-    deepEqual([oneClick, twoClick], [1, 1]);
+    deepEqual([oneClick, twoClick, threeClick], [1, 1, 1]);
     oneSpan.trigger("click");
-    deepEqual([oneClick, twoClick], [2, 1]);
+    deepEqual([oneClick, twoClick, threeClick], [2, 1, 2]);
     twoSpan.trigger("click");
-    deepEqual([oneClick, twoClick], [2, 2]);
+    deepEqual([oneClick, twoClick, threeClick], [2, 2, 2]);
 
     instance.unbindOne();
     oneSpan.trigger("click");
-    deepEqual([oneClick, twoClick], [2, 2]);
+    deepEqual([oneClick, twoClick, threeClick], [2, 2, 3]);
     twoSpan.trigger("click");
-    deepEqual([oneClick, twoClick], [2, 3]);
+    deepEqual([oneClick, twoClick, threeClick], [2, 3, 3]);
+    instance.unbindThree();
+    oneSpan.trigger("click");
+    deepEqual([oneClick, twoClick, threeClick], [2, 3, 3]);
 
     instance.unbindAll();
     oneSpan.trigger("click");
-    deepEqual([oneClick, twoClick], [2, 3]);
+    deepEqual([oneClick, twoClick, threeClick], [2, 3, 3]);
     twoSpan.trigger("click");
-    deepEqual([oneClick, twoClick], [2, 3]);
+    deepEqual([oneClick, twoClick, threeClick], [2, 3, 3]);
 
     instance.destroy();
 });
