@@ -102,6 +102,23 @@ tests.test("bind() no builtin Function.bind", function () {
     equal(obj2.f_bind(), 1);
 });
 
+tests.test("bind() arguments + no builtin Function.bind", function () {
+
+    var obj = {'x': "x"}, f, f1, f2;
+
+    f = function (a, b, c, d) {
+        return [this.x, a, b, c, d].join(", ");
+    };
+
+    f.bind = null;
+
+    f1 = go.Lang.bind(f, obj);
+    f2 = go.Lang.bind(f, obj, ["a", "b"]);
+
+    equal(f1(1, 2, 3, 4), "x, 1, 2, 3, 4");
+    equal(f2(1, 2, 3, 4), "x, a, b, 1, 2");
+});
+
 tests.test("getType", function () {
     var undef, div, spans, fgotype;
     equal(go.Lang.getType(undef), "undefined");
