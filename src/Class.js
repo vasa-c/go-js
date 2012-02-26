@@ -205,7 +205,7 @@ go("Class", function (go) {
          *
          * @param mixed parents
          *        класс-предок или список предков (или null)
-         * @param hash props
+         * @param dict props
          *        набор свойств и методов класса
          */
         '__construct': function (parents, props) {
@@ -516,7 +516,7 @@ go("Class", function (go) {
         /**
          * Формирование данных на этапе формирования класса
          *
-         * @param hash props
+         * @param dict props
          */
         'processClass': function (props) {
             var mutators = this.mutators,
@@ -638,7 +638,7 @@ go("Class", function (go) {
          * Создать новый мутатор
          *
          * @param string name
-         * @param hash props
+         * @param dict props
          * @param object bproto [optional]
          * @param go.class parent [optional]
          * @return Mutator
@@ -662,7 +662,7 @@ go("Class", function (go) {
          *
          * @param string name
          * @param Mutator mparent
-         * @param hash props
+         * @param dict props
          * @param go.class parent [optional]
          * @return Mutator
          */
@@ -691,7 +691,7 @@ go("Class", function (go) {
          *      класс, к которому привязан
          * @var go.class parent
          *      класс-пердок от которого наследован мутатор
-         * @var hash fields
+         * @var dict fields
          *      сохраняемые поля
          */
         'Mutator': (function () {
@@ -719,7 +719,7 @@ go("Class", function (go) {
                 /**
                  * Обработка полей на этапе создания класса
                  *
-                 * @param hash props
+                 * @param dict props
                  */
                 'processClass': function (props) {
                     var fields = this.fields, k, prop, mut;

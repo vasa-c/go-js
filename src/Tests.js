@@ -33,7 +33,7 @@ go("Tests", function (go, global) {
         /**
          * Список нужных глобальных функций QUnit
          *
-         * @const hash
+         * @const dict
          */
         'QUNIT' : {
             'test'   : global.test,
@@ -95,7 +95,7 @@ go("Tests", function (go, global) {
          * @see http://docs.jquery.com/QUnit/module#namelifecycle
          *
          * @param string name
-         * @param hash lifecycle [optional]
+         * @param dict lifecycle [optional]
          */
         'module': function () {
             this.calls.push([this.QUNIT.module, arguments]);

@@ -21,7 +21,7 @@ go("Ext", ["Class"], function (go, global) {
     /**
      * Ext.Options - класс с настройками
      *
-     * @var hash options
+     * @var dict options
      *      настройки данного класса,
      *      перекрывают настройки предка и перекрываются настройками объекта
      */
@@ -68,7 +68,7 @@ go("Ext", ["Class"], function (go, global) {
         /**
          * Конструктор
          *
-         * @param hash options
+         * @param dict options
          *        уникальные настройки объекта
          */
         '__construct': function (options) {
@@ -78,7 +78,7 @@ go("Ext", ["Class"], function (go, global) {
         /**
          * Сохранение настроек объекта
          *
-         * @param hash options
+         * @param dict options
          */
         'initOptions': function (options) {
             if (options) {
@@ -93,7 +93,7 @@ go("Ext", ["Class"], function (go, global) {
         /**
          * Получить настройки объекта
          *
-         * @return hash
+         * @return dict
          */
         'getOptions': function () {
             return this.options;
@@ -130,22 +130,22 @@ go("Ext", ["Class"], function (go, global) {
          */
         'setOption': function (opt, value) {
             var path = opt.split("."),
-                hash,
+                dict,
                 i,
                 len;
             if (this.__OptionsLazy) {
                 this.options = go.Lang.copy(this.options);
                 this.__OptionsLazy = false;
             }
-            hash = this.options;
+            dict = this.options;
             for (i = 0, len = path.length; i < len; i += 1) {
-                if ((!hash) || (typeof hash !== "object")) {
+                if ((!dict) || (typeof dict !== "object")) {
                     throw new Ext.Options.Exceptions.NotFound("setOption(" + opt + ")");
                 }
                 if (i === len - 1) {
-                    hash[path[i]] = value;
+                    dict[path[i]] = value;
                 } else {
-                    hash = hash[path[i]];
+                    dict = dict[path[i]];
                 }
             }
         },
@@ -164,7 +164,7 @@ go("Ext", ["Class"], function (go, global) {
      *
      * @var jQuery node
      *      основная нода объекта
-     * @var hash nodes
+     * @var dict nodes
      *      список загруженных нод
      * @var list nodesListeners
      *      список установленных слушателей событий
@@ -175,7 +175,7 @@ go("Ext", ["Class"], function (go, global) {
          * Список указателей на ноды
          * Переопределяется у потомков
          *
-         * @var hash
+         * @var dict
          */
         'nodes': {},
 
@@ -359,7 +359,7 @@ go("Ext", ["Class"], function (go, global) {
     /**
      * Ext.Events - класс, генерирующий события, на которые можно подписываться
      *
-     * @var hash eventListeners
+     * @var dict eventListeners
      *      тип события => список подписчиков
      */
     Ext.Events = go.Class({
