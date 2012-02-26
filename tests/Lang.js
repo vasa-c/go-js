@@ -167,15 +167,15 @@ tests.test("isArray", function () {
     ok(!go.Lang.isArray(anone2, true));
 });
 
-tests.test("isHash", function () {
+tests.test("isDict", function () {
 
-    ok(go.Lang.isHash({'a': 1, 'b': 2}));
-    ok(!go.Lang.isHash([1, 2]));
-    ok(!go.Lang.isHash(document.createElement("div")));
-    ok(!go.Lang.isHash(function () {}));
-    ok(!go.Lang.isHash(1));
-    ok(!go.Lang.isHash(null));
-    ok(!go.Lang.isHash());
+    ok(go.Lang.isDict({'a': 1, 'b': 2}));
+    ok(!go.Lang.isDict([1, 2]));
+    ok(!go.Lang.isDict(document.createElement("div")));
+    ok(!go.Lang.isDict(function () {}));
+    ok(!go.Lang.isDict(1));
+    ok(!go.Lang.isDict(null));
+    ok(!go.Lang.isDict());
 });
 
 tests.test("each array", function () {

@@ -359,13 +359,13 @@ go("Lang", function (go, global) {
         },
 
         /**
-         * Является ли объект простым хэшем
+         * Является ли объект простым словарём
          * Под хэшем здесь подразумевается любой объект, не имеющий более специфического типа
          *
          * @param object value
          * @return bool
          */
-        'isHash': function (value) {
+        'isDict': function (value) {
             return (value && (value.constructor === Object));
         },
 
@@ -458,11 +458,11 @@ go("Lang", function (go, global) {
         /**
          * Рекурсивное слияние двух объектов на месте
          *
-         * @param hash destination
+         * @param dict destination
          *        исходных объект (изменяется)
-         * @param hash source
+         * @param dict source
          *        источник новых свойств
-         * @return hash
+         * @return dict
          *         расширенный destination
          */
         'merge': function (destination, source) {
@@ -470,7 +470,7 @@ go("Lang", function (go, global) {
             for (k in source) {
                 if (source.hasOwnProperty(k)) {
                     value = source[k];
-                    if (Lang.isHash(value) && Lang.isHash(destination[k])) {
+                    if (Lang.isDict(value) && Lang.isDict(destination[k])) {
                         destination[k] = Lang.merge(destination[k], value);
                     } else {
                         destination[k] = value;
@@ -547,7 +547,7 @@ go("Lang", function (go, global) {
          *        строка запроса (по умолчанию берётся из window.location)
          * @param string sep [optional]
          *        разделитель переменных (по умолчанию "&")
-         * @return hash
+         * @return dict
          *         переменные из запроса
          */
         'parseQuery': function (query, sep) {
@@ -575,7 +575,7 @@ go("Lang", function (go, global) {
         /**
          * Сформировать строку запроса на основе набора переменных
          *
-         * @param hash vars
+         * @param dict vars
          *        набор переменных (или сразу строка)
          * @param string sep [optional]
          *        разделитель (по умолчанию "&")
@@ -584,13 +584,13 @@ go("Lang", function (go, global) {
          */
         'buildQuery': function (vars, sep) {
 
-            var query = [], buildValue, buildArray, buildHash;
+            var query = [], buildValue, buildArray, buildDict;
             if (typeof vars === "string") {
                 return vars;
             }
             buildValue = function (name, value) {
-                if (Lang.isHash(value)) {
-                    buildHash(value, name);
+                if (Lang.isDict(value)) {
+                    buildDict(value, name);
                 } else if (Lang.isArray(value)) {
                     buildArray(value, name);
                 } else {
@@ -604,7 +604,7 @@ go("Lang", function (go, global) {
                     buildValue(name, vars[i]);
                 }
             };
-            buildHash = function (vars, prefix) {
+            buildDict = function (vars, prefix) {
                 var k, name;
                 for (k in vars) {
                     if (vars.hasOwnProperty(k)) {
@@ -613,7 +613,7 @@ go("Lang", function (go, global) {
                     }
                 }
             };
-            buildHash(vars, "");
+            buildDict(vars, "");
             return query.join(sep || "&");
         },
 
