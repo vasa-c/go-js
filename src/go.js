@@ -270,7 +270,7 @@ go("Lang", function (go, global) {
                 } else {
                     args = [thisArg];
                 }
-                return func.bind.apply(func, args);
+                result = func.bind.apply(func, args);
             } else if (args) {
                 result = function () {
                     return func.apply(thisArg, args.concat(Array.prototype.slice.call(arguments, 0)));
@@ -293,46 +293,52 @@ go("Lang", function (go, global) {
          * @todo протестировать лучше
          */
         'getType': function (value) {
-            var type = typeof value;
+            var type = typeof value,
+                result;
             if (type !== "object") {
                 if (type === "function") {
                     if (value.toString() === "[object NodeList]") { // @todo safari
-                        return "collection";
+                        result = "collection";
+                    } else if (value.go$type) {
+                        result = value.go$type;
+                    } else {
+                        result = "function";
                     }
-                    if (value.go$type) {
-                        return value.go$type;
-                    }
+                } else {
+                    result = type;
                 }
-                return type;
             } else if (value === null) {
-                return "null";
+                result = "null";
             } else if (value.go$type) {
-                return value.go$type;
+                result = value.go$type;
             } else if (value instanceof Array) {
-                return "array";
+                result = "array";
             } else if (value.nodeType === 1) {
-                return "element";
+                result = "element";
             } else if (value.nodeType === 3) {
-                return "textnode";
+                result = "textnode";
             } else if (typeof value.length === "number") {
                 switch (Object.prototype.toString.call(value)) {
                 case "[object NodeList]":
                 case "[object HTMLCollection]":
-                    return "collection";
+                    result = "collection";
+                    break;
                 case "[object Arguments]":
-                    return "arguments";
+                    result = "arguments";
+                    break;
+                default:
+                    if (typeof value.item === "function") {
+                        result = "collection";
+                    } else if (typeof value.constructor !== "function") { // @todo IE
+                        result = "collection";
+                    } else if (typeof value.push !== "function") {
+                        result = "arguments";
+                    }
                 }
-                if (typeof value.item === "function") {
-                    return "collection";
-                }
-                if (typeof value.constructor !== "function") { // @todo IE
-                    return "collection";
-                }
-                if (typeof value.push !== "function") {
-                    return "arguments";
-                }
+            } else {
+                result = "object";
             }
-            return "object";
+            return result;
         },
 
         /**

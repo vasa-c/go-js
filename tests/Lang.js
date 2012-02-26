@@ -413,19 +413,17 @@ tests.test("tryDo", function () {
     }
 
     function fone() {
-        if (one) {
-            return "one";
-        } else {
+        if (!one) {
             throw new Error();
         }
+        return "one";
     }
 
     function ftwo() {
-        if (two) {
-            return "two";
-        } else {
+        if (!two) {
             throw new Error();
         }
+        return "two";
     }
 
     funcs = [err, fone, ftwo];
