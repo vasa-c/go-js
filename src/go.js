@@ -234,8 +234,8 @@ var go = (function (global) {
 }(window));
 
 /**
+ * @namespace go
  * @subpackage Lang
- * @namespace go.Lang
  */
 go("Lang", function (go, global) {
 
@@ -249,17 +249,15 @@ go("Lang", function (go, global) {
          * Если для функции определён свой метод bind(), то используется он
          *
          * @namespace go.Lang
-         * @method bind
-         * @param function func
+         *
+         * @param {Function} func
          *        функция
-         * @param object thisArg [optional]
+         * @param {Object} [thisArg=global]
          *        контекст в котором функция должна выполняться
-         *        по умолчанию - global
-         * @param list args [optional]
+         * @param {Array} [args]
          *        аргументы, вставляемые в начало вызова функции
-         * @return function
+         * @return {Function}
          *         связанная с контекстом функция
-         * @todo протестировать в IE
          */
         'bind': function (func, thisArg, args) {
             var result;
@@ -284,13 +282,14 @@ go("Lang", function (go, global) {
         },
 
         /**
-         * Получение типа значения
+         * Получение расширенного типа значения
          *
-         * @param mixed value
+         * @namespace go.Lang
+         *
+         * @param {Mixed} value
          *        проверяемое значение
-         * @return string
+         * @return {String}
          *         название типа
-         * @todo протестировать лучше
          */
         'getType': function (value) {
             var type;
@@ -379,12 +378,14 @@ go("Lang", function (go, global) {
         /**
          * Является ли значение массивом
          *
-         * @param mixed value
+         * @namespace go.Lang
+         *
+         * @param {Mixed} value
          *        проверяемое значение
-         * @param bool strict [optional]
+         * @param {Boolean} [strict=false]
          *        точная проверка - именно массивом
          *        по умолчанию - любая коллекция с порядковым доступом
-         * @return bool
+         * @return {Boolean}
          *         является ли значение массивом
          */
         'isArray': function (value, strict) {
@@ -400,28 +401,34 @@ go("Lang", function (go, global) {
         },
 
         /**
-         * Является ли объект простым словарём
-         * Под хэшем здесь подразумевается любой объект, не имеющий более специфического типа
+         * Является ли объект простым словарём.
+         * То есть любым объектом, не имеющий более специфического типа.
          *
-         * @param object value
-         * @return bool
+         * @namespace go.Lang
+         *
+         * @param {Object} value
+         *        проверяемое значение
+         * @return {Boolean}
+         *         является ли значение простым словарём
          */
         'isDict': function (value) {
             return (value && (value.constructor === Object));
         },
 
         /**
-         * Итерация объекта
+         * Обход элементов объекта
          *
-         * @param object iter
+         * @namespace go.Lang
+         *
+         * @param {Object|Array} iter
          *        итерируемый объект (или порядковый массив)
-         * @param function(value, key, iter) fn
+         * @param {Function(value, key, iter)} fn
          *        тело цикла
-         * @param object thisArg [optional]
+         * @param {Object} [thisArg=global]
          *        контект, в котором следует выполнять тело цикла
-         * @param bool deep [optional]
+         * @param {Boolean} [deep=false]
          *        обходить ли прототипы
-         * @return mixed
+         * @return {Object|Array}
          *         результаты выполнения функции для всех элементов
          */
         'each': function (iter, fn, thisArg, deep) {
@@ -451,8 +458,12 @@ go("Lang", function (go, global) {
         /**
          * Копирование объекта или массива
          *
-         * @param mixed source
-         * @return mixed
+         * @namespace go.Lang
+         *
+         * @param {Object|Array} source
+         *        исходный объект
+         * @return {Object|Array}
+         *         копия исходного объекта
          */
         'copy': function (source) {
             var result, i, len;
@@ -475,13 +486,15 @@ go("Lang", function (go, global) {
         /**
          * Расширение объекта свойствами другого
          *
-         * @param object destination
+         * @namespace go.Lang
+         *
+         * @param {Object} destination
          *        исходный объект (расширяется на месте)
-         * @param object source
+         * @param {Object} source
          *        источник новых свойств
-         * @param bool deep [optional]
+         * @param {Boolean} [deep=false]
          *        обходить прототипы source
-         * @return object
+         * @return {Object}
          *         расширенный destination
          */
         'extend': function (destination, source, deep) {
@@ -499,11 +512,13 @@ go("Lang", function (go, global) {
         /**
          * Рекурсивное слияние двух объектов на месте
          *
-         * @param dict destination
+         * @namespace go.Lang
+         *
+         * @param {Object} destination
          *        исходных объект (изменяется)
-         * @param dict source
+         * @param {Object} source
          *        источник новых свойств
-         * @return dict
+         * @return {Object}
          *         расширенный destination
          */
         'merge': function (destination, source) {
@@ -524,11 +539,13 @@ go("Lang", function (go, global) {
         /**
          * Каррирование функции
          *
-         * @param function fn
+         * @namespace go.Lang
+         *
+         * @param {Function} fn
          *        исходная функция
-         * @params mixed args ...
+         * @params {Mixed} arg1 ...
          *         запоминаемые аргументы
-         * @return function
+         * @return {Function}
          *         каррированная функция
          */
         'curry': function (fn) {
@@ -544,11 +561,13 @@ go("Lang", function (go, global) {
          * Присутствует ли значение в массиве
          * (строгая проверка)
          *
-         * @param mixed needle
+         * @namespace go.Lang
+         *
+         * @param {Mixed} needle
          *        значение
-         * @param list haystack
+         * @param {Array} haystack
          *        порядковый массив
-         * @return bool
+         * @return {Boolean}
          *         находится ли значение в массиве
          */
         'inArray': function (needle, haystack) {
@@ -564,9 +583,11 @@ go("Lang", function (go, global) {
         /**
          * Выполнить первую корректную функцию
          *
-         * @param list funcs
+         * @namespace go.Lang
+         *
+         * @param {Function[]} funcs
          *        список функций
-         * @return mixed
+         * @return {Mixed}
          *         результат первой корректно завершившейся
          *         ни одна не сработала - undefined
          */
@@ -584,11 +605,13 @@ go("Lang", function (go, global) {
         /**
          * Разбор GET или POST запроса
          *
-         * @param string query [optional]
-         *        строка запроса (по умолчанию берётся из window.location)
-         * @param string sep [optional]
-         *        разделитель переменных (по умолчанию "&")
-         * @return dict
+         * @namespace go.Lang
+         *
+         * @param {String} [query=window.location]
+         *        строка запроса
+         * @param {String} [sep="&"]
+         *        разделитель переменных
+         * @return {Object}
          *         переменные из запроса
          */
         'parseQuery': function (query, sep) {
@@ -616,15 +639,16 @@ go("Lang", function (go, global) {
         /**
          * Сформировать строку запроса на основе набора переменных
          *
-         * @param dict vars
+         * @namespace go.Lang
+         *
+         * @param {Object|String} vars
          *        набор переменных (или сразу строка)
-         * @param string sep [optional]
-         *        разделитель (по умолчанию "&")
-         * @return string
+         * @param {String} [sep="&"]
+         *        разделитель
+         * @return {String}
          *         строка запроса
          */
         'buildQuery': function (vars, sep) {
-
             var query = [], buildValue, buildArray, buildDict;
             if (typeof vars === "string") {
                 return vars;
@@ -660,16 +684,22 @@ go("Lang", function (go, global) {
 
         /**
          * Вспомогательные функции-заготовки
+         *
+         * @namespace go.Lang
          */
         'f': {
             /**
              * Функция, не делающая ничего
+             *
+             * @namespace go.Lang.f
              */
             'empty': function () {
             },
 
             /**
              * Функция, просто возвращающая FALSE
+             *
+             * @namespace go.Lang.f
              */
             'ffalse': function () {
                 return false;
@@ -678,6 +708,8 @@ go("Lang", function (go, global) {
 
         /**
          * Создание собственных "классов" исключений
+         *
+         * @namespace go.Lang
          */
         'Exception': (function () {
 
@@ -686,11 +718,13 @@ go("Lang", function (go, global) {
             /**
              * go.Lang.Exception.create - создание "класса" исключения
              *
-             * @param string name
+             * @namespace go.Lang.Exception
+             *
+             * @param {String} name
              *        название класса
-             * @param function parent [optional]
+             * @param {Function} [parent=Error]
              *        родительский класс (конструктор), по умолчанию - Error
-             * @param string defmessage [optional]
+             * @param {String} [defmessage]
              *        сообщение по умолчанию
              */
             create = function (name, parent, defmessage) {
