@@ -293,52 +293,87 @@ go("Lang", function (go, global) {
          * @todo протестировать лучше
          */
         'getType': function (value) {
-            var type = typeof value,
-                result;
-            if (type !== "object") {
-                if (type === "function") {
-                    if (value.toString() === "[object NodeList]") { // @todo safari
-                        result = "collection";
-                    } else if (value.go$type) {
-                        result = value.go$type;
-                    } else {
-                        result = "function";
+            var type;
+
+            if (value && (typeof value.go$type === "string")) {
+                return value.go$type;
+            }
+
+            type = typeof value;
+            if ((type !== "object") && (type !== "function")) {
+                return type;
+            }
+            if (value === null) {
+                return "null";
+            }
+
+            switch (Object.prototype.toString.call(value)) {
+            case "[object Function]":
+                return "function";
+            case "[object Array]":
+                return "array";
+            case "[object RegExp]":
+                return "regexp";
+            case "[object Error]":
+                return "error";
+            case "[object Date]":
+                return "date";
+            case "[object HTMLCollection]":
+            case "[object NodeList]":
+                return "collection";
+            case "[object Text]":
+                return "textnode";
+            case "[object Arguments]":
+                return "arguments";
+            case "[object Number]":
+                return "number";
+            case "[object String]":
+                return "string";
+            case "[object Boolean]":
+                return "boolean";
+            }
+
+            if (value.constructor) {
+                if (value instanceof Array) {
+                    return "array";
+                }
+                if (window.HTMLElement) {
+                    if (value instanceof window.HTMLElement) {
+                        return "element";
                     }
                 } else {
-                    result = type;
-                }
-            } else if (value === null) {
-                result = "null";
-            } else if (value.go$type) {
-                result = value.go$type;
-            } else if (value instanceof Array) {
-                result = "array";
-            } else if (value.nodeType === 1) {
-                result = "element";
-            } else if (value.nodeType === 3) {
-                result = "textnode";
-            } else if (typeof value.length === "number") {
-                switch (Object.prototype.toString.call(value)) {
-                case "[object NodeList]":
-                case "[object HTMLCollection]":
-                    result = "collection";
-                    break;
-                case "[object Arguments]":
-                    result = "arguments";
-                    break;
-                default:
-                    if (typeof value.item === "function") {
-                        result = "collection";
-                    } else if (typeof value.constructor !== "function") { // @todo IE
-                        result = "collection";
-                    } else if (typeof value.push !== "function") {
-                        result = "arguments";
+                    if (value.nodeType === 1) {
+                        return "element";
                     }
                 }
+                if (window.Text && (value instanceof window.Text)) {
+                    return "textnode";
+                }
+                if (window.HTMLCollection && (value instanceof window.HTMLCollection)) {
+                    return "collection";
+                }
+                if (window.NodeList && (value instanceof window.NodeList)) {
+                    return "collection";
+                }
+                if ((typeof value.length === "number") && (!value.slice)) {
+                    return "arguments";
+                }
             } else {
-                result = "object";
+                if (value.nodeType === 1) {
+                    return "element";
+                }
+                if (value.nodeType === 3) {
+                    return "textnode";
+                }
+                if (typeof value.length === "number") {
+                    return "collection";
+                }
+                if (("" + value).indexOf("function") !== -1) {
+                    return "function";
+                }
             }
-            return result;
+
+            return "object";
         },
 
         /**

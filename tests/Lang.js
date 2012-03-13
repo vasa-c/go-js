@@ -6,7 +6,7 @@
  * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
  */
 /*jslint node: true, nomen: true */
-/*global window, document, go, tests, ok, equal, deepEqual */
+/*global window, document, go, tests, ok, equal, deepEqual, alert */
 "use strict";
 
 tests.module("Lang");
@@ -120,30 +120,91 @@ tests.test("bind() arguments + no builtin Function.bind", function () {
 });
 
 tests.test("getType", function () {
-    var undef, div, spans, fgotype;
-    equal(go.Lang.getType(undef), "undefined");
-    equal(go.Lang.getType(null), "null");
-    equal(go.Lang.getType(true), "boolean");
-    equal(go.Lang.getType(3), "number");
-    equal(go.Lang.getType(-3.3), "number");
-    equal(go.Lang.getType("str"), "string");
-    equal(go.Lang.getType({'x': 5}), "object");
-    equal(go.Lang.getType([1, 2, 3]), "array");
-    equal(go.Lang.getType(arguments), "arguments");
+
+    var undef,
+        ConstructorEArray,
+        div,
+        span,
+        collection,
+        ConstructorEObject,
+        instance;
+
+    equal(go.Lang.getType(undef), "undefined", "undefined");
+
+    equal(go.Lang.getType(null), "null", "null");
+
+    equal(go.Lang.getType(5), "number", "positive number");
+    equal(go.Lang.getType(-5), "number", "negative number");
+    equal(go.Lang.getType(10 / 3), "number", "float number");
+    equal(go.Lang.getType(0), "number", "number 0");
+    equal(go.Lang.getType(Number["NaN"]), "number", "NaN");
+    equal(go.Lang.getType(Number.NEGATIVE_INFINITY), "number", "-Infinity");
+    equal(go.Lang.getType(Number.POSITIVE_INFINITY), "number", "+Infinity");
+    equal(go.Lang.getType(new Number(3)), "number", "object Number");
+
+    equal(go.Lang.getType(true), "boolean", "true boolean");
+    equal(go.Lang.getType(false), "boolean", "false boolean");
+    equal(go.Lang.getType(new Boolean(true)), "boolean", "object Boolean");
+
+    equal(go.Lang.getType("string"), "string", "string");
+    equal(go.Lang.getType(""), "string", "empty string");
+    equal(go.Lang.getType(new String("string")), "string", "object String");
+
+    equal(go.Lang.getType(function () {return true; }), "function", "user function");
+    equal(go.Lang.getType(Math.floor), "function", "built-in function");
+    equal(go.Lang.getType(Array), "function", "built-in constructor");
+    equal(go.Lang.getType(alert), "function", "host function (alert)");
+    equal(go.Lang.getType(document.getElementById), "function", "host (dom) function");
+    /*jslint evil: true */
+    equal(go.Lang.getType(new Function('return true')), "function", "new Function");
+    /*jslint evil: false */
+
+    equal(go.Lang.getType([1, 2, 3]), "array", "literal array");
+    equal(go.Lang.getType(new Array(1, 2, 3)), "array", "new Array");
+    equal(go.Lang.getType([]), "array", "empty Array");
+
+    ConstructorEArray = function () {};
+    ConstructorEArray.prototype = new Array();
+    equal(go.Lang.getType(new ConstructorEArray()), "array", "extended Array");
+
+    equal(go.Lang.getType(/\s/), "regexp", "literal RegExp");
+    equal(go.Lang.getType(new RegExp("^a")), "regexp", "new RegExp");
+
+    equal(go.Lang.getType(new Error()), "error", "base Error");
+    equal(go.Lang.getType(new TypeError()), "error", "specific Error");
+    try {
+        undef.method();
+    } catch (e) {
+        equal(go.Lang.getType(e), "error", "catch exception");
+    }
+
+    equal(go.Lang.getType(new Date()), "date", "date");
 
     div = document.createElement("div");
+    span = document.createElement("span");
+    equal(go.Lang.getType(div), "element", "HTMLDivElement");
+    equal(go.Lang.getType(div), "element", "HTMLSpanElement");
+
     div.innerHTML = "<span>1</span> <span>2</span>";
-    spans = div.getElementsByTagName("span");
+    collection = div.getElementsByTagName("span");
+    equal(go.Lang.getType(collection), "collection", "HTMLCollection");
 
-    equal(go.Lang.getType(div), "element");
-    equal(go.Lang.getType(spans.item(0).firstChild), "textnode");
-    equal(go.Lang.getType(spans), "collection");
+    equal(go.Lang.getType(collection[0].firstChild), "textnode", "Text node");
 
-    equal(go.Lang.getType({'go$type': 'user'}), "user");
-    fgotype = function () {};
-    equal(go.Lang.getType(fgotype), "function");
-    fgotype.go$type = "fuser";
-    equal(go.Lang.getType(fgotype), "fuser");
+    equal(go.Lang.getType(arguments), "arguments", "arguments object");
+
+    equal(go.Lang.getType({'x': 5}), "object", "simple dict (literal)");
+    equal(go.Lang.getType(new Object()), "object", "simple dict (new Object)");
+
+    ConstructorEObject = function (x) {
+        this.x = x;
+    };
+    ConstructorEObject.prototype.method = function () {};
+    instance = new ConstructorEObject(7);
+    equal(go.Lang.getType(instance), "object", "extended Object");
+
+    ConstructorEObject.prototype.go$type = "user";
+    equal(go.Lang.getType(instance), "user", "user defined type");
 });
 
 tests.test("isArray", function () {
