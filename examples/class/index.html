@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Пример использования go.Class</title>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <script type="text/javascript" src="./../../src/go.js#Class"></script>
+        <script type="text/javascript" src="./../../tests/qunit/jquery-1.7.1.min.js"></script>
+        <script type="text/javascript" src="./List.js"></script>
+        <script type="text/javascript" src="./ArticleBase.js"></script>
+        <script type="text/javascript" src="./ArticleImmediately.js"></script>
+        <script type="text/javascript" src="./ArticleSmoothly.js"></script>        
+        <link rel="stylesheet" type="text/css" href="./style.css" />
+        <script type="text/javascript">
+            $(document).ready(function () {
+
+                var firstList  = new List("#first-list", ArticleImmediately);
+                var secondList = new List("#second-list", ArticleSmoothly);
+                
+                $(document).unload(function () {
+                    firstList.destroy();
+                    secondList.destroy();
+                });                    
+            
+            });
+        </script>
+    </head>
+    <body>
+        <h1>Пример использования go.Class</h1>
+        
+        <p>Весь контент накопипажжен с <a href="http://lenta.ru/">lenta.ru</a>.</p>
+        
+        <ul id="first-list">
+            <li class="closed">
+                <a href="http://lenta.ru/news/2012/01/25/samsung/">Компания Samsung продолжила шутить над поклонниками iPhone</a>
+                <div class="content">
+                    Компания Samsung опубликовала три рекламных ролика, один из которых за неделю набрал более 790 тысяч просмотров, 
+                    а два других за два дня просмотрели почти 80 и 50 тысяч раз соответственно. 
+                    В них компания высмеивает владельцев неназванных устройств, в которых угадываются поклонники iPhone. 
+                </div>
+            </li>
+            <li class="closed">
+                <a href="http://lenta.ru/news/2012/01/25/moss/">Кейт Мосс стала новым лицом Mango</a>
+                <div class="content">
+                    Британская модель Кейт Мосс стала новым лицом марки модной одежды Mango. 
+                    Об этом сообщается в официальном пресс-релизе компании, поступившем в "Ленту.ру". 
+                    Мосс приняла участие в съемках рекламы для коллекции Mango сезона весна-лето 2012 года.                 
+                </div>
+            </li>
+            <li class="closed">
+                <a href="http://lenta.ru/news/2012/01/25/rise/">Москва предложила на четверть увеличить аренду для операторов наружки</a>
+                <div class="content">
+                    Департамент СМИ и рекламы города Москвы предложил повысить базовую арендную ставку для операторов наружной рекламы на 23 процента. 
+                    Об этом сообщает "Коммерсантъ" со ссылкой на проект постановления правительства Москвы.
+                </div>
+            </li>
+            <li class="closed">
+                <a href="http://lenta.ru/news/2012/01/24/tropicana/">Tropicana установила в Лондоне искусственное солнце</a>
+                <div class="content">
+                    Компания Tropicana, занимающаяся производством соков, установила на Трафальгарской площади в Лондоне искусственное солнце. 
+                    Об этом сообщается на странице компании в Facebook.                 
+                </div>
+            </li>                        
+        </ul>
+        
+        <ul id="second-list">
+            <li class="closed">
+                <a href="http://lenta.ru/news/2012/01/25/illegal/">Европейский суд отказал полякам в регистрации напитка Viaguara</a>
+                <div class="content">
+                    Европейский трибунал (General Court of the European Union) окончательно отказал польской компании 
+                    Viaguara в регистрации одноименной марки энергетического напитка, сообщает AFP. 
+                    В суде сочли, что напиток похож по названию на таблетки Viagra, 
+                    выпускающиеся американской фармацевтической корпорацией Pfizer.                 
+                </div>
+            </li>
+            <li class="closed">
+                <a href="http://lenta.ru/news/2012/01/25/double/">РЖД запустят сдвоенные "Сапсаны"</a>
+                <div class="content">
+                    "Российские железные дороги" запустят сдвоенные составы высокоскоростных пассажирских поездов "Сапсан". 
+                    Об этом заявил начальник Октябрьской железной дороги Виктор Степов, передает ИТАР-ТАСС. 
+                    Он уточнил, что составы, состоящие из 20 вагонов, начнут регулярные перевозки с 2013 года.                 
+                </div>
+            </li>
+            <li class="closed">
+                <a href="http://lenta.ru/news/2012/01/24/teaser/">Kia Motors разрекламирует в кинотеатрах свою же рекламу</a>
+                <div class="content">
+                    Автомобильная компания Kia Motors с 27 января начнет в американских кинотеатрах акцию, в рамках которой покажет тизер своего
+                    рекламного ролика, приуроченного к финалу чемпионата по американскому футболу (Super Bowl). 
+                    Об этом пишет газета Los Angeles Times.                 
+                </div>
+            </li>
+            <li class="closed">
+                <a href="http://lenta.ru/news/2012/01/25/ryanair/">Ryanair запустит прямые рейсы на Украину</a>
+                <div class="content">
+                    Ирландская бюджетная авиакомпания Ryanair намерена открыть регулярные рейсы на Украину. 
+                    Об этом пишет "Коммерсантъ-Украина". 
+                    Соответствующие переговоры с Ryanair были проведены министерством инфраструктуры страны.                 
+                </div>
+            </li>                                            
+        </ul>
+    </body>
+</html>
