@@ -43,9 +43,9 @@ go("Tests", function (go, global) {
         /**
          * Конструктор
          *
-         * @param string[] modules
+         * @param {String[]} modules
          *        список имён тестируемых модулей
-         * @param string testDir
+         * @param {String} testDir
          *        каталог с js-файлами тестов
          */
         '__constructor': function (modules, testDir) {
@@ -79,9 +79,9 @@ go("Tests", function (go, global) {
          * Аргументы соответствуют test() из QUnit
          * @see http://docs.jquery.com/QUnit/test#nameexpectedtest
          *
-         * @param string name
-         * @param number expected [optional]
-         * @param function test
+         * @params {String} name
+         * @params {Number} [expected]
+         * @params {Function} test
          */
         'test': function () {
             this.calls.push([this.QUNIT.test, arguments]);
@@ -94,8 +94,8 @@ go("Tests", function (go, global) {
          * Аргументы соответствуют module() из QUnit
          * @see http://docs.jquery.com/QUnit/module#namelifecycle
          *
-         * @param string name
-         * @param dict lifecycle [optional]
+         * @params {String} name
+         * @params {Object} lifecycle [optional]
          */
         'module': function () {
             this.calls.push([this.QUNIT.module, arguments]);
@@ -104,11 +104,10 @@ go("Tests", function (go, global) {
         /**
          * Загрузка нужных модулей и тестов к ним
          *
-         * @param string[] modules
+         * @param {String[]} modules
          *        список имён модулей
          */
         'loadModules': function (modules) {
-
             var i, len, name, scripts = [], src;
 
             for (i = 0, len = modules.length; i < len; i += 1) {
