@@ -435,6 +435,7 @@ tests.test("Mutators", function () {
                             return prop(x) * value;
                         };
                     }
+                    return null;
                 }
             }
         },

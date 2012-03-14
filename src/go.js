@@ -46,9 +46,11 @@ var go = (function (global) {
      * go.include(): инициирование загрузки нужных модулей
      * (только на этапе загрузки страницы)
      *
-     * @param string[] names
+     * @namespace go
+     *
+     * @param {String[]} names
      *        имя нужного модуля или список из нескольких имён
-     * @param function listener [optional]
+     * @param {Function} [listener]
      *        обработчик загрузки всех указанных модулей
      */
     go.include = function (names, listener) {
@@ -59,10 +61,12 @@ var go = (function (global) {
      * go.appendModule(): добавление модуля в пространство имён
      * (вызывается при определении модуля в соответствующем файле)
      *
-     * @param string name
+     * @namespace go
+     *
+     * @param {String} name
      *        имя модуля
-     * @param list reqs [optional]
-     * @param function fmodule
+     * @param {Array} [reqs]
+     * @param {Function} fmodule
      *        функция-конструктор модуля
      */
     go.appendModule = function (name, reqs, fmodule) {
@@ -214,6 +218,7 @@ var go = (function (global) {
                         return matches;
                     }
                 }
+                return null;
             }());
         }
         if (!matches) {
@@ -233,11 +238,13 @@ var go = (function (global) {
     return go;
 }(window));
 
+/*jslint unparam: true */
 /**
  * @namespace go
  * @subpackage Lang
  */
 go("Lang", function (go, global) {
+    /*jslint unparam: false */
 
     var Lang = {
 
@@ -286,7 +293,7 @@ go("Lang", function (go, global) {
          *
          * @namespace go.Lang
          *
-         * @param {Mixed} value
+         * @param {mixed} value
          *        проверяемое значение
          * @return {String}
          *         название типа
@@ -367,7 +374,11 @@ go("Lang", function (go, global) {
                 if (typeof value.length === "number") {
                     return "collection";
                 }
-                if (("" + value).indexOf("function") !== -1) {
+                /* Идентификация host-функции в старых IE (typeof === "object") по строковому представлению
+                 * Также у них нет toString(), так что складываем со строкой.
+                 * Сложение с пустой строкой не нравится JSLint
+                 */
+                if ((value + ":").indexOf("function") !== -1) {
                     return "function";
                 }
             }
@@ -380,7 +391,7 @@ go("Lang", function (go, global) {
          *
          * @namespace go.Lang
          *
-         * @param {Mixed} value
+         * @param {mixed} value
          *        проверяемое значение
          * @param {Boolean} [strict=false]
          *        точная проверка - именно массивом
@@ -543,7 +554,7 @@ go("Lang", function (go, global) {
          *
          * @param {Function} fn
          *        исходная функция
-         * @params {Mixed} arg1 ...
+         * @params {mixed} arg1 ...
          *         запоминаемые аргументы
          * @return {Function}
          *         каррированная функция
@@ -563,7 +574,7 @@ go("Lang", function (go, global) {
          *
          * @namespace go.Lang
          *
-         * @param {Mixed} needle
+         * @param {mixed} needle
          *        значение
          * @param {Array} haystack
          *        порядковый массив
@@ -587,7 +598,7 @@ go("Lang", function (go, global) {
          *
          * @param {Function[]} funcs
          *        список функций
-         * @return {Mixed}
+         * @return {mixed}
          *         результат первой корректно завершившейся
          *         ни одна не сработала - undefined
          */

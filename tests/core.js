@@ -8,7 +8,6 @@
 /*global go, tests, ok, deepEqual */
 "use strict";
 
-
 tests.module("core");
 
 tests.test("go.VERSION", function () {
