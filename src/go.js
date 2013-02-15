@@ -14,41 +14,66 @@
 /*global window */
 "use strict";
 
+/**
+ * @namespace go
+ */
 var go = (function (global) {
 
-    var VERSION = "1.0-beta",
+    var VERSIONS = "1.0-beta",
 
         /**
-         * http-адрес каталога в котором находится go.js и модули
+         * Http-адрес каталога в котором находится go.js и модули
          *
-         * @var string
+         * @type {String}
          */
         GO_DIR,
 
+        /**
+         * @type {Document}
+         */
         doc = global.document,
 
         /**
          * Загрузчик модулей
          *
-         * @var go.__Loader
+         * @type {go.__Loader}
          */
         loader;
 
+    /**
+     * Вызов go(), как функции - загрузка модуля
+     *
+     * @param {String} name
+     *        имя модуля
+     * @param {Array<String>} [reqs]
+     *        список зависимостей
+     * @param {Function} fmodule
+     *        функция-конструктор модуля
+     * @return {Function}
+     */
     function go(name, reqs, fmodule) {
         if (name) {
             go.appendModule(name, reqs, fmodule);
         }
         return go;
     }
-    go.VERSION = VERSION;
+
+    /**
+     * Текущая версия библиотеки
+     *
+     * @constant
+     * @name go.VERSION
+     * @type {String}
+     */
+    go.VERSION = VERSIONS;
 
     /**
      * go.include(): инициирование загрузки нужных модулей
      * (только на этапе загрузки страницы)
      *
-     * @namespace go
+     * @name go.include
      *
-     * @param {String[]} names
+     * @param {(String|Array<String>)} names
      *        имя нужного модуля или список из нескольких имён
      * @param {Function} [listener]
      *        обработчик загрузки всех указанных модулей
@@ -61,11 +86,11 @@ var go = (function (global) {
      * go.appendModule(): добавление модуля в пространство имён
      * (вызывается при определении модуля в соответствующем файле)
      *
-     * @namespace go
-     *
+     * @name go.appendModule
      * @param {String} name
      *        имя модуля
-     * @param {Array} [reqs]
+     * @param {Array<String>} [reqs]
+     *        список зависимостей
      * @param {Function} fmodule
      *        функция-конструктор модуля
      */
@@ -77,12 +102,62 @@ var go = (function (global) {
         loader.appendModule(name, reqs, fmodule);
     };
 
+    /**
+     * Класс загрузчиков модулей
+     *
+     * @class go.__Loader
+     */
     go.__Loader = (function () {
 
         var LoaderPrototype, LoaderConstructor;
 
         LoaderPrototype = {
 
+            /**
+             * Имя модуля => был ли запрос на его загрузку
+             *
+             * @name go.__Loader#reqs
+             * @type {Object.<String, Boolean>}
+             * @private
+             */
+            'reqs': null,
+
+            /**
+             * Имя модуля => был ли он загружен
+             *
+             * @name go.__Loaders#loaded
+             * @type {Object.<String, Boolean>}
+             * @private
+             */
+            'loaded': null,
+
+            /**
+             * Имя модуля => был ли он создан и помещён в пространство имён
+             *
+             * @name go.__Loaders#loaded
+             * @type {Object.<String, Boolead>}
+             * @private
+             */
+            'created': null,
+
+            /**
+             * Имя модуля => список слушателей его загрузки
+             *
+             * Поля слушателя:
+             * fn {Function} обработчик
+             * l {Number} количество модулей, оставшихся на ожидании
+             *
+             * @name go.__Loaders#listeners
+             * @type {Object.<String, Object>}
+             * @private
+             */
+            'listeners': null,
+
+            /**
+             * @constructs
+             * @name go.__Loaders#
+             * @param {Object} params
+             */
             '__construct': function (params) {
                 var k;
                 if (params) {
@@ -92,12 +167,22 @@ var go = (function (global) {
                         }
                     }
                 }
-                this.reqs      = {};
-                this.loaded    = {};
-                this.created   = {};
+                this.reqs = {};
+                this.loaded = {};
+                this.created = {};
                 this.listeners = {};
             },
 
+            /**
+             * Подключить список модулей
+             *
+             * @name go.__Loader#include
+             * @public
+             * @param {(String|Array.<String>)} names
+             *        имя модуля или список имён
+             * @param {Function} [listener]
+             *        обработчик загрузки всех модулей
+             */
             'include': function (names, listener) {
                 var i, len, name;
                 if (typeof names === "string") {
@@ -115,8 +200,18 @@ var go = (function (global) {
                 }
             },
 
+            /**
+             * Добавить слушатель на загрузку блока модулей
+             *
+             * @name go.__Loader#addListener
+             * @public
+             * @param {Array.<String>} names
+             *        список имён модулей
+             * @param {Function} listener
+             *        обработчик, вызываемый после загрузки всех модулей из блока
+             */
             'addListener': function (names, listener) {
-                var L = {'l': 0, 'fn': listener},
+                var L = {'l' : 0, 'fn' : listener},
                     name,
                     i,
                     len;
@@ -135,6 +230,18 @@ var go = (function (global) {
                 }
             },
 
+            /**
+             * Добавить модуль в пространство имён
+             *
+             * @name go.__Loader#appendModule
+             * @public
+             * @param {String} name
+             *        имя модуля
+             * @param {Array.<String>} reqs
+             *        список зависимостей
+             * @param {Function} fmodule
+             *        конструктор объекта модуля
+             */
             'appendModule': function (name, reqs, fmodule) {
                 var lreqs = [], i, len, _this = this, f;
                 this.reqs[name] = true;
@@ -157,15 +264,39 @@ var go = (function (global) {
                 }
             },
 
+            /**
+             * Запрос на загрузку модуля
+             *
+             * @name go.__Loader#requestModule
+             * @protected
+             * @param {String} name
+             */
             'requestModule': function (name) {
-                var src = GO_DIR + name + ".js" + loader._anticache;
+                var src = GO_DIR + name + ".js" + this._anticache;
                 doc.write('<script type="text/javascript" src="' + src + '"></script>');
             },
 
+            /**
+             * Создать объект модуля в заданном пространстве имён
+             *
+             * @name go.__Loader#createModule
+             * @protected
+             * @param {String} name
+             *        имя модуля
+             * @param {Function} fmodule
+             *        конструктор модуля
+             */
             'createModule': function (name, fmodule) {
                 go[name] = fmodule(go, global);
             },
 
+            /**
+             * Обработка события подключения модуля
+             *
+             * @name go.__Loader#onload
+             * @private
+             * @param {String} name
+             */
             'onload': function (name) {
                 var listeners = this.listeners[name], i, len, listener;
                 this.created[name] = true;
@@ -190,7 +321,7 @@ var go = (function (global) {
     }());
     loader = new go.__Loader();
 
-    /**
+    /*
      * Инициализация библиотеки
      * - вычисление каталога с go.js
      * - подключение модулей заданных в параметрах URL
@@ -240,13 +371,16 @@ var go = (function (global) {
 
 /*jslint unparam: true */
 /**
- * @namespace go
- * @subpackage Lang
+ * @namespace go.Lang
  */
 go("Lang", function (go, global) {
     /*jslint unparam: false */
 
     var Lang = {
+
+        /**
+         * @lends go.Lang
+         */
 
         /**
          * Связывание функции с контекстом и аргументами
@@ -255,12 +389,11 @@ go("Lang", function (go, global) {
          *
          * Если для функции определён свой метод bind(), то используется он
          *
-         * @namespace go.Lang
-         *
+         * @name go.Lang.bind
          * @param {Function} func
          *        функция
-         * @param {Object} [thisArg=global]
-         *        контекст в котором функция должна выполняться
+         * @param {Object} [thisArg]
+         *        контекст в котором функция должна выполняться (по умолчанию - global)
          * @param {Array} [args]
          *        аргументы, вставляемые в начало вызова функции
          * @return {Function}
@@ -291,8 +424,7 @@ go("Lang", function (go, global) {
         /**
          * Получение расширенного типа значения
          *
-         * @namespace go.Lang
-         *
+         * @name go.Lang.getType
          * @param {mixed} value
          *        проверяемое значение
          * @return {String}
@@ -389,8 +521,7 @@ go("Lang", function (go, global) {
         /**
          * Является ли значение массивом
          *
-         * @namespace go.Lang
-         *
+         * @name go.Lang.isArray
          * @param {mixed} value
          *        проверяемое значение
          * @param {Boolean} [strict=false]
@@ -415,8 +546,7 @@ go("Lang", function (go, global) {
          * Является ли объект простым словарём.
          * То есть любым объектом, не имеющий более специфического типа.
          *
-         * @namespace go.Lang
-         *
+         * @name go.Lang.isDict
          * @param {Object} value
          *        проверяемое значение
          * @return {Boolean}
@@ -429,11 +559,10 @@ go("Lang", function (go, global) {
         /**
          * Обход элементов объекта
          *
-         * @namespace go.Lang
-         *
+         * @name go.Lang.each
          * @param {Object|Array} iter
          *        итерируемый объект (или порядковый массив)
-         * @param {Function(value, key, iter)} fn
+         * @param {Function} fn
          *        тело цикла
          * @param {Object} [thisArg=global]
          *        контект, в котором следует выполнять тело цикла
@@ -469,8 +598,7 @@ go("Lang", function (go, global) {
         /**
          * Копирование объекта или массива
          *
-         * @namespace go.Lang
-         *
+         * @name go.Lang.copy
          * @param {Object|Array} source
          *        исходный объект
          * @return {Object|Array}
@@ -497,8 +625,7 @@ go("Lang", function (go, global) {
         /**
          * Расширение объекта свойствами другого
          *
-         * @namespace go.Lang
-         *
+         * @name go.Lang.extend
          * @param {Object} destination
          *        исходный объект (расширяется на месте)
          * @param {Object} source
@@ -523,8 +650,7 @@ go("Lang", function (go, global) {
         /**
          * Рекурсивное слияние двух объектов на месте
          *
-         * @namespace go.Lang
-         *
+         * @name go.Lang.merge
          * @param {Object} destination
          *        исходных объект (изменяется)
          * @param {Object} source
@@ -550,11 +676,10 @@ go("Lang", function (go, global) {
         /**
          * Каррирование функции
          *
-         * @namespace go.Lang
-         *
+         * @name go.Lang.curry
          * @param {Function} fn
          *        исходная функция
-         * @params {mixed} arg1 ...
+         * @params {mixed} [arg1] ...
          *         запоминаемые аргументы
          * @return {Function}
          *         каррированная функция
@@ -572,8 +697,7 @@ go("Lang", function (go, global) {
          * Присутствует ли значение в массиве
          * (строгая проверка)
          *
-         * @namespace go.Lang
-         *
+         * @name go.Lang.inArray
          * @param {mixed} needle
          *        значение
          * @param {Array} haystack
@@ -594,8 +718,7 @@ go("Lang", function (go, global) {
         /**
          * Выполнить первую корректную функцию
          *
-         * @namespace go.Lang
-         *
+         * @name go.Lang.tryDo
          * @param {Function[]} funcs
          *        список функций
          * @return {mixed}
@@ -616,8 +739,7 @@ go("Lang", function (go, global) {
         /**
          * Разбор GET или POST запроса
          *
-         * @namespace go.Lang
-         *
+         * @name go.Lang.parseQuery
          * @param {String} [query=window.location]
          *        строка запроса
          * @param {String} [sep="&"]
@@ -650,8 +772,7 @@ go("Lang", function (go, global) {
         /**
          * Сформировать строку запроса на основе набора переменных
          *
-         * @namespace go.Lang
-         *
+         * @name go.Lang.buildQuery
          * @param {Object|String} vars
          *        набор переменных (или сразу строка)
          * @param {String} [sep="&"]
@@ -696,13 +817,14 @@ go("Lang", function (go, global) {
         /**
          * Вспомогательные функции-заготовки
          *
-         * @namespace go.Lang
+         * @namespace go.Lang.f
          */
         'f': {
             /**
              * Функция, не делающая ничего
              *
-             * @namespace go.Lang.f
+             * @name go.Lang.f.empty
+             * @return void
              */
             'empty': function () {
             },
@@ -710,7 +832,8 @@ go("Lang", function (go, global) {
             /**
              * Функция, просто возвращающая FALSE
              *
-             * @namespace go.Lang.f
+             * @name go.Lang.f.ffalse
+             * @return {Boolean}
              */
             'ffalse': function () {
                 return false;
@@ -720,23 +843,24 @@ go("Lang", function (go, global) {
         /**
          * Создание собственных "классов" исключений
          *
-         * @namespace go.Lang
+         * @name go.Lang.Exception
+         * @type {Function}
          */
         'Exception': (function () {
 
             var Base, create;
 
             /**
-             * go.Lang.Exception.create - создание "класса" исключения
+             * Создание "класса" исключения
              *
-             * @namespace go.Lang.Exception
-             *
+             * @name go.Lang.Exception.create
              * @param {String} name
              *        название класса
              * @param {Function} [parent=Error]
              *        родительский класс (конструктор), по умолчанию - Error
              * @param {String} [defmessage]
              *        сообщение по умолчанию
+             * @return {Function}
              */
             create = function (name, parent, defmessage) {
                 var Exc, Fake;
@@ -762,6 +886,13 @@ go("Lang", function (go, global) {
                 }
                 return Exc;
             };
+
+            /**
+             * Базовый "класс" исключений внутри библиотеки
+             *
+             * @name go.Lang.Exception.Base
+             * @type {Function}
+             */
             Base = create("go.Exception");
 
             Base.create = create;
