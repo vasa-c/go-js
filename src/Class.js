@@ -26,33 +26,118 @@ go("Class", function (go) {
 
     /**
      * Прототип корневого класса
-     * Свойства и методы, доступные во всех объектах
+     * Свойства и методы, доступные во всех объектах (или классах)
+     *
+     * @type {Object}
      */
     RootPrototype = {
-        'go$type'     : "go.object",
-        '__classname' : "go.Class.Root",
-        '__abstract'  : true,
-        '__final'     : false,
-        '__construct' : function () {},
-        '__destruct'  : function () {},
+
+        /**
+         * @lends go.Class.Root.prototype
+         */
+
+        /**
+         * "Расширенный тип" экземпляров классов
+         * @see go.Lang.getType
+         * @name go.Class.Root#go$type
+         * @protected
+         * @type {String}
+         */
+        'go$type': "go.object",
+
+        /**
+         * Имя класса для строкового представления
+         *
+         * @name go.Class.Root#__classname
+         * @protected
+         * @type {String}
+         */
+        '__classname': "go.Class.Root",
+
+        /**
+         * Признак абстрактного класса
+         *
+         * @name go.Class.Root#__abstract
+         * @protected
+         * @type {Boolean}
+         */
+        '__abstract': true,
+
+        /**
+         * Признак финального класса
+         *
+         * @name go.Class.Root#__final
+         * @protected
+         * @type {Boolean}
+         */
+        '__final': false,
+
+        /**
+         * Базовый конструктор
+         * @constructs
+         * @public
+         */
+        '__construct': function () {},
+
+        /**
+         * Базовый деструктор
+         *
+         * @protected
+         */
+        '__destruct': function () {},
+
+        /**
+         * Вызов родительского конструктора
+         *
+         * @name go.Class.Root#__parentConstructor
+         * @protected
+         * @param {Function} C
+         *        родительский класс
+         */
         '__parentConstruct': function (C) {
             var args = Array.prototype.slice.call(arguments);
             args[0] = this;
             C.__construct.apply(C, args);
         },
+
+        /**
+         * Вызов родительского деструктора
+         *
+         * @name go.Class.Root#__parentDestructor
+         * @protected
+         * @param {Function} C
+         */
         '__parentDestruct': function (C) {
             C.__destruct(this);
         },
+
         /**
-         * @param {go.Class} C
-         * @params {mixed} name, args ...
-         * @return {mixed}
+         * Вызов метода из родительского класса
+         *
+         * @name go.Class.Root#__parentMethod
+         * @protected
+         * @param {Function} C
+         *        родительский класс
+         * @param {String} name
+         *        имя метода
+         * @param {... *} [args]
+         *        аргументы метода
+         * @return {*}
+         *         результат выполнения запрошенного метода
          */
         '__parentMethod': function (C) {
             var args = Array.prototype.slice.call(arguments);
             args[0] = this;
             return C.__method.apply(C, args);
         },
+
+        /**
+         * Принудительное разрушение экземпляра
+         *
+         * @name go.Class.Root#destroy
+         * @public
+         * @return void
+         */
         'destroy': function () {
             var k, undef;
             if (this.__destroyed) {
@@ -66,17 +151,40 @@ go("Class", function (go) {
             }
             this.__destroyed = true;
         },
+
+        /**
+         * Является ли объект экземпляром указанного класса
+         *
+         * @name go.Class.Root#instance_of
+         * @public
+         * @param {Function} C
+         *        проверяемый класс
+         * @return {Boolean}
+         */
         'instance_of': function (C) {
             if ((typeof C === "function") && (this instanceof C)) {
                 return true;
             }
             return this.__self.isSubclassOf(C);
         },
+
+        /**
+         * Строковое представление объекта
+         *
+         * @return {String}
+         */
         'toString': function () {
             var classname = this.__self ? this.__self.__classname : "undefined";
             return "instance of [" + classname + "]";
         },
+
+        /**
+         * Предопределённые мутаторы
+         *
+         * @type {Object}
+         */
         '__mutators': {
+
             /**
              * Мутатор "sysvars" - перенос системных переменных в класс
              */
@@ -103,6 +211,7 @@ go("Class", function (go) {
                     delete props.eoc;
                 }
             },
+
             /**
              * Мутатор "static" - перенос статических полей в класс из объекта
              */
@@ -124,6 +233,7 @@ go("Class", function (go) {
                     }
                 }
             },
+
             /**
              * Мутатор "bind" - связь методов с объектом
              */
@@ -192,6 +302,7 @@ go("Class", function (go) {
     /**
      * Прототип объектов, создающих конструкторы новых классов
      *
+     * @type {Object}
      * @property {Function} Class
      *           итоговая функция-конструктор
      * @property {Object} props
@@ -204,8 +315,8 @@ go("Class", function (go) {
         /**
          * Конструктор
          *
-         * @param {mixed} parents
-         *        класс-предок или список предков (или null)
+         * @param {(Function|Array.<Function>)} [parents]
+         *        класс-предок или список предков
          * @param {Object} props
          *        набор свойств и методов класса
          */
@@ -226,6 +337,9 @@ go("Class", function (go) {
 
         /**
          * Создание класса
+         *
+         * @public
+         * @return void
          */
         'create': function () {
             this.createClass();
@@ -240,7 +354,10 @@ go("Class", function (go) {
         },
 
         /**
-         * Получение класса
+         * Получение класса созданного класса
+         *
+         * @public
+         * @return {Function}
          */
         'getClass': function () {
             return this.Class;
@@ -248,6 +365,9 @@ go("Class", function (go) {
 
         /**
          * Создание функции-конструктора
+         *
+         * @private
+         * @return void
          */
         'createClass': function () {
             var C = function () {
@@ -269,6 +389,9 @@ go("Class", function (go) {
 
         /**
          * Разделение предков на основные и второстепенные
+         *
+         * @private
+         * @return void
          */
         'separateParents': function () {
             var cparents = this.cparents,
@@ -290,6 +413,9 @@ go("Class", function (go) {
 
         /**
          * Проверить, что среди предков нет финальных
+         *
+         * @private
+         * @return {Boolean}
          */
         'checkParentsNoFinal': function () {
             var i, len, parents, parent, C = this.Class;
@@ -310,6 +436,9 @@ go("Class", function (go) {
 
         /**
          * Создание объекта прототипа
+         *
+         * @private
+         * @return void
          */
         'createPrototype': function () {
             var C = this.Class;
@@ -324,6 +453,9 @@ go("Class", function (go) {
 
         /**
          * Создание списка мутаторов
+         *
+         * @private
+         * @return void
          */
         'createMutators': function () {
             var C = this.Class,
@@ -336,6 +468,8 @@ go("Class", function (go) {
          * Перенести поля второстепенных предков в прототип
          *
          * @todo ref
+         * @private
+         * @return void
          */
         'applyOtherParents': function () {
             var oparents = this.Class.__otherParents,
@@ -364,6 +498,8 @@ go("Class", function (go) {
 
         /**
          * Заполнение класса и прототипа нужными свойствами
+         *
+         * @return void
          */
         'fillClass': function () {
             var C = this.Class,
@@ -383,9 +519,15 @@ go("Class", function (go) {
         'classMethods': {
 
             /**
+             * @lends go.Class.Root
+             */
+
+            /**
              * Является ли класс, подклассом указанного
              *
-             * @param {go.class} wparent
+             * @name go.Class.Root.isSubclassOf
+             * @public
+             * @param {Function} wparent
              * @return {Boolean}
              */
             'isSubclassOf': function (wparent) {
@@ -422,9 +564,10 @@ go("Class", function (go) {
             /**
              * Вызов конструктора данного класса для объекта
              *
-             * @param {go.object} instance
-             * @params {mixed}
-             *         аргументы конструктора
+             * @name go.Class.Root.__construct
+             * @public
+             * @param {Object} instance
+             * @param {... *} args
              */
             '__construct': function (instance) {
                 var args = [instance, "__construct"];
@@ -435,7 +578,9 @@ go("Class", function (go) {
             /**
              * Вызов деструктора данного класса для объекта
              *
-             * @param {go.object} instance
+             * @name go.Class.Root.__destruct
+             * @public
+             * @param {Object} instance
              */
             '__destruct': function (instance) {
                 this.__method.call(this, instance, "__destruct");
@@ -444,11 +589,17 @@ go("Class", function (go) {
             /**
              * Вызов метода данного класса для объекта
              *
-             * @param {go.object} instance
+             * @name go.Class.Root.__method
+             * @public
+             *
+             * @param {Object} instance
+             *        объект
              * @param {String} name
-             * @params mixed arg1, arg2 ...
+             *        имя метода
+             * @param {... *} args
              *         аргументы метода
-             * @return {mixed}
+             * @return {*}
+             *         результат, возвращённый методом
              */
             '__method': function (instance, name) {
                 var args = Array.prototype.slice.call(arguments, 2),
@@ -468,12 +619,15 @@ go("Class", function (go) {
              * Заполнение экземпляра объекта нужными свойствами
              * На этапе конструирования до вызова __construct()
              *
-             * @param {go.object} instance
+             * @param {Object} instance
              */
             '__fillInstance': function (instance) {
                 this.__mutators.processInstance(instance);
             },
 
+            /**
+             * @return {String}
+             */
             'toString': function () {
                 return "class [" + this.__classname + "]";
             }
@@ -489,17 +643,17 @@ go("Class", function (go) {
     /**
      * Прототип объектов, представляющих списки мутаторов конкретных классов
      *
-     * @property {go.class} Class
-     *           объект целевого класса
-     * @property {Array.Mutator} mutators
+     * @property {Function} Class
+     *           целевой класс
+     * @property {Object} mutators
      *           набор мутаторов (имя => объект мутатора)
      */
     MutatorsListPrototype = {
 
         /**
-         * Конструктор
-         *
-         * @param {go.class} C
+         * @constructs
+         * @param {Function} C
+         *        целевой класс
          */
         '__construct': function (C) {
             this.Class = C;
@@ -507,6 +661,9 @@ go("Class", function (go) {
 
         /**
          * Создание списка мутаторов для данного класса
+         *
+         * @public
+         * @return void
          */
         'create': function () {
             this.mutators = {};
@@ -517,6 +674,7 @@ go("Class", function (go) {
         /**
          * Формирование данных на этапе формирования класса
          *
+         * @public
          * @param {Object} props
          */
         'processClass': function (props) {
@@ -536,7 +694,8 @@ go("Class", function (go) {
         /**
          * Обработка создаваемого экземпляра класса
          *
-         * @param {go.object} instance
+         * @public
+         * @param {Object} instance
          */
         'processInstance': function (instance) {
             var mutators = this.mutators,
@@ -553,8 +712,10 @@ go("Class", function (go) {
         /**
          * Получить метод, сохранённый в мутаторах
          *
+         * @public
          * @param {String} name
-         * @param {go.object} instance
+         * @param {Object} instance
+         * @return {Function}
          */
         'getMethod': function (name, instance) {
             var mutators = this.mutators,
@@ -572,6 +733,9 @@ go("Class", function (go) {
 
         /**
          * Создание мутаторов из прямой ветки (без множественного наследования)
+         *
+         * @private
+         * @return void
          */
         'createDirectLine': function () {
             var C = this.Class,
@@ -609,16 +773,19 @@ go("Class", function (go) {
 
         /**
          * Слияние с мутаторами из второстепенных предков
+         *
+         * @private
+         * @return void
          */
         'mergeColBranch': function () {
             var oparents = this.Class.__otherParents,
                 oparent,
                 mutators = this.mutators,
                 pmutators,
+                len = oparents.length,
                 i,
-                len,
                 k;
-            for (i = 0, len = oparents.length; i < len; i += 1) {
+            for (i = 0; i < len; i += 1) {
                 oparent = oparents[i];
                 if (typeof oparent === "function") {
                     pmutators = oparent.__mutators && oparent.__mutators.mutators;
@@ -641,7 +808,7 @@ go("Class", function (go) {
          * @param {String} name
          * @param {Object} props
          * @param {Object} [bproto]
-         * @param {go.class} [parent]
+         * @param {Function} [parent]
          * @return {Mutator}
          */
         'createNewMutator': function (name, props, bproto, parent) {
@@ -659,12 +826,12 @@ go("Class", function (go) {
         },
 
         /**
-         * Раширить предковый мутатор
+         * Расширить предковый мутатор
          *
          * @param {String} name
          * @param {Mutator} mparent
          * @param {Object} props
-         * @param {go.class} [parent]
+         * @param {Function} [parent]
          * @return {Mutator}
          */
         'extendMutator': function (name, mparent, props, parent) {
@@ -686,11 +853,12 @@ go("Class", function (go) {
         /**
          * Базовый "класс" мутаторов
          *
+         * @constructor
          * @property {String} name
          *           название мутатора
-         * @property {go.class} Class
+         * @property {Function} Class
          *           класс, к которому привязан
-         * @property {go.class} parent
+         * @property {Function} parent
          *           класс-пердок от которого наследован мутатор
          * @property {Object} fields
          *           сохраняемые поля
@@ -703,11 +871,13 @@ go("Class", function (go) {
             Construct.prototype = {
 
                 /**
-                 * Конструктор мутатора
-                 *
+                 * @constructs
                  * @param {String} name
-                 * @param {go.class} C
-                 * @param {go.class} [parent]
+                 *        имя мутатора
+                 * @param {Function} C
+                 *        класс к которому привязан
+                 * @param {Function} [parent]
+                 *        класс от которого мутатор наследован
                  */
                 '__construct': function (name, C, parent) {
                     this.name   = name;
@@ -764,6 +934,9 @@ go("Class", function (go) {
 
                 /**
                  * Подгрузка полей из предков
+                 *
+                 * @private
+                 * @return void
                  */
                 'loadFromParents': function () {
                     var C = this.Class,
@@ -785,11 +958,10 @@ go("Class", function (go) {
                 /**
                  * Подгрузка полей из одного предка
                  *
-                 * @param {go.class} parent
+                 * @param {Function} parent
                  */
                 'loadFromSingleParent': function (parent) {
-                    var mutators;
-                    mutators = parent.__mutators;
+                    var mutators = parent.__mutators;
                     if (!mutators) {
                         return;
                     }
@@ -842,7 +1014,14 @@ go("Class", function (go) {
 
     /**
      * Функция создания нового класса
-     * @alias {go.Class}
+     *
+     * @name go.Class
+     * @param {(Function|Array.<Function>)} [parents]
+     *        класс-предок или список предков
+     * @param {Object} props
+     *        список методов и свойств класса
+     * @return {Function}
+     *         функция-конструктор экземпляров требуемого класса
      */
     Class = function (parents, props) {
         var creator, C;
