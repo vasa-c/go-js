@@ -114,6 +114,16 @@ var go = (function (global) {
         LoaderPrototype = {
 
             /**
+             * Контейнер в который записываются загруженные модули
+             * (может быть переопределён у конкретного объекта)
+             *
+             * @name go.__Loader#container
+             * @type {Object}
+             * @private
+             */
+            'container': go,
+
+            /**
              * Имя модуля => был ли запрос на его загрузку
              *
              * @name go.__Loader#reqs
@@ -277,7 +287,7 @@ var go = (function (global) {
              *        конструктор модуля
              */
             'createModule': function (name, fmodule) {
-                go[name] = fmodule(go, global);
+                this.container[name] = fmodule(go, global);
             },
 
             /**
