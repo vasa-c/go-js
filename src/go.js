@@ -123,15 +123,6 @@ var go = (function (global) {
             'reqs': null,
 
             /**
-             * Имя модуля => был ли он загружен
-             *
-             * @name go.__Loaders#loaded
-             * @type {Object.<String, Boolean>}
-             * @private
-             */
-            'loaded': null,
-
-            /**
              * Имя модуля => был ли он создан и помещён в пространство имён
              *
              * @name go.__Loaders#loaded
@@ -156,7 +147,8 @@ var go = (function (global) {
             /**
              * @constructs
              * @name go.__Loaders#
-             * @param {Object} params
+             * @param {Object} [params]
+             *        параметры могут перекрывать существующие свойства и метода объекта
              */
             '__construct': function (params) {
                 var k;
@@ -168,7 +160,6 @@ var go = (function (global) {
                     }
                 }
                 this.reqs = {};
-                this.loaded = {};
                 this.created = {};
                 this.listeners = {};
             },
@@ -245,12 +236,11 @@ var go = (function (global) {
             'appendModule': function (name, reqs, fmodule) {
                 var lreqs = [], i, len, _this = this, f;
                 this.reqs[name] = true;
-                if (!reqs) {
-                    reqs = [];
-                }
-                for (i = 0, len = reqs.length; i < len; i += 1) {
-                    if (!this.created[reqs[i]]) {
-                        lreqs.push(reqs[i]);
+                if (reqs) {
+                    for (i = 0, len = reqs.length; i < len; i += 1) {
+                        if (!this.created[reqs[i]]) {
+                            lreqs.push(reqs[i]);
+                        }
                     }
                 }
                 f = function () {
@@ -300,14 +290,13 @@ var go = (function (global) {
             'onload': function (name) {
                 var listeners = this.listeners[name], i, len, listener;
                 this.created[name] = true;
-                if (!listeners) {
-                    return;
-                }
-                for (i = 0, len = listeners.length; i < len; i += 1) {
-                    listener = listeners[i];
-                    listener.l -= 1;
-                    if (listener.l <= 0) {
-                        listener.fn.call(global);
+                if (listeners) {
+                    for (i = 0, len = listeners.length; i < len; i += 1) {
+                        listener = listeners[i];
+                        listener.l -= 1;
+                        if (listener.l <= 0) {
+                            listener.fn.call(global);
+                        }
                     }
                 }
             }
@@ -321,7 +310,7 @@ var go = (function (global) {
     }());
     loader = new go.__Loader();
 
-    /*
+    /**
      * Инициализация библиотеки
      * - вычисление каталога с go.js
      * - подключение модулей заданных в параметрах URL
