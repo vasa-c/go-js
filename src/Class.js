@@ -890,6 +890,7 @@ go("Class", function (go) {
                 /**
                  * Обработка полей на этапе создания класса
                  *
+                 * @public
                  * @param {Object} props
                  */
                 'processClass': function (props) {
@@ -911,7 +912,8 @@ go("Class", function (go) {
                 /**
                  * Заполнение экземпляра класса
                  *
-                 * @param {go.object} instance
+                 * @public
+                 * @param {Object} instance
                  */
                 'processInstance': function (instance) {
                     var fields = this.fields, k;
@@ -925,6 +927,7 @@ go("Class", function (go) {
                 /**
                  * Получить метод, если он сохранён в данном мутаторе
                  *
+                 * @public
                  * @params {String} name
                  * @params {go.object} instance
                  */
@@ -958,6 +961,7 @@ go("Class", function (go) {
                 /**
                  * Подгрузка полей из одного предка
                  *
+                 * @private
                  * @param {Function} parent
                  */
                 'loadFromSingleParent': function (parent) {
@@ -974,14 +978,21 @@ go("Class", function (go) {
 
                 /**
                  * eachForClass должен перебирать только методы
+                 *
+                 * @protected
+                 * @type {Boolean}
                  */
                 'onlyMethods': true,
 
                 /**
-                 * Перебор всех элементов на этапе создания класса
+                 * Перебор всех полей на этапе создания класса
                  *
-                 * @params string name
-                 * @params mixed prop
+                 * @params {String} name
+                 *         имя поля
+                 * @params {*} prop
+                 *         значение поля
+                 * @return {*}
+                 *         если возвращается непустое значение, оно сохраняется в мутаторе, а из props удаляется
                  */
                 'eachForClass': function () {
                     return;
@@ -990,9 +1001,12 @@ go("Class", function (go) {
                 /**
                  * Перебор сохранённых полей на этапе создания объекта
                  *
-                 * @param {go.object} instance
+                 * @param {Object} instance
+                 *        объект
                  * @param {String} name
-                 * @param {mixed} prop
+                 *        имя поля
+                 * @param {*} prop
+                 *        сохранённое мутатором значение
                  */
                 'eachForInstance': function (instance, name, prop) {
                     instance[name] = prop;
