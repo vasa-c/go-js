@@ -499,6 +499,10 @@ go("Ext", ["Class"], function (go, global) {
             if (!elisteners) {
                 return false;
             }
+            if (typeof listener === "number") {
+                elisteners[listener] = null;
+                return true;
+            }
             for (i = 0, len = elisteners.length; i < len; i += 1) {
                 if (listener === elisteners[i]) {
                     elisteners[i] = null;

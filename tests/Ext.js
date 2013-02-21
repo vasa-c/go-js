@@ -283,7 +283,7 @@ tests.test("Nodes class: load nodes", function () {
 
 tests.test("Events class", function () {
 
-    var TestClass, f1, f2, f3, instance1, instance2, result = [], expected;
+    var TestClass, f1, f2, f3, instance1, instance2, result = [], expected, f3id;
 
     TestClass = go.Class([null, go.Ext.Events], {
 
@@ -317,8 +317,7 @@ tests.test("Events class", function () {
 
     instance1.addEventListener("odd", f1);
     instance1.addEventListener("even", f2);
-    instance2.addEventListener("odd", f3);
-
+    f3id = instance2.addEventListener("odd", f3);
     instance1.clk(1);
     instance2.clk(1);
     instance1.clk(2);
@@ -345,6 +344,15 @@ tests.test("Events class", function () {
     expected = [
         "f1 odd 1",
         "f3 odd 2"
+    ];
+    deepEqual(result, expected);
+
+    result = [];
+    instance2.removeEventListener("odd", f3id);
+    instance1.clk(1);
+    instance2.clk(1);
+    expected = [
+        "f1 odd 1"
     ];
     deepEqual(result, expected);
 });
