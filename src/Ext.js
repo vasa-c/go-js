@@ -14,23 +14,37 @@ if (!window.go) {
     throw new Error("go.core is not found");
 }
 
+/**
+ * @namespace go.Ext
+ */
 go("Ext", ["Class"], function (go, global) {
 
     var Ext = {};
 
     /**
-     * Ext.Options - класс с настройками
-     *
-     * @property {Object} options
-     *           настройки данного класса,
-     *           перекрывают настройки предка и перекрываются настройками объекта
+     * @class go.Ext.Options
+     *        класс с настройками
      */
     Ext.Options = go.Class({
 
-        '__classname': "go.Ext.Options",
-
+        /**
+         * Настройки данного класса.
+         * Перекрывают настройки предка и перекрываются настройками объекта.
+         *
+         * @name go.Ext.Options#options
+         * @protected
+         * @type {Object}
+         */
         'options': {},
 
+        /**
+         * @ignore
+         */
+        '__classname': "go.Ext.Options",
+
+        /**
+         * @ignore
+         */
         '__mutators': {
 
             /**
@@ -66,8 +80,8 @@ go("Ext", ["Class"], function (go, global) {
         },
 
         /**
-         * Конструктор
-         *
+         * @constructs
+         * @public
          * @param {Object} options
          *        уникальные настройки объекта
          */
@@ -78,7 +92,10 @@ go("Ext", ["Class"], function (go, global) {
         /**
          * Сохранение настроек объекта
          *
+         * @name go.Ext.Options#initOptions
+         * @protected
          * @param {Object} options
+         *        уникальные настройки объекта
          */
         'initOptions': function (options) {
             if (options) {
@@ -93,6 +110,8 @@ go("Ext", ["Class"], function (go, global) {
         /**
          * Получить настройки объекта
          *
+         * @name go.Ext.Options#getOptions
+         * @public
          * @return {Object}
          */
         'getOptions': function () {
@@ -102,10 +121,14 @@ go("Ext", ["Class"], function (go, global) {
         /**
          * Получить указанную настройку
          *
-         * @throws go.Ext.Exception.NotFound
+         * @name go.Ext.Options#getOption
+         * @public
          * @param {String} opt
          *        имя настройки в виде пути ("one.two.three")
-         * @return {mixed}
+         * @return {*}
+         *         значение настроки
+         * @throws go.Ext.Exception.NotFound
+         *         неверный путь
          */
         'getOption': function (opt) {
             var path = opt.split("."),
@@ -122,11 +145,16 @@ go("Ext", ["Class"], function (go, global) {
         },
 
         /**
-         * Установить настройку
+         * Установить новое значение настройки
          *
-         * @throws go.Ext.Exception.NotFound
+         * @name go.Ext.Options#setOption
+         * @public
          * @param {String} opt
+         *        путь к настройке ("one.two.three")
          * @param {mixed} value
+         *        новое значение
+         * @throws go.Ext.Exception.NotFound
+         *         неверный путь
          */
         'setOption': function (opt, value) {
             var path = opt.split("."),
@@ -153,32 +181,64 @@ go("Ext", ["Class"], function (go, global) {
         'eoc': null
     });
 
+    /**
+     * @namespace go.Ext.Options.Exceptions
+     */
     Ext.Options.Exceptions = {
+        /**
+         * Исключение - настройка по указанному пути не найдена
+         *
+         * @name go.Ext.Options.Exceptions.NotFound
+         * @type {Error}
+         */
         'NotFound' : go.Lang.Exception.create("go.Ext.Options.Exceptions.NotFound", go.Lang.Exception)
     };
 
     /**
-     * Ext.Nodes - класс, обрабатывающий DOM-элементы
-     *
+     * @class go.Ext.Nodes
+     *        класс, обрабатывающий DOM-элементы
+     * @abstract
      * @uses jQuery
-     *
-     * @property {jQuery} node
-     *           основная нода объекта
-     * @property {Object} nodes
-     *           список загруженных нод
-     * @property {Array} nodesListeners
-     *           список установленных слушателей событий
      */
     Ext.Nodes = go.Class({
 
         /**
-         * Список указателей на ноды
+         * Основная нода объекта
+         *
+         * @name go.Ext.Nodes#node
+         * @protected
+         * @type {jQuery}
+         */
+        'node': null,
+
+        /**
+         * При определении класса - список указателей на ноды
          * Переопределяется у потомков
+         * В экземпляре класса - список самих нод
+         *
+         * @name go.Ext.Nodes#nodes
+         * @protected
+         * @type {Object.<string, jQuery>}
          */
         'nodes': {},
 
+        /**
+         * Список слушателей событий
+         *
+         * @name go.Ext.Nodes#nodesListeners
+         * @protected
+         * @type {Array.<[jQuery node, String eventType, Function handler]>}
+         */
+        'nodesListeners': null,
+
+        /**
+         * @ignore
+         */
         '__abstract': true,
 
+        /**
+         * @ignore
+         */
         '__mutators': {
             /**
              * Мутатор "nodes" - подгрузка предковых списков нод
@@ -212,9 +272,8 @@ go("Ext", ["Class"], function (go, global) {
         },
 
         /**
-         * Конструктор
-         *
-         * @param {mixed} node
+         * @constructs
+         * @param {jQuerySelector} node
          *        указатель на основной контейнер объекта
          */
         '__construct': function (node) {
@@ -222,7 +281,9 @@ go("Ext", ["Class"], function (go, global) {
         },
 
         /**
-         * Деструктор
+         * @destructs
+         * @ignore
+         * @return void
          */
         '__destruct': function () {
             this.doneNodes();
@@ -231,7 +292,9 @@ go("Ext", ["Class"], function (go, global) {
         /**
          * Инициализация нод
          *
-         * @param {mixed} node
+         * @name go.Ext.Nodes#initNodes
+         * @protected
+         * @param {jQuerySelector} node
          *        указатель на основной контейнер объекта
          * @todo протестировать лучше
          */
@@ -302,6 +365,10 @@ go("Ext", ["Class"], function (go, global) {
 
         /**
          * Очищение структур данных
+         *
+         * @name go.Ext.Nodes#doneNodes
+         * @protected
+         * @return void
          */
         'doneNodes': function () {
             this.unbindAll();
@@ -310,11 +377,13 @@ go("Ext", ["Class"], function (go, global) {
         /**
          * Установить обработчик события
          *
-         * @param {mixed} node
+         * @name go.Ext.Nodes#bind
+         * @protected
+         * @param {jQuerySelector} node
          *        указатель на ноду
          * @param {String} eventType
          *        тип события
-         * @param {Function(e)|String} handler
+         * @param {(String|Function(e))} handler
          *        обработчик - функция или имя метода данного объекта
          */
         'bind': function (node, eventType, handler) {
@@ -328,9 +397,14 @@ go("Ext", ["Class"], function (go, global) {
         /**
          * Снять обработчик события
          *
-         * @param {mixed} node
+         * @name go.Ext.Nodes#unbind
+         * @protected
+         * @param {jQuerySelector} node
+         *        указатель на ноду
          * @param {String} eventType
-         * @param {Function(e)|String} handler
+         *        тип события
+         * @param {(String|Function(e))} handler
+         *        обработчик - функция или имя метода данного объекта
          */
         'unbind': function (node, eventType, handler) {
             if (typeof handler !== "function") {
@@ -341,6 +415,10 @@ go("Ext", ["Class"], function (go, global) {
 
         /**
          * Снять все обработчики, установленные ранее через bind()
+         *
+         * @name go.Ext.Nodes#unbindAll
+         * @protected
+         * @return void
          */
         'unbindAll': function () {
             var listeners = this.nodesListeners,
@@ -355,18 +433,28 @@ go("Ext", ["Class"], function (go, global) {
     });
 
     /**
-     * Ext.Events - класс, генерирующий события, на которые можно подписываться
-     *
-     * @property {Object} eventListeners
-     *           тип события => список подписчиков
+     * @class go.Ext.Events
+     *        класс, генерирующий события, на которые можно подписываться
      */
     Ext.Events = go.Class({
 
         /**
+         * Список подписчиков
+         *
+         * @name go.Ext.Events#eventListeners
+         * @protected
+         * @type {Object.<string, Array.<Function>>}
+         *       имя события => список обработчиков
+         */
+        'eventListeners': null,
+
+        /**
          * Добавить обработчик события
          *
-         * @param {String} eventType [optional]
-         *        тип события
+         * @name go.Ext.Events#addEventListener
+         * @public
+         * @param {String} [eventType]
+         *        тип события (если в классе определены различные)
          * @param {Function} listener
          *        обработчик события
          * @return {Number}
@@ -387,14 +475,17 @@ go("Ext", ["Class"], function (go, global) {
             } else {
                 elisteners[eventType] = [listener];
             }
+            return elisteners[eventType].length - 1;
         },
 
         /**
          * Удалить обработчик события
          *
+         * @name go.Ext.Events#removeEventsListener
+         * @public
          * @param {String} [eventType]
-         *        тип события
-         * @param {Function|Number} listener
+         *        тип события (если в классе определены различные)
+         * @param {(Function|Number)} listener
          *        обработчик или его идентификатор
          * @return {Boolean}
          *         был ли обработчик найден и удалён
@@ -408,6 +499,10 @@ go("Ext", ["Class"], function (go, global) {
             if (!elisteners) {
                 return false;
             }
+            if (typeof listener === "number") {
+                elisteners[listener] = null;
+                return true;
+            }
             for (i = 0, len = elisteners.length; i < len; i += 1) {
                 if (listener === elisteners[i]) {
                     elisteners[i] = null;
@@ -420,7 +515,9 @@ go("Ext", ["Class"], function (go, global) {
         /**
          * Удалить все обработчики одного события
          *
-         * @param {String} eventType [optional]
+         * @name go.Ext.Events#removeEventsAllListeners
+         * @public
+         * @param {String} [eventType]
          *        тип события
          */
         'removeEventAllListeners': function (eventType) {
@@ -429,6 +526,10 @@ go("Ext", ["Class"], function (go, global) {
 
         /**
          * Сброс всех обработчиков всех событий
+         *
+         * @name go.Ext.Events#resetEventListeners
+         * @public
+         * @return void
          */
         'resetEventListeners': function () {
             this.eventListeners = {};
@@ -437,9 +538,11 @@ go("Ext", ["Class"], function (go, global) {
         /**
          * Генерация события
          *
-         * @param {String|Object} event
+         * @name go.Ext.Events#fireEvent
+         * @public
+         * @param {(String|Object)} event
          *        объект события или его тип
-         * @param {mixed} eventData
+         * @param {*} [eventData]
          *        данные события (если event - строка)
          */
         'fireEvent': function (event, eventData) {
@@ -460,7 +563,8 @@ go("Ext", ["Class"], function (go, global) {
         },
 
         /**
-         * Деструктор
+         * @destructs
+         * @ignore
          */
         '__destruct': function () {
             this.resetEventListeners();
@@ -470,18 +574,47 @@ go("Ext", ["Class"], function (go, global) {
     });
 
     /**
-     * Конструктор объектов-событий для go.Ext.Events
+     * @class go.Ext.Events.Event
+     *        конструктор объектов-событий для go.Ext.Events
+     *
+     * @property {String} type
+     * @property {*} data
      */
     Ext.Events.Event = (function () {
 
         var EventPrototype = {
+
+            /**
+             * @lends go.Ext.Events.Event.prototype
+             */
+
+            /**
+             * @constructs
+             * @param {String} eventType
+             * @param {*} eventData
+             */
+            '__construct': function (eventType, eventData) {
+                this.type = eventType;
+                this.data = eventData;
+            },
+
+            /**
+             * Строковое представление объекта события
+             * @name go.Ext.Events.Event#toString
+             * @override
+             * @return {String}
+             */
             'toString': function () {
                 return "[Event " + this.type + "]";
             }
         };
+
+        /**
+         * @param eventType
+         * @param eventData
+         */
         function EventConstructor(eventType, eventData) {
-            this.type = eventType;
-            this.data = eventData;
+            this.__construct(eventType, eventData);
         }
         EventConstructor.prototype = EventPrototype;
 

@@ -20,12 +20,10 @@ tests.test("Loader", function () {
 
     loader = new go.__Loader({
 
+        'container': modules,
+
         'requestModule': function (name) {
             reqs[name] = true;
-        },
-
-        'createModule': function (name, fmodule) {
-            modules[name] = fmodule();
         }
 
     });

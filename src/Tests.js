@@ -21,14 +21,17 @@ go("Tests", function (go, global) {
      * Создаются конструктором go.Tests().
      * @example var test = new go.Tests(modules, testDir)
      *
-     * @namespace go
-     * @class Tests
-     * @var string testDir
+     * @class go.Tests
+     * @property {String} testDir
      *      каталог с js-файлами тестов
-     * @var list calls
+     * @property {Array} calls
      *      список накопленных вызовов (function, args).
      */
     var TestsPrototype = {
+
+        /**
+         * @lends go.Tests.prototype
+         */
 
         /**
          * Список нужных глобальных функций QUnit
@@ -41,9 +44,9 @@ go("Tests", function (go, global) {
         },
 
         /**
-         * Конструктор
-         *
-         * @param {String[]} modules
+         * @constructs
+         * @name go.Tests#__constructor
+         * @param {Array.<String>} modules
          *        список имён тестируемых модулей
          * @param {String} testDir
          *        каталог с js-файлами тестов
@@ -56,6 +59,10 @@ go("Tests", function (go, global) {
 
         /**
          * Запуск накопленных тестов
+         *
+         * @name go.Tests#run
+         * @public
+         * @return void
          */
         'run': function () {
             var calls = this.calls, obj = global, i, len, call;
@@ -67,6 +74,10 @@ go("Tests", function (go, global) {
 
         /**
          * Деструктор
+         *
+         * @name go.Tests#destroy
+         * @public
+         * @return void
          */
         'destroy': function () {
             this.calls = null;
@@ -79,9 +90,12 @@ go("Tests", function (go, global) {
          * Аргументы соответствуют test() из QUnit
          * @see http://docs.jquery.com/QUnit/test#nameexpectedtest
          *
-         * @params {String} name
-         * @params {Number} [expected]
-         * @params {Function} test
+         * @name go.Tests#test
+         * @public
+         * @param {String} name
+         * @param {Number} [expected]
+         * @param {Function} test
+         * @return void
          */
         'test': function () {
             this.calls.push([this.QUNIT.test, arguments]);
@@ -94,8 +108,11 @@ go("Tests", function (go, global) {
          * Аргументы соответствуют module() из QUnit
          * @see http://docs.jquery.com/QUnit/module#namelifecycle
          *
-         * @params {String} name
-         * @params {Object} lifecycle [optional]
+         * @name go.Tests#test
+         * @public
+         * @param {String} name
+         * @param {Object} [lifecycle]
+         * @return void
          */
         'module': function () {
             this.calls.push([this.QUNIT.module, arguments]);
@@ -104,13 +121,19 @@ go("Tests", function (go, global) {
         /**
          * Загрузка нужных модулей и тестов к ним
          *
-         * @param {String[]} modules
+         * @name go.Tests#loadModules
+         * @private
+         * @param {Array.<String>} modules
          *        список имён модулей
+         * @return void
          */
         'loadModules': function (modules) {
-            var i, len, name, scripts = [], src;
-
-            for (i = 0, len = modules.length; i < len; i += 1) {
+            var scripts = [],
+                name,
+                src,
+                len = modules.length,
+                i;
+            for (i = 0; i < len; i += 1) {
                 name = modules[i];
                 if (name) {
                     go.include(name);
@@ -120,9 +143,7 @@ go("Tests", function (go, global) {
                 src = this.testDir + name + ".js";
                 scripts.push('<script type="text/javascript" src="' + src + '"></script>');
             }
-
             global.document.write(scripts.join(""));
-
         },
 
         'eoc': null
