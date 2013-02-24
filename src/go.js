@@ -840,10 +840,10 @@ go("Lang", function (go, global) {
         },
 
         /**
-         * Создание собственных "классов" исключений
-         *
-         * @name go.Lang.Exception
-         * @type {Function}
+         * @class go.Lang.Exception
+         *        пользовательские "классы" исключений
+         * @alias go.Lang.Exception.Base
+         * @augments Error
          */
         'Exception': (function () {
 
@@ -887,10 +887,9 @@ go("Lang", function (go, global) {
             };
 
             /**
-             * Базовый "класс" исключений внутри библиотеки
-             *
-             * @name go.Lang.Exception.Base
-             * @type {Function}
+             * @class go.Lang.Exception.Base
+             *        базовый "класс" исключений внутри библиотеки
+             * @augments Error
              */
             Base = create("go.Exception");
 
