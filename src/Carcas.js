@@ -1,5 +1,5 @@
 /**
- * go.Class: надстройка над ООП с "классовым" синтаксисом
+ * go.Carcas: небольшой фреймворк
  *
  * @package    go.js
  * @subpackage Carcas
@@ -21,11 +21,15 @@ go("Carcas", ["Class", "Ext"], function (go) {
      */
     var Carcas = go.Class({
 
+        /**
+         * @ignore
+         */
         '__static': {
 
             /**
              * @name go.Carcas.getInstance
              * @public
+             * @static
              * @return {go.Carcas}
              */
             'getInstance': function () {
@@ -36,20 +40,40 @@ go("Carcas", ["Class", "Ext"], function (go) {
             },
 
             /**
-             * @name go.Carcas.mo
-             * @alias go.Carcas#mo
-             * @return {Boolean}
+             * @name go.Carcas.init
+             * @alias go.Carcas#init
+             * @public
+             * @static
+             * @param {Object} params
+             * @throws {go.Carcas.Exceptions.AlreadyInited}
              */
-            'mo': function (name, reqs, fmodule) {
-                return this.getInstance().mo(name, reqs, fmodule);
+            'init': function (params) {
+                this.getInstance().init(params);
             },
 
             /**
-             * @name go.Carcas.c
-             * @alias go.Carcas#c
+             * @name go.Carcas.module
+             * @alias go.Carcas#module
+             * @public
+             * @static
              * @return {Boolean}
+             * @throws go.Carcas.Exceptions.NotInited
+             * @throws go.Carcas.Exceptions.ModuleRedeclare
              */
-            'c': function (name, reqs, props) {
+            'module': function (name, reqs, fmodule) {
+                return this.getInstance().module(name, reqs, fmodule);
+            },
+
+            /**
+             * @name go.Carcas.controller
+             * @alias go.Carcas#controller
+             * @public
+             * @static
+             * @return {Boolean}
+             * @throws go.Carcas.Exceptions.NotInited
+             * @throws go.Carcas.Exceptions.ControllerRedeclare
+             */
+            'controller': function (name, reqs, props) {
                 return this.getInstance().c(name, reqs, props);
             }
         },
@@ -70,11 +94,30 @@ go("Carcas", ["Class", "Ext"], function (go) {
         /**
          * Список загруженных контроллеров
          *
-         * @name go.Carcas#controllers
+         * @name go.Carcas#controllersList
          * @public
          * @type {Object.<String, go.Class.Controller>}
          */
-        'controllers': null,
+        'controllersList': null,
+
+        /**
+         * Список загруженных модулей
+         *
+         * @name go.Carcas#modulesList
+         * @public
+         * @type {Object.<String, Object>}
+         */
+        'modulesList': null,
+
+        /**
+         * Список загруженных модулей
+         *
+         * @name go.Carcas#mo
+         * @alias go.Carcas#modulesList
+         * @public
+         * @type {Object.<String, Object>}
+         */
+        'mo': null,
 
         /**
          * Загрузчик дополнительных библиотек
@@ -82,12 +125,42 @@ go("Carcas", ["Class", "Ext"], function (go) {
          * @private
          * @type {Function(Array.<String [, Function])}
          */
-        'libsLoader': null,
+        'otherLibsLoader': null,
+
+        /**
+         * Был ли каркас инициализован
+         *
+         * @private
+         * @type {Boolean}
+         */
+        'inited': false,
 
         /**
          * @constructs
          */
         '__construct': function () {
+        },
+
+        /**
+         * Инициализация и запуск каркаса
+         *
+         * @name go.Carcas#init
+         * @public
+         * @param {Object} params
+         *        параметры (реестр, загружаемые контроллеры и т.п)
+         * @throws {go.Carcas.Exceptions.AlreadyInited}
+         */
+        'init': function (params) {
+            if (this.inited) {
+                throw new go.Carcas.Exceptions.AlreadyInited();
+            }
+            this.inited = true;
+            this.registry = (typeof params.registry === "object") ? params.registry : {};
+            this.otherLibsLoader = params.otherLibsLoader;
+            this.controllersList = {};
+            this.modulesList = {};
+            this.mo = this.modulesList;
+            // @todo (load controllers)
         },
 
         /**
@@ -103,8 +176,10 @@ go("Carcas", ["Class", "Ext"], function (go) {
          *        функция-конструктор модуля
          * @return {Boolean}
          *         был ли модуль создан сразу же (все зависимости есть)
+         * @throws go.Carcas.Exceptions.NotInited
+         * @throws go.Carcas.Exceptions.ModuleRedeclare
          */
-        'mo': function (name, reqs, fmodule) {
+        'module': function (name, reqs, fmodule) {
             if (!fmodule) {
                 fmodule = reqs;
                 reqs = [];
@@ -115,7 +190,7 @@ go("Carcas", ["Class", "Ext"], function (go) {
         /**
          * Определение контроллера
          *
-         * @name go.Carcas#c
+         * @name go.Carcas#controller
          * @public
          * @param {String} name
          *        имя контроллера
@@ -125,22 +200,15 @@ go("Carcas", ["Class", "Ext"], function (go) {
          *        поля класса контроллера (расширение go.Carcas.Controller)
          * @return {Boolean}
          *         был ли контроллер создан сразу же (все зависимости есть)
+         * @throws go.Carcas.Exceptions.NotInited
+         * @throws go.Carcas.Exceptions.ControllerRedeclare
          */
-        'c': function (name, reqs, props) {
+        'controller': function (name, reqs, props) {
             if (!props) {
                 props = reqs;
                 reqs = [];
             }
             // @todo
-        },
-
-        /**
-         * Указать загрузчик дополнительных библиотек
-         *
-         * @param {Function(Array.<String> [, Function])} loader
-         */
-        'setLibsLoader': function (loader) {
-            this.libsLoader = loader;
         },
 
         'eoc': null
@@ -169,17 +237,110 @@ go("Carcas", ["Class", "Ext"], function (go) {
         /**
          * @constructs
          * @param {go.Carcas} carcas
-         * @param {go} go
-         * @param {window} global
          */
-        '__construct': function (carcas, go, global) {
+        '__construct': function (carcas) {
             this.carcas = carcas;
-            this.go = go;
-            this.global = global;
+            this.oncreate();
+        },
+
+        /**
+         * @destructs
+         */
+        '__destruct': function () {
+        },
+
+        /**
+         * Действия после создания объекта
+         *
+         * @name go.Carcas.Controller#oncreate
+         * @protected
+         * @return void
+         */
+        'oncreate': function () {
+            // переопределятеся у потомков
+        },
+
+        /**
+         * Действия после загрузки DOM
+         *
+         * @name go.Carcas.Controller#init
+         * @protected
+         * @return void
+         */
+        'init': function () {
+            // переопределяется у потомков
+        },
+
+        /**
+         * Действия после загрузки всех ресурсов
+         *
+         * @name go.Carcas.Controller#oncload
+         * @protected
+         * @return void
+         */
+        'onload': function () {
+            // переопределяется у потомков
+        },
+
+        /**
+         * Действия перед разрушением объекта
+         *
+         * @name go.Carcas.Controller#done
+         * @protected
+         * @return void
+         */
+        'done': function () {
+            // переопределяется у потомков
         },
 
         'eoc': null
     });
+
+    /**
+     * @namespace go.Carcas.Exceptions
+     *            исключения при работе с библиотекой
+     */
+    Carcas.Exceptions = (function () {
+        var create = go.Lang.Exception.create,
+            Base = create("go.Carcas.Exceptions.Base", go.Lang.Exception);
+        return {
+
+            /**
+             * @class go.Carcas.Exceptions.Base
+             *        базовое исключение при работе с библиотекой
+             * @abstract
+             */
+            'Base': Base,
+
+            /**
+             * @class go.Carcas.Exceptions.AlreadyInited
+             *        попытка инициализовать уже инициализированный каркас
+             * @augments go.Carcas.Exceptions.Base
+             */
+            'AlreadyInited': create("go.Carcas.Exceptions.AlreadyInited", Base),
+
+            /**
+             * @class go.Carcas.Exceptions.NotInited
+             *        попытка доступа к ещё не инициализированному каркасу
+             * @augments go.Carcas.Exceptions.Base
+             */
+            'NotInited': create("go.Carcas.Exceptions.NotInited", Base),
+
+            /**
+             * @class go.Carcas.Exceptions.ModuleRedeclare
+             *        попытка повторно определить модуль
+             * @augments go.Carcas.Exceptions.Base
+             */
+            'ModuleRedeclare': create("go.Carcas.Exceptions.ModuleRedeclare", Base),
+
+            /**
+             * @class go.Carcas.Exceptions.ControllerRedeclare
+             *        попытка повторно определить контроллер
+             * @augments go.Carcas.Exceptions.Base
+             */
+            'ControllerRedeclare': create("go.Carcas.Exceptions.ControllerRedeclare", Base)
+        };
+    }());
 
     return Carcas;
 });
