@@ -338,9 +338,91 @@ go("Carcas", ["Class", "Ext"], function (go) {
              *        попытка повторно определить контроллер
              * @augments go.Carcas.Exceptions.Base
              */
-            'ControllerRedeclare': create("go.Carcas.Exceptions.ControllerRedeclare", Base)
+            'ControllerRedeclare': create("go.Carcas.Exceptions.ControllerRedeclare", Base),
+
+            /**
+             * @class go.Carcas.Exceptions.ErrorDependence
+             *        ошибочная зависимость
+             * @augments go.Carcas.Exceptions.Base
+             */
+            'ErrorDependence': create("go.Carcas.Exceptions.ErrorDependence", Base)
         };
     }());
+
+    /**
+     * @namespace Carcas.Helpers
+     *            некоторые вспомогательные функции
+     */
+    Carcas.Helpers = {
+
+        /**
+         * Привести список зависимостей к виду словаря
+         *
+         * @name go.Carcas.Helpers
+         * @public
+         * @static
+         * @param {(Object|String)} deps
+         * @param {String} [defaultPrefix]
+         * @return {Object.<String, Array>}
+         * @throws {go.Carcas.Exceptions.ErrorDependence}
+         */
+        'parseDeps': function (deps, defaultPrefix) {
+            var result,
+                dep,
+                len,
+                i,
+                prefix,
+                lprefixes;
+            if (typeof deps === "object") {
+                return deps;
+            }
+            result = {};
+            lprefixes = Carcas.Helpers.prefixes;
+            deps = deps.replace(/\s+/g, "").split(",");
+            for (i = 0, len = deps.length; i < len; i += 1) {
+                dep = deps[i].split(":");
+                switch (dep.length) {
+                case 2:
+                    prefix = dep[0];
+                    dep = dep[1];
+                    break;
+                case 1:
+                    prefix = defaultPrefix;
+                    dep = dep[0];
+                    break;
+                default:
+                    throw new Carcas.Exceptions.ErrorDependence("Error format in " + deps[i]);
+                }
+                if (!prefix) {
+                    throw new Carcas.Exceptions.ErrorDependence("Undefined prefix in " + deps[i]);
+                }
+                prefix = lprefixes[prefix];
+                if (!prefix) {
+                    throw new Carcas.Exceptions.ErrorDependence("Error prefix " + deps[i]);
+                }
+                if (result[prefix]) {
+                    result[prefix].push(dep);
+                } else {
+                    result[prefix] = [dep];
+                }
+            }
+            return result;
+        },
+
+        /**
+         * @name go.Carcas.Helpers.prefixes
+         * @static
+         * @private
+         * @type {Object.<String, String>}
+         */
+        'prefixes': {
+            'c'  : "controllers",
+            'mo' : "modules",
+            'go' : "go",
+            'l'  : "otherLibs"
+        }
+
+    };
 
     return Carcas;
 });
