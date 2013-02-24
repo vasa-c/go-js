@@ -897,19 +897,7 @@ go("Class", function (go) {
                  * @param {Object} props
                  */
                 'processClass': function (props) {
-                    var fields = this.fields, k, prop, mut;
-                    for (k in props) {
-                        if (props.hasOwnProperty(k)) {
-                            prop = props[k];
-                            if ((typeof prop === "function") || (!this.onlyMethods)) {
-                                mut = this.eachForClass(k, prop);
-                                if (mut) {
-                                    fields[k] = mut;
-                                    delete props[k];
-                                }
-                            }
-                        }
-                    }
+
                 },
 
                 /**
@@ -919,12 +907,7 @@ go("Class", function (go) {
                  * @param {Object} instance
                  */
                 'processInstance': function (instance) {
-                    var fields = this.fields, k;
-                    for (k in fields) {
-                        if (fields.hasOwnProperty(k)) {
-                            this.eachForInstance(instance, k, fields[k]);
-                        }
-                    }
+
                 },
 
                 /**
@@ -977,42 +960,6 @@ go("Class", function (go) {
                         return;
                     }
                     go.Lang.extend(this.fields, mutators[this.name].fields);
-                },
-
-                /**
-                 * eachForClass должен перебирать только методы
-                 *
-                 * @protected
-                 * @type {Boolean}
-                 */
-                'onlyMethods': true,
-
-                /**
-                 * Перебор всех полей на этапе создания класса
-                 *
-                 * @params {String} name
-                 *         имя поля
-                 * @params {*} prop
-                 *         значение поля
-                 * @return {*}
-                 *         если возвращается непустое значение, оно сохраняется в мутаторе, а из props удаляется
-                 */
-                'eachForClass': function () {
-                    return;
-                },
-
-                /**
-                 * Перебор сохранённых полей на этапе создания объекта
-                 *
-                 * @param {Object} instance
-                 *        объект
-                 * @param {String} name
-                 *        имя поля
-                 * @param {*} prop
-                 *        сохранённое мутатором значение
-                 */
-                'eachForInstance': function (instance, name, prop) {
-                    instance[name] = prop;
                 },
 
                 'eoc': null
