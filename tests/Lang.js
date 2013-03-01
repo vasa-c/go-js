@@ -604,3 +604,39 @@ tests.test("go.Lang.Listeners.create", function () {
     ok(!listener.remove(f3));
     deepEqual(result, [1, 3, 1]);
 });
+
+tests.test("go.Lang.Listeners.createCounter", function () {
+
+    var f1, f2, f3, listener1, listener2, counter1, counter2, counter3, result;
+
+    f1 = function () {
+        result.push(1);
+    };
+    f2 = function () {
+        result.push(2);
+    };
+    f3 = function () {
+        result.push(3);
+    };
+
+    result = [];
+    listener1 = go.Lang.Listeners.create([f1, f2]);
+    counter1  = go.Lang.Listeners.createCounter(5, listener1);
+    counter2  = go.Lang.Listeners.createCounter(3, f3);
+    counter3  = go.Lang.Listeners.createCounter(0, f1);
+    listener2 = go.Lang.Listeners.create([counter1, counter2, counter3]);
+    deepEqual(result, [1]);
+
+    result = [];
+    listener2();
+    listener2();
+    deepEqual(result, []);
+    listener2();
+    deepEqual(result, [3]);
+    listener2();
+    deepEqual(result, [3]);
+    listener2();
+    deepEqual(result, [3, 1, 2]);
+    listener2();
+    deepEqual(result, [3, 1, 2]);
+});

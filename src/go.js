@@ -201,8 +201,28 @@ var go = (function (global) {
                 }
 
                 return create;
-            }())
+            }()),
 
+            /**
+             * @name go.Lang.Listeners.createCounter
+             * @param {Number} count
+             * @param {Function} listener
+             * @return {Function}
+             */
+            'createCounter': function (count, listener) {
+                if (count == 0) {
+                    listener();
+                }
+
+                return function Counter() {
+                    if (count > 0) {
+                        count -= 1;
+                        if (count == 0) {
+                            listener();
+                        }
+                    }
+                };
+            }
         }
 
     };
