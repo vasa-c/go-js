@@ -121,7 +121,7 @@ var go = (function (global) {
                  * @return void
                  */
                 function ping() {
-                    this();
+                    this.apply(null, arguments);
                 }
 
                 /**
@@ -187,7 +187,7 @@ var go = (function (global) {
                         for (i = 0; i < len; i += 1) {
                             current = list[i];
                             if (current) {
-                                current();
+                                current.apply(null, arguments);
                             }
                         }
                     };

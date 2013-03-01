@@ -569,8 +569,11 @@ tests.test("go.Lang.Listeners.create", function () {
 
     var listener, f1, f2, f3, result, idf2;
 
-    f1 = function () {
-        result.push(1);
+    f1 = function (t) {
+        if (!t) {
+            t = 0;
+        }
+        result.push(1 + t);
     };
     f2 = function () {
         result.push(2);
@@ -584,16 +587,16 @@ tests.test("go.Lang.Listeners.create", function () {
     result = [];
     listener();
     deepEqual(result, [1]);
-    listener.ping();
-    deepEqual(result, [1, 1]);
+    listener.ping(10);
+    deepEqual(result, [1, 11]);
 
     result = [];
     idf2 = listener.append(f2);
     equal(idf2, listener.append(f2, true));
     listener();
     listener.append(f3);
-    listener();
-    deepEqual(result, [1, 2, 1, 2, 3]);
+    listener(10);
+    deepEqual(result, [1, 2, 11, 2, 3]);
 
     result = [];
     ok(listener.remove(idf2));
