@@ -133,7 +133,7 @@ tests.test("Init and loading", function () {
 
     TestCarcas = go.Class(go.Carcas, {
 
-        'requestFile': function (filename) {
+        'requestJSFile': function (filename) {
             requests.push(filename);
         },
 
@@ -160,7 +160,7 @@ tests.test("Init and loading", function () {
     /**
      * @type {go.Carcas}
      */
-    carcas = new go.Carcas();
+    carcas = new TestCarcas();
 
     requests = [];
     carcas.init({
@@ -169,7 +169,7 @@ tests.test("Init and loading", function () {
         'controllers' : ["page1", "search"],
         'otherLibsLoader': otherLibsLoader
     });
-    equal(
+    deepEqual(
         requests,
         ["/carcas/controllers/page1.js", "/carcas/controllers/search.js"],
         "Запросы контроллеров после инициализации"
@@ -178,7 +178,7 @@ tests.test("Init and loading", function () {
     requests = [];
     files.include("/carcas/controllers/page1.js");
     files.include("/carcas/controllers/search.js");
-    equal(
+    deepEqual(
         requests,
         ["/carcas/controllers/layout/default.js", "/carcas/modules/one/Two.js"],
         "page1 тянет за собой default и модуль"
@@ -194,23 +194,23 @@ tests.test("Init and loading", function () {
     requests = [];
     files.include("/carcas/controllers/layout/default.js");
     ok(!carcas.controllersList.layout, "default ждёт one.Two");
-    equals(request, [], "Но запрос к one.Two уже послан");
+    deepEqual(request, [], "Но запрос к one.Two уже послан");
 
     files.include("/carcas/modules/one/Two.js");
     ok(!carcas.mo.one, "one.Two ждёт one.Three, Four и fancybox");
-    equal(
+    deepEqual(
         requests,
         ["/carcas/modules/one/Theree.js", "/carcas/modules/Four.js"],
         "one.Two послал два запроса к библиотеке (fancybox отдельно)"
     );
-    equal(otherLibsLoader.requests[0][0], ["fancybox"], "facybox запрошен через пользовательский загрузчик");
+    deepEqual(otherLibsLoader.requests[0][0], ["fancybox"], "facybox запрошен через пользовательский загрузчик");
 
     requests = [];
     files.include("/carcas/modules/one/Three.js");
     ok(carcas.mo.one.Three, "one.Three ничего не ждёт");
     files.include("/carcas/modules/one/Four.js");
     ok(carcas.mo.Four, "Four создан, так как go.Cookie уже загружен");
-    equal(request, [], "Никаких дополнительных запросов ещё не было");
+    deepEqual(request, [], "Никаких дополнительных запросов ещё не было");
 
     ok(carcas.mo.one.Three.getCarcasFromModule, "Правильно ли создан модуль");
     ok(carcas.mo.one.Three.getCarcasFromModule(), carcas, "carcas из модуля ссылается на центральный объект");
@@ -223,7 +223,7 @@ tests.test("Init and loading", function () {
     ok(carcas.controllersList.layouts.default);
     ok(carcas.controllersList.one.Two);
 
-    equal(
+    deepEqual(
         controllersCreate,
         ["search", "default", "page1"],
         "Правильный порядок создания контроллеров и вызов oncreate"

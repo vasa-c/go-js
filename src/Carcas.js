@@ -120,9 +120,19 @@ go("Carcas", ["Class", "Ext"], function (go) {
         'mo': null,
 
         /**
+         * Базовый каталог контроллеров и модулей
+         *
+         * @name go.Carcas#baseDir
+         * @protected
+         * @type {String}
+         */
+        'baseDir': null,
+
+        /**
          * Загрузчик дополнительных библиотек
          *
-         * @private
+         * @name go.Carcas#otherLibsLoader
+         * @protected
          * @type {Function(Array.<String [, Function])}
          */
         'otherLibsLoader': null,
@@ -130,10 +140,29 @@ go("Carcas", ["Class", "Ext"], function (go) {
         /**
          * Был ли каркас инициализован
          *
-         * @private
+         * @name go.Carcas#inited
+         * @protected
          * @type {Boolean}
          */
         'inited': false,
+
+        /**
+         * Список контроллеров, запрос на загрузку которых был уже дан
+         *
+         * @name go.Carcas#reqsControllers
+         * @protected
+         * @type {Object.<String, Boolean>}
+         */
+        'reqsControllers': null,
+
+        /**
+         * Список модулей, запрос на загрузку которых был уже дан
+         *
+         * @name go.Carcas#reqsModules
+         * @protected
+         * @type {Object.<String, Boolean>}
+         */
+        'reqsModules': null,
 
         /**
          * @constructs
@@ -151,16 +180,21 @@ go("Carcas", ["Class", "Ext"], function (go) {
          * @throws {go.Carcas.Exceptions.AlreadyInited}
          */
         'init': function (params) {
+            var i, len, controllers;
             if (this.inited) {
                 throw new go.Carcas.Exceptions.AlreadyInited();
             }
             this.inited = true;
+            this.baseDir  = params.baseDir;
             this.registry = (typeof params.registry === "object") ? params.registry : {};
             this.otherLibsLoader = params.otherLibsLoader;
             this.controllersList = {};
             this.modulesList = {};
             this.mo = this.modulesList;
-            // @todo (load controllers)
+            controllers = params.controllers;
+            for (i = 0, len = controllers.length; i < len; i += 1) {
+                this.includeController(controllers[i]);
+            }
         },
 
         /**
@@ -209,6 +243,19 @@ go("Carcas", ["Class", "Ext"], function (go) {
                 reqs = [];
             }
             // @todo
+        },
+
+        'includeController': function (name) {
+            var filename = this.baseDir + "/controllers/" + name.replace(/\./g, "/") + ".js";
+            this.requestJSFile(filename);
+        },
+
+        'includeModule': function (name) {
+
+        },
+
+        'requestJSFile': function () {
+
         },
 
         'eoc': null
