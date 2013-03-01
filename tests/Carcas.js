@@ -157,7 +157,6 @@ tests.test("Init and loading", function () {
      * @type {go.Carcas}
      */
     carcas = new go.Carcas();
-console.log(carcas);
 
     requests = [];
     carcas.init({
@@ -185,7 +184,7 @@ console.log(carcas);
     ok(carcas.controllers.search, "search загрузился сразу же");
     ok(carcas.contorllers.search instanceof go.Carcas.Controller, "search - контроллер");
     ok(carcas.controller.search.getCarcas, "search имеет свой метод");
-    equal(carcas.controller.search.getCarcas === carcas, "carcas из контроллера ссылается на центральный объект");
+    equal(carcas.controller.search.getCarcas(), carcas, "carcas из контроллера ссылается на центральный объект");
 
     requests = [];
     files.include("/carcas/controllers/layout/default.js");
