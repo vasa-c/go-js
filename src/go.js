@@ -38,7 +38,9 @@ var go = (function (global) {
          *
          * @type {go.__Loader}
          */
-        loader;
+        loader,
+
+        MLoad;
 
     /**
      * Вызов go(), как функции - загрузка модуля
@@ -102,12 +104,115 @@ var go = (function (global) {
         loader.appendModule(name, reqs, fmodule);
     };
 
+    MLoad = {
+
+        'Listeners': {
+
+            /**
+             * @name go.Lang.Listeners.create
+             * @param {(Function|Array.<Function>)} f
+             * @return {go.Lang.Listeners.Listener}
+             */
+            'create': (function () {
+
+                /**
+                 * @name go.Lang.Listeners.Listener#ping
+                 * @public
+                 * @return void
+                 */
+                function ping() {
+                    this();
+                }
+
+                /**
+                 * @name go.Lang.Listeners.Listener#append
+                 * @public
+                 * @param {Function} f
+                 * @param {Boolean} [check]
+                 * @return {Number}
+                 */
+                function append(f, check) {
+                    var list = this.list,
+                        len,
+                        i;
+                    if (check) {
+                        for (i = 0, len = list.length; i < len; i += 1) {
+                            if (list[i] === f) {
+                                return i;
+                            }
+                        }
+                    }
+                    list.push(f);
+                    return list.length - 1;
+                }
+
+                /**
+                 * @name go.Lang.Listeners.Listener#ping
+                 * @public
+                 * @param {(Function|Number)} f
+                 * @return {Number}
+                 */
+                function remove(f) {
+                    var list = this.list, len, i;
+                    if (typeof f !== "function") {
+                        if (list[f]) {
+                            list[f] = null;
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                    for (i = 0, len = list.length; i < len; i += 1) {
+                        if (list[i] === f) {
+                            list[i] = null;
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+
+                function create(list) {
+                    var listener;
+
+                    if (typeof list === "function") {
+                        list = [list];
+                    } else if (Object.prototype.toString.call(list) !== '[object Array]') {
+                        list = [];
+                    }
+
+                    listener = function () {
+                        var current,
+                            len = list.length,
+                            i;
+                        for (i = 0; i < len; i += 1) {
+                            current = list[i];
+                            if (current) {
+                                current();
+                            }
+                        }
+                    };
+
+                    listener.list = list;
+                    listener.ping = ping;
+                    listener.append = append;
+                    listener.remove = remove;
+
+                    return listener;
+                }
+
+                return create;
+            }())
+
+        }
+
+    };
+
     /**
      * Класс загрузчиков модулей
      *
      * @class go.__Loader
      */
-    go.__Loader = (function () {
+    go.__Loader = (function (MLoad) {
 
         var LoaderPrototype, LoaderConstructor;
 
@@ -135,7 +240,7 @@ var go = (function (global) {
             /**
              * Имя модуля => был ли он создан и помещён в пространство имён
              *
-             * @name go.__Loaders#loaded
+             * @name go.__Loader#loaded
              * @type {Object.<String, Boolead>}
              * @private
              */
@@ -148,7 +253,7 @@ var go = (function (global) {
              * fn {Function} обработчик
              * l {Number} количество модулей, оставшихся на ожидании
              *
-             * @name go.__Loaders#listeners
+             * @name go.__Loader#listeners
              * @type {Object.<String, Object>}
              * @private
              */
@@ -156,7 +261,7 @@ var go = (function (global) {
 
             /**
              * @constructs
-             * @name go.__Loaders#
+             * @name go.__Loader#
              * @param {Object} [params]
              *        параметры могут перекрывать существующие свойства и метода объекта
              */
@@ -315,9 +420,10 @@ var go = (function (global) {
             this.__construct.apply(this, arguments);
         };
         LoaderConstructor.prototype = LoaderPrototype;
+        LoaderConstructor.MLoad = MLoad;
 
         return LoaderConstructor;
-    }());
+    }(MLoad));
     loader = new go.__Loader();
 
     /**
@@ -898,6 +1004,8 @@ go("Lang", function (go, global) {
 
             return Base;
         }()),
+
+        'Listeners': go.__Loader.MLoad.Listeners,
 
         'eoc': null
     };

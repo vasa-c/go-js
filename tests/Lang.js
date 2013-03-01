@@ -564,3 +564,43 @@ tests.test("go.Lang.Exception", function () {
         equal(e3.message, "default");
     }
 });
+
+tests.test("go.Lang.Listeners.create", function () {
+
+    var listener, f1, f2, f3, result, idf2;
+
+    f1 = function () {
+        result.push(1);
+    };
+    f2 = function () {
+        result.push(2);
+    };
+    f3 = function () {
+        result.push(3);
+    };
+
+    listener = go.Lang.Listeners.create(f1);
+
+    result = [];
+    listener();
+    deepEqual(result, [1]);
+    listener.ping();
+    deepEqual(result, [1, 1]);
+
+    result = [];
+    idf2 = listener.append(f2);
+    equal(idf2, listener.append(f2, true));
+    listener();
+    listener.append(f3);
+    listener();
+    deepEqual(result, [1, 2, 1, 2, 3]);
+
+    result = [];
+    ok(listener.remove(idf2));
+    listener();
+    ok(!listener.remove(idf2));
+    ok(listener.remove(f3));
+    listener();
+    ok(!listener.remove(f3));
+    deepEqual(result, [1, 3, 1]);
+});
