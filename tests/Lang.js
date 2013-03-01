@@ -655,4 +655,10 @@ tests.test("go.Lang.Listeners.createCounter", function () {
     counter3.inc();
     counter3();
     deepEqual(result, [1]);
+
+    result = [];
+    counter3 = go.Lang.Listeners.createCounter(null, f1);
+    counter3.filled();
+    deepEqual(result, [1]);
+
 });

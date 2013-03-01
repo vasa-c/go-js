@@ -221,22 +221,35 @@ var go = (function (global) {
                     }
                 }
 
+                /**
+                 * @name go.Lang.Listeners.Counter#filled
+                 * @return {Boolean}
+                 */
+                function filled() {
+                    if (!this.count) {
+                        this.count = 0;
+                        this.listener.apply(null);
+                        return true;
+                    }
+                    return false;
+                }
+
                 function createCounter(count, listener) {
                     if (count === 0) {
                         listener();
                     }
-
                     function Counter() {
                         if (Counter.count > 0) {
                             Counter.count -= 1;
                             if (Counter.count == 0) {
-                                listener();
+                                Counter.listener.apply(null);
                             }
                         }
                     }
-
                     Counter.count = count;
+                    Counter.listener = listener;
                     Counter.inc = inc;
+                    Counter.filled = filled;
                     return Counter;
                 };
 
@@ -286,14 +299,10 @@ var go = (function (global) {
             'created': null,
 
             /**
-             * Имя модуля => список слушателей его загрузки
-             *
-             * Поля слушателя:
-             * fn {Function} обработчик
-             * l {Number} количество модулей, оставшихся на ожидании
+             * Имя модуля => слушатели его загрузки
              *
              * @name go.__Loader#listeners
-             * @type {Object.<String, Object>}
+             * @type {Object.<String, go.Lang.Listeners.Listener.<go.Lang.Listeners.Counter>>}
              * @private
              */
             'listeners': null,
@@ -356,7 +365,7 @@ var go = (function (global) {
              *        обработчик, вызываемый после загрузки всех модулей из блока
              */
             'addListener': function (names, listener) {
-                var L = {'l' : 0, 'fn' : listener},
+                var counter = MLoad.Listeners.createCounter(null, listener),
                     name,
                     i,
                     len;
@@ -364,15 +373,14 @@ var go = (function (global) {
                     name = names[i];
                     if (!this.created[name]) {
                         if (!this.listeners[name]) {
-                            this.listeners[name] = [];
+                            this.listeners[name] = MLoad.Listeners.create(counter);
+                        } else {
+                            this.listeners[name].append(counter);
                         }
-                        L.l += 1;
-                        this.listeners[name].push(L);
+                        counter.inc();
                     }
                 }
-                if (L.l === 0) {
-                    listener();
-                }
+                counter.filled();
             },
 
             /**
@@ -442,16 +450,10 @@ var go = (function (global) {
              * @param {String} name
              */
             'onload': function (name) {
-                var listeners = this.listeners[name], i, len, listener;
+                var listener = this.listeners[name];
                 this.created[name] = true;
-                if (listeners) {
-                    for (i = 0, len = listeners.length; i < len; i += 1) {
-                        listener = listeners[i];
-                        listener.l -= 1;
-                        if (listener.l <= 0) {
-                            listener.fn.call(global);
-                        }
-                    }
+                if (listener) {
+                    listener();
                 }
             }
         };
