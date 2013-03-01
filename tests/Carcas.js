@@ -183,45 +183,45 @@ tests.test("Init and loading", function () {
         ["/carcas/controllers/layout/default.js", "/carcas/modules/one/Two.js"],
         "page1 тянет за собой default и модуль"
     );
-    ok(!carcas.controllers.page1, "page1 ждёт зависимости и ещё не загрузился");
+    ok(!carcas.controllersList.page1, "page1 ждёт зависимости и ещё не загрузился");
 
-    ok(carcas.controllers.search, "search загрузился сразу же");
-    ok(carcas.contorllers.search instanceof go.Carcas.Controller, "search - контроллер");
-    ok(carcas.controller.search.getCarcas, "search имеет свой метод");
-    equal(carcas.controller.search.getCarcas(), carcas, "carcas из контроллера ссылается на центральный объект");
-    equal(carcas.controller.search.getRegistryA(), 5, "Правильно установлен carcas.registry");
+    ok(carcas.controllersList.search, "search загрузился сразу же");
+    ok(carcas.controllersList.search instanceof go.Carcas.Controller, "search - контроллер");
+    ok(carcas.controllersList.search.getCarcas, "search имеет свой метод");
+    equal(carcas.controllersList.search.getCarcas(), carcas, "carcas из контроллера ссылается на центральный объект");
+    equal(carcas.controllersList.search.getRegistryA(), 5, "Правильно установлен carcas.registry");
 
     requests = [];
     files.include("/carcas/controllers/layout/default.js");
-    ok(!carcas.controllers.layout, "default ждёт one.Two");
+    ok(!carcas.controllersList.layout, "default ждёт one.Two");
     equals(request, [], "Но запрос к one.Two уже послан");
 
     files.include("/carcas/modules/one/Two.js");
     ok(!carcas.mo.one, "one.Two ждёт one.Three, Four и fancybox");
-    equals(
+    equal(
         requests,
         ["/carcas/modules/one/Theree.js", "/carcas/modules/Four.js"],
         "one.Two послал два запроса к библиотеке (fancybox отдельно)"
     );
-    equals(otherLibsLoader.requests[0][0], ["fancybox"], "facybox запрошен через пользовательский загрузчик");
+    equal(otherLibsLoader.requests[0][0], ["fancybox"], "facybox запрошен через пользовательский загрузчик");
 
     requests = [];
     files.include("/carcas/modules/one/Three.js");
     ok(carcas.mo.one.Three, "one.Three ничего не ждёт");
     files.include("/carcas/modules/one/Four.js");
     ok(carcas.mo.Four, "Four создан, так как go.Cookie уже загружен");
-    equals(request, [], "Никаких дополнительных запросов ещё не было");
+    equal(request, [], "Никаких дополнительных запросов ещё не было");
 
     ok(carcas.mo.one.Three.getCarcasFromModule, "Правильно ли создан модуль");
     ok(carcas.mo.one.Three.getCarcasFromModule(), carcas, "carcas из модуля ссылается на центральный объект");
 
-    ok(!carcas.controllers.page1, "Все остальные ждут fancybox");
+    ok(!carcas.controllersList.page1, "Все остальные ждут fancybox");
     ok(!carcas.modules.one.Two, "Все остальные ждут fancybox");
 
     otherLibsLoader.requests[0][1](); // обработчик загрузки fancybox
-    ok(carcas.controllers.page1);
-    ok(carcas.controllers.default);
-    ok(carcas.controllers.one.Two);
+    ok(carcas.controllersList.page1);
+    ok(carcas.controllersList.layouts.default);
+    ok(carcas.controllersList.one.Two);
 
     equal(
         controllersCreate,
