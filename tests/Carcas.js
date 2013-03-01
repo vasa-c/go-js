@@ -79,6 +79,10 @@ tests.test("Init and loading", function () {
 
                 'getCarcas': function () {
                     return this.carcas;
+                },
+
+                'getRegistryA': function () {
+                    return this.carcas.registry.a;
                 }
 
             });
@@ -185,6 +189,7 @@ tests.test("Init and loading", function () {
     ok(carcas.contorllers.search instanceof go.Carcas.Controller, "search - контроллер");
     ok(carcas.controller.search.getCarcas, "search имеет свой метод");
     equal(carcas.controller.search.getCarcas(), carcas, "carcas из контроллера ссылается на центральный объект");
+    equal(carcas.controller.search.getRegistryA(), 5, "Правильно установлен carcas.registry");
 
     requests = [];
     files.include("/carcas/controllers/layout/default.js");
@@ -223,4 +228,5 @@ tests.test("Init and loading", function () {
         ["search", "default", "page1"],
         "Правильный порядок создания контроллеров и вызов oncreate"
     );
+
 });
