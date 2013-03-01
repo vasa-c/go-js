@@ -639,4 +639,20 @@ tests.test("go.Lang.Listeners.createCounter", function () {
     deepEqual(result, [3, 1, 2]);
     listener2();
     deepEqual(result, [3, 1, 2]);
+
+    result = [];
+    counter3 = go.Lang.Listeners.createCounter(null, f1);
+    deepEqual(result, []);
+    counter3.inc();
+    counter3.inc(2);
+    counter3();
+    counter3.inc();
+    counter3();
+    counter3();
+    deepEqual(result, []);
+    counter3();
+    deepEqual(result, [1]);
+    counter3.inc();
+    counter3();
+    deepEqual(result, [1]);
 });

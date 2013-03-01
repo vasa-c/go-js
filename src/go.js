@@ -207,22 +207,41 @@ var go = (function (global) {
              * @name go.Lang.Listeners.createCounter
              * @param {Number} count
              * @param {Function} listener
-             * @return {Function}
+             * @return {(Function|go.Lang.Listeners.Counter)}
              */
-            'createCounter': function (count, listener) {
-                if (count == 0) {
-                    listener();
+            'createCounter': (function () {
+
+                /**
+                 * @name go.Lang.Listeners.Counter#inc
+                 * @param {Number} [i=1]
+                 */
+                function inc(i) {
+                    if (this.count !== 0) {
+                        this.count += (i || 1);
+                    }
                 }
 
-                return function Counter() {
-                    if (count > 0) {
-                        count -= 1;
-                        if (count == 0) {
-                            listener();
+                function createCounter(count, listener) {
+                    if (count === 0) {
+                        listener();
+                    }
+
+                    function Counter() {
+                        if (Counter.count > 0) {
+                            Counter.count -= 1;
+                            if (Counter.count == 0) {
+                                listener();
+                            }
                         }
                     }
+
+                    Counter.count = count;
+                    Counter.inc = inc;
+                    return Counter;
                 };
-            }
+
+                return createCounter;
+            }())
         }
 
     };
