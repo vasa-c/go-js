@@ -340,6 +340,7 @@ go("Class", function (go) {
          *
          * @public
          * @return void
+         * @throws go.Class.Exceptions.Final
          */
         'create': function () {
             this.createClass();
@@ -368,6 +369,7 @@ go("Class", function (go) {
          *
          * @private
          * @return void
+         * @throws go.Class.Exceptions.Abstract
          */
         'createClass': function () {
             var C = function () {
@@ -600,6 +602,7 @@ go("Class", function (go) {
              *         аргументы метода
              * @return {*}
              *         результат, возвращённый методом
+             * @throws go.Class.Exceptions.Method
              */
             '__method': function (instance, name) {
                 var args = Array.prototype.slice.call(arguments, 2),
@@ -894,19 +897,7 @@ go("Class", function (go) {
                  * @param {Object} props
                  */
                 'processClass': function (props) {
-                    var fields = this.fields, k, prop, mut;
-                    for (k in props) {
-                        if (props.hasOwnProperty(k)) {
-                            prop = props[k];
-                            if ((typeof prop === "function") || (!this.onlyMethods)) {
-                                mut = this.eachForClass(k, prop);
-                                if (mut) {
-                                    fields[k] = mut;
-                                    delete props[k];
-                                }
-                            }
-                        }
-                    }
+
                 },
 
                 /**
@@ -916,12 +907,7 @@ go("Class", function (go) {
                  * @param {Object} instance
                  */
                 'processInstance': function (instance) {
-                    var fields = this.fields, k;
-                    for (k in fields) {
-                        if (fields.hasOwnProperty(k)) {
-                            this.eachForInstance(instance, k, fields[k]);
-                        }
-                    }
+
                 },
 
                 /**
@@ -976,42 +962,6 @@ go("Class", function (go) {
                     go.Lang.extend(this.fields, mutators[this.name].fields);
                 },
 
-                /**
-                 * eachForClass должен перебирать только методы
-                 *
-                 * @protected
-                 * @type {Boolean}
-                 */
-                'onlyMethods': true,
-
-                /**
-                 * Перебор всех полей на этапе создания класса
-                 *
-                 * @params {String} name
-                 *         имя поля
-                 * @params {*} prop
-                 *         значение поля
-                 * @return {*}
-                 *         если возвращается непустое значение, оно сохраняется в мутаторе, а из props удаляется
-                 */
-                'eachForClass': function () {
-                    return;
-                },
-
-                /**
-                 * Перебор сохранённых полей на этапе создания объекта
-                 *
-                 * @param {Object} instance
-                 *        объект
-                 * @param {String} name
-                 *        имя поля
-                 * @param {*} prop
-                 *        сохранённое мутатором значение
-                 */
-                'eachForInstance': function (instance, name, prop) {
-                    instance[name] = prop;
-                },
-
                 'eoc': null
             };
             Construct.prototype.constructor = Construct;
@@ -1030,6 +980,7 @@ go("Class", function (go) {
      * Функция создания нового класса
      *
      * @name go.Class
+     * @public
      * @param {(Function|Array.<Function>)} [parents]
      *        класс-предок или список предков
      * @param {Object} props
@@ -1045,16 +996,51 @@ go("Class", function (go) {
         creator.__destruct();
         return C;
     };
+
+    /**
+     * @class go.Class.Root
+     *        базовый класс
+     */
     Class.Root = Class.apply(window, [null, RootPrototype]);
     Class.Root.prototype.toString = RootPrototype.toString; // IE !!!
+
+    /**
+     * @namespace go.Class.Exceptions
+     *            исключения при работе с библиотекой
+     */
     Class.Exceptions = (function () {
         var create = go.Lang.Exception.create,
             Base = create("go.Class.Exceptions.Base", go.Lang.Exception);
         return {
-            'Base'     : Base,
-            'Abstract' : create("go.Class.Exceptions.Abstract", Base),
-            'Final'    : create("go.Class.Exceptions.Final", Base),
-            'Method'   : create("go.Class.Exceptions.Method", Base)
+
+            /**
+             * @class go.Class.Exceptions.Base
+             *        базовое исключение при работе с go.Class
+             * @augments go.Lang.Exception.Base
+             * @abstract
+             */
+            'Base': Base,
+
+            /**
+             * @class go.Class.Exceptions.Abstract
+             *        попытка инстанцировать абстрактный класс
+             * @augments go.Class.Exceptions.Base
+             */
+            'Abstract': create("go.Class.Exceptions.Abstract", Base),
+
+            /**
+             * @class go.Class.Exceptions.Final
+             *        попытка расширить финальный класс
+             * @augments go.Class.Exceptions.Base
+             */
+            'Final': create("go.Class.Exceptions.Final", Base),
+
+            /**
+             * @class go.Class.Exceptions.Method
+             *        попытка вызова не существующего метода
+             * @augments go.Class.Exceptions.Method
+             */
+            'Method': create("go.Class.Exceptions.Method", Base)
         };
     }());
 

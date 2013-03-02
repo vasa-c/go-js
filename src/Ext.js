@@ -443,7 +443,7 @@ go("Ext", ["Class"], function (go, global) {
          *
          * @name go.Ext.Events#eventListeners
          * @protected
-         * @type {Object.<string, Array.<Function>>}
+         * @type {Object.<string, go.Lang.Listeners.Listener>}
          *       имя события => список обработчиков
          */
         'eventListeners': null,
@@ -470,12 +470,10 @@ go("Ext", ["Class"], function (go, global) {
                 this.eventListeners = {};
             }
             elisteners = this.eventListeners;
-            if (elisteners[eventType]) {
-                elisteners[eventType].push(listener);
-            } else {
-                elisteners[eventType] = [listener];
+            if (!elisteners[eventType]) {
+                elisteners[eventType] = go.Lang.Listeners.create();
             }
-            return elisteners[eventType].length - 1;
+            return elisteners[eventType].append(listener);
         },
 
         /**
@@ -499,17 +497,7 @@ go("Ext", ["Class"], function (go, global) {
             if (!elisteners) {
                 return false;
             }
-            if (typeof listener === "number") {
-                elisteners[listener] = null;
-                return true;
-            }
-            for (i = 0, len = elisteners.length; i < len; i += 1) {
-                if (listener === elisteners[i]) {
-                    elisteners[i] = null;
-                    return true;
-                }
-            }
-            return false;
+            return elisteners.remove(listener);
         },
 
         /**
@@ -521,7 +509,7 @@ go("Ext", ["Class"], function (go, global) {
          *        тип события
          */
         'removeEventAllListeners': function (eventType) {
-            this.eventListeners[eventType] = [];
+            this.eventListeners[eventType] = null;
         },
 
         /**
@@ -546,20 +534,15 @@ go("Ext", ["Class"], function (go, global) {
          *        данные события (если event - строка)
          */
         'fireEvent': function (event, eventData) {
-            var listeners, listener, i, len;
+            var listener, i, len;
             if ((!event) || (typeof event !== "object")) {
                 event = new Ext.Events.Event(event, eventData);
             }
-            listeners = this.eventListeners && this.eventListeners[event.type];
-            if (!listeners) {
+            listener = this.eventListeners && this.eventListeners[event.type];
+            if (!listener) {
                 return;
             }
-            for (i = 0, len = listeners.length; i < len; i += 1) {
-                listener = listeners[i];
-                if (listener) {
-                    listener(event);
-                }
-            }
+            listener(event);
         },
 
         /**

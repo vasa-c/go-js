@@ -38,22 +38,29 @@ var go = (function (global) {
          *
          * @type {go.__Loader}
          */
-        loader;
+        loader,
+
+        /**
+         * Антикэш при подключении модулей
+         *
+         * @return {String}
+         */
+        anticache;
 
     /**
      * Вызов go(), как функции - загрузка модуля
      *
      * @param {String} name
      *        имя модуля
-     * @param {Array<String>} [reqs]
+     * @param {Array.<String>} [deps]
      *        список зависимостей
      * @param {Function} fmodule
      *        функция-конструктор модуля
      * @return {Function}
      */
-    function go(name, reqs, fmodule) {
+    function go(name, deps, fmodule) {
         if (name) {
-            go.appendModule(name, reqs, fmodule);
+            go.appendModule(name, deps, fmodule);
         }
         return go;
     }
@@ -89,236 +96,325 @@ var go = (function (global) {
      * @name go.appendModule
      * @param {String} name
      *        имя модуля
-     * @param {Array<String>} [reqs]
+     * @param {Array<String>} [deps]
      *        список зависимостей
      * @param {Function} fmodule
      *        функция-конструктор модуля
      */
-    go.appendModule = function (name, reqs, fmodule) {
+    go.appendModule = function (name, deps, fmodule) {
         if (!fmodule) {
-            fmodule = reqs;
-            reqs = [];
+            fmodule = deps;
+            deps = [];
         }
-        loader.appendModule(name, reqs, fmodule);
+        loader.loaded(name, deps, fmodule);
     };
 
     /**
-     * Класс загрузчиков модулей
-     *
      * @class go.__Loader
+     *        загрузчик модулей
      */
     go.__Loader = (function () {
 
-        var LoaderPrototype, LoaderConstructor;
-
-        LoaderPrototype = {
-
-            /**
-             * Контейнер в который записываются загруженные модули
-             * (может быть переопределён у конкретного объекта)
-             *
-             * @name go.__Loader#container
-             * @type {Object}
-             * @private
-             */
-            'container': go,
+        function Loader(includer, creator) {
+            this.__construct(includer, creator);
+        }
+        Loader.prototype = {
 
             /**
-             * Имя модуля => был ли запрос на его загрузку
-             *
-             * @name go.__Loader#reqs
-             * @type {Object.<String, Boolean>}
-             * @private
+             * @lends go.__Loader.prototype
              */
-            'reqs': null,
-
-            /**
-             * Имя модуля => был ли он создан и помещён в пространство имён
-             *
-             * @name go.__Loaders#loaded
-             * @type {Object.<String, Boolead>}
-             * @private
-             */
-            'created': null,
-
-            /**
-             * Имя модуля => список слушателей его загрузки
-             *
-             * Поля слушателя:
-             * fn {Function} обработчик
-             * l {Number} количество модулей, оставшихся на ожидании
-             *
-             * @name go.__Loaders#listeners
-             * @type {Object.<String, Object>}
-             * @private
-             */
-            'listeners': null,
 
             /**
              * @constructs
-             * @name go.__Loaders#
-             * @param {Object} [params]
-             *        параметры могут перекрывать существующие свойства и метода объекта
+             * @public
+             * @param {Function(string)} includer
+             *        внешняя функция, инициирующая запрос на загрузку модуля (получает аргументом название)
+             * @param {Function(string, *)} creator
+             *        внешнаяя функция, создающая модуль (получает имя и данные)
              */
-            '__construct': function (params) {
-                var k;
-                if (params) {
-                    for (k in params) {
-                        if (params.hasOwnProperty(k)) {
-                            this[k] = params[k];
-                        }
-                    }
-                }
-                this.reqs = {};
-                this.created = {};
-                this.listeners = {};
+            '__construct': function (includer, creator) {
+                this.includer = includer;
+                this.creator  = creator;
+                this.modules  = {};
             },
 
             /**
-             * Подключить список модулей
+             * Запрос на подключения модулей
              *
              * @name go.__Loader#include
              * @public
              * @param {(String|Array.<String>)} names
              *        имя модуля или список имён
              * @param {Function} [listener]
-             *        обработчик загрузки всех модулей
+             *        слушатель окончания загрузки всех модулей из списка
              */
             'include': function (names, listener) {
-                var i, len, name;
+                var len,
+                    i,
+                    name,
+                    module,
+                    includer = this.includer,
+                    counter,
+                    Listeners = go.__Loader.Listeners;
                 if (typeof names === "string") {
                     names = [names];
                 }
+                if (listener) {
+                    counter = Listeners.createCounter(null, listener);
+                }
                 for (i = 0, len = names.length; i < len; i += 1) {
                     name = names[i];
-                    if (!this.reqs[name]) {
-                        this.reqs[name] = true;
-                        this.requestModule(name);
+                    module = this.modules[name];
+                    if (!module) {
+                        module = {};
+                        this.modules[name] = module;
+                        includer(name);
+                    }
+                    if ((!module.created) && counter) {
+                        counter.inc();
+                        if (module.listener) {
+                            module.listener.append(counter);
+                        } else {
+                            module.listener = Listeners.create(counter);
+                        }
                     }
                 }
-                if (listener) {
-                    this.addListener(names, listener);
+                if (counter) {
+                    counter.filled();
                 }
             },
 
             /**
-             * Добавить слушатель на загрузку блока модулей
+             * Информирование о загрузке данных модуля
              *
-             * @name go.__Loader#addListener
+             * @name go.__Loader#loaded
              * @public
-             * @param {Array.<String>} names
-             *        список имён модулей
-             * @param {Function} listener
-             *        обработчик, вызываемый после загрузки всех модулей из блока
+             * @param {String} name
+             *        название
+             * @param {Array.<String>} deps
+             *        список зависимостей
+             * @param {*} data
+             *        данные модуля
              */
-            'addListener': function (names, listener) {
-                var L = {'l' : 0, 'fn' : listener},
-                    name,
-                    i,
-                    len;
-                for (i = 0, len = names.length; i < len; i += 1) {
-                    name = names[i];
-                    if (!this.created[name]) {
-                        if (!this.listeners[name]) {
-                            this.listeners[name] = [];
+            'loaded': function (name, deps, data) {
+                var module = this.modules[name],
+                    listener,
+                    loader = this;
+                if (!module) {
+                    module = {};
+                    this.modules[name] = module;
+                } else if (module.created || module.data) {
+                    return;
+                }
+                listener = function () {
+                    loader.creator.call(this, name, data);
+                    module.created = true;
+                    if (module.listener) {
+                        module.listener.call(null);
+                    }
+                };
+                deps = deps || [];
+                this.include(deps, listener);
+            },
+
+            /**
+             * См. конструктор
+             * @name go.__Loader#includer
+             * @private
+             * @type {Function(string)}
+             */
+            'includer': null,
+
+            /**
+             * См. конструктор
+             * @name go.__Loader#creator
+             * @private
+             * @type {Function(string, *)}
+             */
+            'creator': null,
+
+            /**
+             * Статусы и параметры модулей
+             * имя => параметры
+             *
+             * Есть запись - запрос на загрузку уже послан
+             * поле "created"  - модуль создан
+             * поле "listener" - слушатель на создание этого модуля
+             *
+             * @name go.__Loader#reqs
+             * @private
+             * @type {Object.<String, Object>}
+             */
+            'modules': null
+        };
+        return Loader;
+    }());
+
+    go.__Loader.Listeners = {
+
+        /**
+         * @name go.Lang.Listeners.create
+         * @param {(Function|Array.<Function>)} f
+         * @return {go.Lang.Listeners.Listener}
+         */
+        'create': (function () {
+
+            var ping, append, remove;
+
+            /**
+             * @name go.Lang.Listeners.Listener#ping
+             * @public
+             * @return void
+             */
+            ping = function ping() {
+                this.apply(null, arguments);
+            };
+
+            /**
+             * @name go.Lang.Listeners.Listener#append
+             * @public
+             * @param {Function} f
+             * @param {Boolean} [check]
+             * @return {Number}
+             */
+            append = function append(f, check) {
+                var list = this.list,
+                    len,
+                    i;
+                if (check) {
+                    for (i = 0, len = list.length; i < len; i += 1) {
+                        if (list[i] === f) {
+                            return i;
                         }
-                        L.l += 1;
-                        this.listeners[name].push(L);
                     }
                 }
-                if (L.l === 0) {
+                list.push(f);
+                return list.length - 1;
+            };
+
+            /**
+             * @name go.Lang.Listeners.Listener#ping
+             * @public
+             * @param {(Function|Number)} f
+             * @return {Boolean}
+             */
+            remove = function remove(f) {
+                var list = this.list, len, i;
+                if (typeof f !== "function") {
+                    if (list[f]) {
+                        list[f] = null;
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+                for (i = 0, len = list.length; i < len; i += 1) {
+                    if (list[i] === f) {
+                        list[i] = null;
+                        return true;
+                    }
+                }
+                return false;
+            };
+
+            function create(list) {
+                var listener;
+
+                if (typeof list === "function") {
+                    list = [list];
+                } else if (Object.prototype.toString.call(list) !== '[object Array]') {
+                    list = [];
+                }
+
+                listener = function () {
+                    var current,
+                        len = list.length,
+                        i;
+                    for (i = 0; i < len; i += 1) {
+                        current = list[i];
+                        if (current) {
+                            current.apply(null, arguments);
+                        }
+                    }
+                };
+
+                listener.list = list;
+                listener.ping = ping;
+                listener.append = append;
+                listener.remove = remove;
+
+                return listener;
+            }
+
+            return create;
+        }()),
+
+        /**
+         * @name go.Lang.Listeners.createCounter
+         * @param {Number} count
+         * @param {Function} listener
+         * @return {(Function|go.Lang.Listeners.Counter)}
+         */
+        'createCounter': (function () {
+
+            var inc, filled;
+
+            /**
+             * @name go.Lang.Listeners.Counter#inc
+             * @param {Number} [i=1]
+             */
+            inc = function inc(i) {
+                if (this.count !== 0) {
+                    this.count += (i || 1);
+                }
+            };
+
+            /**
+             * @name go.Lang.Listeners.Counter#filled
+             * @return {Boolean}
+             */
+            filled = function filled() {
+                if (!this.count) {
+                    this.count = 0;
+                    this.listener.apply(null);
+                    return true;
+                }
+                return false;
+            };
+
+            function createCounter(count, listener) {
+                if (count === 0) {
                     listener();
                 }
-            },
-
-            /**
-             * Добавить модуль в пространство имён
-             *
-             * @name go.__Loader#appendModule
-             * @public
-             * @param {String} name
-             *        имя модуля
-             * @param {Array.<String>} reqs
-             *        список зависимостей
-             * @param {Function} fmodule
-             *        конструктор объекта модуля
-             */
-            'appendModule': function (name, reqs, fmodule) {
-                var lreqs = [], i, len, _this = this, f;
-                this.reqs[name] = true;
-                if (reqs) {
-                    for (i = 0, len = reqs.length; i < len; i += 1) {
-                        if (!this.created[reqs[i]]) {
-                            lreqs.push(reqs[i]);
+                function Counter() {
+                    if (Counter.count > 0) {
+                        Counter.count -= 1;
+                        if (Counter.count === 0) {
+                            Counter.listener.apply(null);
                         }
                     }
                 }
-                f = function () {
-                    _this.createModule(name, fmodule);
-                    _this.onload(name);
-                };
-                if (lreqs.length > 0) {
-                    this.include(lreqs, f);
-                } else {
-                    f();
-                }
-            },
-
-            /**
-             * Запрос на загрузку модуля
-             *
-             * @name go.__Loader#requestModule
-             * @protected
-             * @param {String} name
-             */
-            'requestModule': function (name) {
-                var src = GO_DIR + name + ".js" + this._anticache;
-                doc.write('<script type="text/javascript" src="' + src + '"></script>');
-            },
-
-            /**
-             * Создать объект модуля в заданном пространстве имён
-             *
-             * @name go.__Loader#createModule
-             * @protected
-             * @param {String} name
-             *        имя модуля
-             * @param {Function} fmodule
-             *        конструктор модуля
-             */
-            'createModule': function (name, fmodule) {
-                this.container[name] = fmodule(go, global);
-            },
-
-            /**
-             * Обработка события подключения модуля
-             *
-             * @name go.__Loader#onload
-             * @private
-             * @param {String} name
-             */
-            'onload': function (name) {
-                var listeners = this.listeners[name], i, len, listener;
-                this.created[name] = true;
-                if (listeners) {
-                    for (i = 0, len = listeners.length; i < len; i += 1) {
-                        listener = listeners[i];
-                        listener.l -= 1;
-                        if (listener.l <= 0) {
-                            listener.fn.call(global);
-                        }
-                    }
-                }
+                Counter.count = count;
+                Counter.listener = listener;
+                Counter.inc = inc;
+                Counter.filled = filled;
+                return Counter;
             }
-        };
-        LoaderConstructor = function () {
-            this.__construct.apply(this, arguments);
-        };
-        LoaderConstructor.prototype = LoaderPrototype;
 
-        return LoaderConstructor;
+            return createCounter;
+        }())
+    };
+
+    loader = (function () {
+        function includer(name) {
+            var src = GO_DIR + name + ".js" + anticache;
+            doc.write('<script type="text/javascript" src="' + src + '"></script>');
+        }
+        function creator(name, data) {
+            go[name] = data(go, global);
+        }
+        return new go.__Loader(includer, creator);
     }());
-    loader = new go.__Loader();
 
     /**
      * Инициализация библиотеки
@@ -357,7 +453,7 @@ var go = (function (global) {
 
         GO_DIR = matches[1];
 
-        loader._anticache = matches[2] || "";
+        anticache = matches[2] || "";
 
         if (matches[4]) {
             go.include(matches[4].split(","));
@@ -840,10 +936,10 @@ go("Lang", function (go, global) {
         },
 
         /**
-         * Создание собственных "классов" исключений
-         *
-         * @name go.Lang.Exception
-         * @type {Function}
+         * @class go.Lang.Exception
+         *        пользовательские "классы" исключений
+         * @alias go.Lang.Exception.Base
+         * @augments Error
          */
         'Exception': (function () {
 
@@ -887,10 +983,9 @@ go("Lang", function (go, global) {
             };
 
             /**
-             * Базовый "класс" исключений внутри библиотеки
-             *
-             * @name go.Lang.Exception.Base
-             * @type {Function}
+             * @class go.Lang.Exception.Base
+             *        базовый "класс" исключений внутри библиотеки
+             * @augments Error
              */
             Base = create("go.Exception");
 
@@ -899,6 +994,8 @@ go("Lang", function (go, global) {
 
             return Base;
         }()),
+
+        'Listeners': go.__Loader.Listeners,
 
         'eoc': null
     };
