@@ -104,6 +104,146 @@ var go = (function (global) {
         loader.appendModule(name, reqs, fmodule);
     };
 
+    /**
+     * @class go.__Loader
+     *        загрузчик модулей
+     */
+    go.__L = (function () {
+
+        function Loader(includer, creator) {
+            this.__construct(includer, creator);
+        }
+        Loader.prototype = {
+
+            /**
+             * @lends go.__Loader.prototype
+             */
+
+            /**
+             * @constructs
+             * @public
+             * @param {Function(string)} includer
+             *        внешняя функция, инициирующая запрос на загрузку модуля (получает аргументом название)
+             * @param {Function(string, *)} creator
+             *        внешнаяя функция, создающая модуль (получает имя и данные)
+             */
+            '__construct': function (includer, creator) {
+                this.includer = includer;
+                this.creator  = creator;
+                this.modules  = {};
+            },
+
+            /**
+             * Запрос на подключения модулей
+             *
+             * @name go.__Loader#include
+             * @public
+             * @param {(String|Array.<String>)} names
+             *        имя модуля или список имён
+             * @param {Function} [listener]
+             *        слушатель окончания загрузки всех модулей из списка
+             */
+            'include': function (names, listener) {
+                var len,
+                    i,
+                    name,
+                    module,
+                    includer = this.includer,
+                    counter;
+                if (typeof names === "string") {
+                    names = [names];
+                }
+                if (listener) {
+                    counter = MLoad.Listeners.createCounter(null, listener);
+                }
+                for (i = 0, len = names.length; i < len; i += 1) {
+                    name = names[i];
+                    module = this.modules[name];
+                    if (!module) {
+                        module = {};
+                        this.modules[name] = module;
+                        includer(name);
+                    }
+                    if ((!module.created) && counter) {
+                        counter.inc();
+                        if (module.listener) {
+                            module.listener.append(counter);
+                        } else {
+                            module.listener = MLoad.Listeners.create(counter);
+                        }
+                    }
+                }
+                if (counter) {
+                    counter.filled();
+                }
+            },
+
+            /**
+             * Информирование о загрузке данных модуля
+             *
+             * @name go.__Loader#loaded
+             * @public
+             * @param {String} name
+             *        название
+             * @param {Array.<String>} deps
+             *        список зависимостей
+             * @param {*} data
+             *        данные модуля
+             */
+            'loaded': function (name, deps, data) {
+                var module = this.modules[name],
+                    listener,
+                    loader = this;
+                if (!module) {
+                    module = {};
+                    this.modules[name] = module;
+                } else if (module.created || module.data) {
+                    return;
+                }
+                listener = function () {
+                    loader.creator.call(this, name, data);
+                    module.created = true;
+                    if (module.listener) {
+                        module.listener.call(null);
+                    }
+                };
+                deps = deps || [];
+                this.include(deps, listener);
+            },
+
+            /**
+             * См. конструктор
+             * @name go.__Loader#includer
+             * @private
+             * @type {Function(string)}
+             */
+            'includer': null,
+
+            /**
+             * См. конструктор
+             * @name go.__Loader#creator
+             * @private
+             * @type {Function(string, *)}
+             */
+            'creator': null,
+
+            /**
+             * Статусы и параметры модулей
+             * имя => параметры
+             *
+             * Есть запись - запрос на загрузку уже послан
+             * поле "created"  - модуль создан
+             * поле "listener" - слушатель на создание этого модуля
+             *
+             * @name go.__Loader#reqs
+             * @private
+             * @type {Object.<String, Object>}
+             */
+            'modules': null
+        };
+        return Loader;
+    }());
+
     MLoad = {
 
         'Listeners': {
