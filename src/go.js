@@ -416,6 +416,13 @@ var go = (function (global) {
         return new go.__Loader(includer, creator);
     }());
 
+    go.log = function () {
+        var console = global.console;
+        if (console && console.log) {
+            console.log.apply(console, arguments);
+        }
+    };
+
     /**
      * Инициализация библиотеки
      * - вычисление каталога с go.js
