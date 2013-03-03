@@ -431,6 +431,57 @@ tests.test("merge", function () {
     deepEqual(destination, expected);
 });
 
+tests.test("getByPath", function () {
+
+    var context = {
+        'one': 1,
+        'two': {
+            'three': 3,
+            'four': {
+                'five': "five"
+            },
+            'six': null
+        }
+    };
+
+    equal(go.Lang.getByPath(context, "one"), 1);
+    deepEqual(go.Lang.getByPath(context, "two"), context.two);
+    equal(typeof go.Lang.getByPath(context, "three"), "undefined");
+    equal(go.Lang.getByPath(context, "three", 11), 11, "by default");
+
+    equal(go.Lang.getByPath(context, "two.four.five"), "five");
+    equal(go.Lang.getByPath(context, ["two", "four", "five"]), "five");
+
+    equal(typeof go.Lang.getByPath(context, "two.six.seven"), "undefined");
+    equal(typeof go.Lang.getByPath(context, "two.four.five.toString"), "undefined", "prototype");
+});
+
+tests.test("setByPath", function () {
+
+    var context = {
+        'one': 1,
+        'two': {
+            'three': 3,
+            'four': {
+                'five': "five"
+            },
+            'six': null
+        }
+    };
+
+    go.Lang.setByPath(context, "one", 2);
+    equal(context.one, 2);
+    go.Lang.setByPath(context, "two.three", 4);
+    equal(context.two.three, 4);
+    go.Lang.setByPath(context, ["two", "four"], 5);
+    equal(context.two.four, 5);
+    go.Lang.setByPath(context, "two.x.y.z", "xyz");
+    equal(typeof context.two.x, "object");
+    equal(typeof context.two.x.y, "object");
+    equal(context.two.x.y.z, "xyz");
+
+});
+
 tests.test("curry", function () {
 
     var cur, cur2;
@@ -563,4 +614,105 @@ tests.test("go.Lang.Exception", function () {
     } catch (e3) {
         equal(e3.message, "default");
     }
+});
+
+tests.test("go.Lang.Listeners.create", function () {
+
+    var listener, f1, f2, f3, result, idf2;
+
+    f1 = function (t) {
+        if (!t) {
+            t = 0;
+        }
+        result.push(1 + t);
+    };
+    f2 = function () {
+        result.push(2);
+    };
+    f3 = function () {
+        result.push(3);
+    };
+
+    listener = go.Lang.Listeners.create(f1);
+
+    result = [];
+    listener();
+    deepEqual(result, [1]);
+    listener.ping(10);
+    deepEqual(result, [1, 11]);
+
+    result = [];
+    idf2 = listener.append(f2);
+    equal(idf2, listener.append(f2, true));
+    listener();
+    listener.append(f3);
+    listener(10);
+    deepEqual(result, [1, 2, 11, 2, 3]);
+
+    result = [];
+    ok(listener.remove(idf2));
+    listener();
+    ok(!listener.remove(idf2));
+    ok(listener.remove(f3));
+    listener();
+    ok(!listener.remove(f3));
+    deepEqual(result, [1, 3, 1]);
+});
+
+tests.test("go.Lang.Listeners.createCounter", function () {
+
+    var f1, f2, f3, listener1, listener2, counter1, counter2, counter3, result;
+
+    f1 = function () {
+        result.push(1);
+    };
+    f2 = function () {
+        result.push(2);
+    };
+    f3 = function () {
+        result.push(3);
+    };
+
+    result = [];
+    listener1 = go.Lang.Listeners.create([f1, f2]);
+    counter1  = go.Lang.Listeners.createCounter(5, listener1);
+    counter2  = go.Lang.Listeners.createCounter(3, f3);
+    counter3  = go.Lang.Listeners.createCounter(0, f1);
+    listener2 = go.Lang.Listeners.create([counter1, counter2, counter3]);
+    deepEqual(result, [1]);
+
+    result = [];
+    listener2();
+    listener2();
+    deepEqual(result, []);
+    listener2();
+    deepEqual(result, [3]);
+    listener2();
+    deepEqual(result, [3]);
+    listener2();
+    deepEqual(result, [3, 1, 2]);
+    listener2();
+    deepEqual(result, [3, 1, 2]);
+
+    result = [];
+    counter3 = go.Lang.Listeners.createCounter(null, f1);
+    deepEqual(result, []);
+    counter3.inc();
+    counter3.inc(2);
+    counter3();
+    counter3.inc();
+    counter3();
+    counter3();
+    deepEqual(result, []);
+    counter3();
+    deepEqual(result, [1]);
+    counter3.inc();
+    counter3();
+    deepEqual(result, [1]);
+
+    result = [];
+    counter3 = go.Lang.Listeners.createCounter(null, f1);
+    counter3.filled();
+    deepEqual(result, [1]);
+
 });
