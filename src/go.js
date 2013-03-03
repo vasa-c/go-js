@@ -776,6 +776,34 @@ go("Lang", function (go, global) {
         },
 
         /**
+         * Получить значение по пути внутри объекта
+         *
+         * @name go.Lang.getByPath
+         * @param {Object} context
+         *        объект, в котором производится поиск (не указан - глобальный)
+         * @param {(String|Array.<String>)} path
+         *        путь - массив компонентов или строка вида "one.two.three"
+         * @param [bydefault]
+         *        значение по умолчанию, если путь не найден
+         * @return {*}
+         */
+        'getByPath': function (context, path, bydefault) {
+            var len, i, p;
+            context = context || global;
+            if (typeof path !== "object") {
+                path = path.split(".");
+            }
+            for (i = 0, len = path.length; i < len; i += 1) {
+                p = path[i];
+                if (!(context && context.hasOwnProperty(p))) {
+                    return bydefault;
+                }
+                context = context[p];
+            }
+            return context;
+        },
+
+        /**
          * Каррирование функции
          *
          * @name go.Lang.curry

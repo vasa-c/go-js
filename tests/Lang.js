@@ -431,6 +431,31 @@ tests.test("merge", function () {
     deepEqual(destination, expected);
 });
 
+tests.test("getByPath", function () {
+
+    var context = {
+        'one': 1,
+        'two': {
+            'three': 3,
+            'four': {
+                'five': "five"
+            },
+            'six': null
+        }
+    };
+
+    equal(go.Lang.getByPath(context, "one"), 1);
+    deepEqual(go.Lang.getByPath(context, "two"), context.two);
+    equal(typeof go.Lang.getByPath(context, "three"), "undefined");
+    equal(go.Lang.getByPath(context, "three", 11), 11, "by default");
+
+    equal(go.Lang.getByPath(context, "two.four.five"), "five");
+    equal(go.Lang.getByPath(context, ["two", "four", "five"]), "five");
+
+    equal(typeof go.Lang.getByPath(context, "two.six.seven"), "undefined");
+    equal(typeof go.Lang.getByPath(context, "two.four.five.toString"), "undefined", "prototype");
+});
+
 tests.test("curry", function () {
 
     var cur, cur2;
