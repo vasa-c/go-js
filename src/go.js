@@ -804,6 +804,33 @@ go("Lang", function (go, global) {
         },
 
         /**
+         * Установить значение по пути внутри объекта
+         *
+         * @name go.Lang.getByPath
+         * @param {Object} context
+         *        целевой объект
+         * @param {(String|Array.<String>)} path
+         *        путь - массив компонентов или строка вида "one.two.three"
+         * @param {*} value
+         *        значение
+         */
+        'setByPath': function (context, path, value, extend) {
+            var len, i, p;
+            context = context || global;
+            if (typeof path !== "object") {
+                path = path.split(".");
+            }
+            for (i = 0, len = path.length - 1; i < len; i += 1) {
+                p = path[i];
+                if (!context.hasOwnProperty(p)) {
+                    context[p] = {};
+                }
+                context = context[p];
+            }
+            context[path[path.length - 1]] = value;
+        },
+
+        /**
          * Каррирование функции
          *
          * @name go.Lang.curry

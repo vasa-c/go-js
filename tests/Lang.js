@@ -456,6 +456,32 @@ tests.test("getByPath", function () {
     equal(typeof go.Lang.getByPath(context, "two.four.five.toString"), "undefined", "prototype");
 });
 
+tests.test("setByPath", function () {
+
+    var context = {
+        'one': 1,
+        'two': {
+            'three': 3,
+            'four': {
+                'five': "five"
+            },
+            'six': null
+        }
+    };
+
+    go.Lang.setByPath(context, "one", 2);
+    equal(context.one, 2);
+    go.Lang.setByPath(context, "two.three", 4);
+    equal(context.two.three, 4);
+    go.Lang.setByPath(context, ["two", "four"], 5);
+    equal(context.two.four, 5);
+    go.Lang.setByPath(context, "two.x.y.z", "xyz");
+    equal(typeof context.two.x, "object");
+    equal(typeof context.two.x.y, "object");
+    equal(context.two.x.y.z, "xyz");
+
+});
+
 tests.test("curry", function () {
 
     var cur, cur2;
