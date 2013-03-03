@@ -814,7 +814,7 @@ go("Lang", function (go, global) {
          * @param {*} value
          *        значение
          */
-        'setByPath': function (context, path, value, extend) {
+        'setByPath': function (context, path, value) {
             var len, i, p;
             context = context || global;
             if (typeof path !== "object") {
