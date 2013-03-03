@@ -147,28 +147,24 @@ go("Carcas", ["Class", "Ext"], function (go) {
         'inited': false,
 
         /**
-         * Список контроллеров, запрос на загрузку которых был уже дан
+         * Загрузчик
          *
-         * @name go.Carcas#reqsControllers
+         * @name go.Carcas#loader
          * @protected
-         * @type {Object.<String, Boolean>}
+         * @type {go.__Loader}
          */
-        'reqsControllers': null,
-
-        /**
-         * Список модулей, запрос на загрузку которых был уже дан
-         *
-         * @name go.Carcas#reqsModules
-         * @protected
-         * @type {Object.<String, Boolean>}
-         */
-        'reqsModules': null,
+        'loader': null,
 
         /**
          * @constructs
          */
         '__construct': function () {
         },
+
+        /**
+         * @ignore
+         */
+        '__bind': ["includerForLoader", "creatorForLoader"],
 
         /**
          * Инициализация и запуск каркаса
@@ -191,10 +187,7 @@ go("Carcas", ["Class", "Ext"], function (go) {
             this.controllersList = {};
             this.modulesList = {};
             this.mo = this.modulesList;
-            controllers = params.controllers;
-            for (i = 0, len = controllers.length; i < len; i += 1) {
-                this.includeController(controllers[i]);
-            }
+            // @todo
         },
 
         /**
@@ -245,12 +238,11 @@ go("Carcas", ["Class", "Ext"], function (go) {
             // @todo
         },
 
-        'includeController': function (name) {
-            var filename = this.baseDir + "/controllers/" + name.replace(/\./g, "/") + ".js";
-            this.requestJSFile(filename);
+        'includerForLoader': function (name) {
+
         },
 
-        'includeModule': function (name) {
+        'creatorForLoader': function (name, data) {
 
         },
 
@@ -408,67 +400,57 @@ go("Carcas", ["Class", "Ext"], function (go) {
          * @name go.Carcas.Helpers
          * @public
          * @static
-         * @param {(Object|String)} deps
-         * @param {String} [defaultPrefix]
-         * @return {Object.<String, Array>}
+         * @param {(String|Array.<String>|Object.<String, Array.<String>>)} deps
+         * @param {String} context ("c"|"mo")
+         * @return {Array.<String>}
          * @throws {go.Carcas.Exceptions.ErrorDependence}
          */
-        'parseDeps': function (deps, defaultPrefix) {
-            var result,
-                dep,
+        'normalizeDeps': function (deps, context) {
+            var isarray = go.Lang.isArray(deps),
+                result,
                 len,
                 i,
+                lenj,
+                j,
+                dep,
                 prefix,
-                lprefixes;
-            if (typeof deps === "object") {
-                return deps;
+                nodes,
+                node,
+                list;
+
+            if (typeof deps === "string") {
+                deps = deps.split(",");
+                isarray = true;
             }
-            result = {};
-            lprefixes = Carcas.Helpers.prefixes;
-            deps = deps.replace(/\s+/g, "").split(",");
-            for (i = 0, len = deps.length; i < len; i += 1) {
-                dep = deps[i].split(":");
-                switch (dep.length) {
-                case 2:
-                    prefix = dep[0];
-                    dep = dep[1];
-                    break;
-                case 1:
-                    prefix = defaultPrefix;
-                    dep = dep[0];
-                    break;
-                default:
-                    throw new Carcas.Exceptions.ErrorDependence("Error format in " + deps[i]);
+
+            if (isarray) {
+                result = [];
+                for (i = 0, len = deps.length; i < len; i += 1) {
+                    dep = deps[i].replace(/^\s+/, "").replace(/\s+$/, "");
+                    if (dep.indexOf(":") === -1) {
+                        dep = context + ":" + dep;
+                    }
+                    result.push(dep);
                 }
-                if (!prefix) {
-                    throw new Carcas.Exceptions.ErrorDependence("Undefined prefix in " + deps[i]);
-                }
-                prefix = lprefixes[prefix];
-                if (!prefix) {
-                    throw new Carcas.Exceptions.ErrorDependence("Error prefix " + deps[i]);
-                }
-                if (result[prefix]) {
-                    result[prefix].push(dep);
-                } else {
-                    result[prefix] = [dep];
+                return result;
+            }
+
+            result = [];
+            nodes = Carcas.Helpers.nodes;
+            for (i = 0, len = nodes.length; i < len; i += 1) {
+                node = nodes[i];
+                prefix = node[0];
+                list = deps[node[1]];
+                if (list) {
+                    for (j = 0, lenj = list.length; j < lenj; j += 1) {
+                        result.push(prefix + ":" + list[j]);
+                    }
                 }
             }
             return result;
         },
 
-        /**
-         * @name go.Carcas.Helpers.prefixes
-         * @static
-         * @private
-         * @type {Object.<String, String>}
-         */
-        'prefixes': {
-            'c'  : "controllers",
-            'mo' : "modules",
-            'go' : "go",
-            'l'  : "otherLibs"
-        }
-
+        'nodes': [["c", "controllers"], ["mo", "modules"], ["go", "go"], ["l", "libs"]],
     };
 
     return Carcas;

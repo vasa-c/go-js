@@ -17,43 +17,32 @@ tests.test("Carcas.getInstance()", function () {
     equal(instance, go.Carcas.getInstance());
 });
 
-tests.test("Parse deps", function () {
+tests.test("Carcas.Helpers.normalizDeps()", function () {
 
-    var depsString = "c:page1, mo:one, mo:one.two.Three, go:Cookies, l:fancybox, page2, layout.default, mo:four.Five",
-        depsDict = {
-            'controllers' : ["page1", "page2", "layout.default"],
-            'modules'     : ["one", "one.two.Three", "four.Five"],
-            'go'          : ["Cookies"],
-            'otherLibs'   : ["fancybox"]
-        };
+    var normalize = go.Carcas.Helpers.normalizeDeps,
+        deps, expected;
 
-    deepEqual(go.Carcas.Helpers.parseDeps(depsString, "c"), depsDict);
+    deps = ["c:page1", "mo:one.two", "mo:three.four", "layout.default", "l:fancybox"];
+    expected = ["c:page1", "mo:one.two", "mo:three.four", "c:layout.default", "l:fancybox"];
+    deepEqual(normalize(deps, "c"), expected, "deps as Array (and default prefix)");
 
-    throws(
-        function () {
-            go.Carcas.Helpers.parseDeps(depsString);
-        },
-        go.Carcas.Exceptions.ErrorDependence,
-        "undefined prefix"
-    );
+    deps = "c:page1, mo:one.two, mo:three.four, layout.default, l:fancybox";
+    deepEqual(normalize(deps, "c"), expected, "deps as String");
 
-    throws(
-        function () {
-            var depsString = "mo:one, x:two, c:three";
-            go.Carcas.Helpers.parseDeps(depsString, "c");
-        },
-        go.Carcas.Exceptions.ErrorDependence,
-        "unknown prefix"
-    );
+    deps = {
+        'controllers' : ["page1", "layout.default"],
+        'modules'     : ["one.two", "three.four"],
+        'go'          : ["Cookie"]
+    };
+    expected = ["c:page1", "c:layout.default", "mo:one.two", "mo:three.four", "go:Cookie"];
+    deepEqual(normalize(deps), expected, "deps as Dict");
 
-    throws(
-        function () {
-            var depsString = "mo:one, mo:one:two";
-            go.Carcas.Helpers.parseDeps(depsString, "c");
-        },
-        go.Carcas.Exceptions.ErrorDependence,
-        "error format"
-    );
+    deps = {
+        'controllers' : ["page1", "layout.default"],
+        'libs'        : ["fancybox"]
+    };
+    expected = ["c:page1", "c:layout.default", "l:fancybox"];
+    deepEqual(normalize(deps), expected, "deps as Dict (and empty nodes)");
 });
 
 tests.test("Init and loading", function () {
