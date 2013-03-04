@@ -156,6 +156,19 @@ go("Carcas", ["Class", "Ext"], function (go) {
         'loader': null,
 
         /**
+         * Статус загрузки
+         *
+         * 0 - до загрузки DOM
+         * 1 - DOM загружен
+         * 2 - полная загрузка
+         *
+         * @name go.Carcas#loadedStatus
+         * @protected
+         * @type {Number}
+         */
+        'loadedStatus': 0,
+
+        /**
          * @constructs
          */
         '__construct': function () {
@@ -164,7 +177,7 @@ go("Carcas", ["Class", "Ext"], function (go) {
         /**
          * @ignore
          */
-        '__bind': ["includerForLoader", "creatorForLoader"],
+        '__bind': ["includerForLoader", "creatorForLoader", "ondomload", "onload", "onunload"],
 
         /**
          * Инициализация и запуск каркаса
@@ -192,6 +205,7 @@ go("Carcas", ["Class", "Ext"], function (go) {
                 controllers = go.Lang.each(params.controllers, function (c) {return "c:" + c; });
                 this.loader.include(controllers);
             }
+            this.setEventsListeners();
         },
 
         /**
@@ -313,8 +327,14 @@ go("Carcas", ["Class", "Ext"], function (go) {
 
         'createController': function (name, props) {
             var CController = go.Class(Carcas.Controller, props),
-                controller = new CController(this);
+                controller = new CController(name, this);
             this.setByPath(this.controllersList, name, controller);
+            if (this.loadedStatus > 0) {
+                controller.init();
+                if (this.loadedStatus > 1) {
+                    controller.onload();
+                }
+            }
         },
 
         'createModule': function (name, fmodule) {
@@ -328,6 +348,51 @@ go("Carcas", ["Class", "Ext"], function (go) {
                 go.Lang.extend(obj, current);
             }
             go.Lang.setByPath(context, name, obj);
+        },
+
+        'setEventsListeners': function () {
+            $(document).ready(this.ondomload);
+            $(window).bind("load", this.onload);
+            $(window).bind("unload", this.onunload);
+        },
+
+        'ondomload': function () {
+            var list = this.controllersList, k;
+            this.loadedStatus = 1;
+            for (k in list) {
+                if (list.hasOwnProperty(k)) {
+                    list[k].init();
+                }
+            }
+        },
+
+        'onload': function () {
+            var list = this.controllersList, k;
+            this.loadedStatus = 2;
+            for (k in list) {
+                if (list.hasOwnProperty(k)) {
+                    list[k].onload();
+                }
+            }
+        },
+
+        'onunload': function () {
+            var list = this.controllersList, k;
+            for (k in list) {
+                if (list.hasOwnProperty(k)) {
+                    list[k].onunload();
+                }
+            }
+            this.destroy();
+        },
+
+        '__destruct': function () {
+            var list = this.controllersList, k;
+            for (k in list) {
+                if (list.hasOwnProperty(k)) {
+                    list[k].destroy();
+                }
+            }
         },
 
         'eoc': null
@@ -347,6 +412,15 @@ go("Carcas", ["Class", "Ext"], function (go) {
          */
 
         /**
+         * Название конструктора
+         *
+         * @name go.Carcas.Controller#name
+         * @protected
+         * @type {String}
+         */
+        'name': null,
+
+        /**
          * @name go.Carcas.Controller#carcas
          * @protected
          * @type {go.Carcas}
@@ -355,9 +429,11 @@ go("Carcas", ["Class", "Ext"], function (go) {
 
         /**
          * @constructs
+         * @param {String} name
          * @param {go.Carcas} carcas
          */
-        '__construct': function (carcas) {
+        '__construct': function (name, carcas) {
+            this.name = name;
             this.carcas = carcas;
             this.oncreate();
         },
@@ -366,6 +442,8 @@ go("Carcas", ["Class", "Ext"], function (go) {
          * @destructs
          */
         '__destruct': function () {
+console.log(1);
+            this.done();
         },
 
         /**
@@ -393,12 +471,23 @@ go("Carcas", ["Class", "Ext"], function (go) {
         /**
          * Действия после загрузки всех ресурсов
          *
-         * @name go.Carcas.Controller#oncload
+         * @name go.Carcas.Controller#onload
          * @protected
          * @return void
          */
         'onload': function () {
             // переопределяется у потомков
+        },
+
+        /**
+         * Действия перед закрытием страницы
+         *
+         * @name go.Carcas.Controller#onunload
+         * @protected
+         * @return void
+         */
+        'onunload': function () {
+
         },
 
         /**
@@ -410,6 +499,13 @@ go("Carcas", ["Class", "Ext"], function (go) {
          */
         'done': function () {
             // переопределяется у потомков
+        },
+
+        /**
+         * @return {String}
+         */
+        'toString': function() {
+            return "[Controller " + this.name + "]";
         },
 
         'eoc': null

@@ -130,6 +130,10 @@ tests.test("Init and loading", function () {
             this.loader.loaded("go:" + name, [], true);
         },
 
+        'setEventsListeners': function () {
+
+        },
+
         'eoc': null
     });
 
@@ -224,6 +228,7 @@ tests.test("Create parent module (controller)", function () {
     var carcas, logs = [], expected;
 
     carcas = new go.Carcas();
+    carcas.setEventsListeners = go.Lang.f.empty;
     carcas.init({});
 
     carcas.module("one.two.three", function (carcas) {
@@ -273,4 +278,99 @@ tests.test("Create parent module (controller)", function () {
     ];
 
     deepEqual(logs, expected);
+});
+
+tests.test("Events", function () {
+
+    var carcas, events = {}, expected = {};
+
+    carcas = new go.Carcas();
+    carcas.setEventsListeners = go.Lang.f.empty;
+    carcas.init({});
+
+    deepEqual(events, expected);
+
+    carcas.controller("one", {
+        'oncreate': function () {
+            events.one_oncreate = true;
+        },
+        'init': function () {
+            events.one_init = true;
+        },
+        'onload': function () {
+            events.one_onload = true;
+        },
+        'onunload': function () {
+            events.one_onunload = true;
+        },
+        'done': function () {
+            events.one_done = true;
+        }
+    });
+
+    expected.one_oncreate = true;
+    deepEqual(events, expected);
+
+    carcas.ondomload();
+    expected.one_init = true;
+    deepEqual(events, expected);
+
+    carcas.controller("two", {
+        'oncreate': function () {
+            events.two_oncreate = true;
+        },
+        'init': function () {
+            events.two_init = true;
+        },
+        'onload': function () {
+            events.two_onload = true;
+        },
+        'onunload': function () {
+            events.two_onunload = true;
+        },
+        'done': function () {
+            events.two_done = true;
+        }
+    });
+
+    expected.two_oncreate = true;
+    expected.two_init = true;
+    deepEqual(events, expected);
+
+    carcas.onload();
+    expected.one_onload = true;
+    expected.two_onload = true;
+    deepEqual(events, expected);
+
+    carcas.controller("three", {
+        'oncreate': function () {
+            events.three_oncreate = true;
+        },
+        'init': function () {
+            events.three_init = true;
+        },
+        'onload': function () {
+            events.three_onload = true;
+        },
+        'onunload': function () {
+            events.three_onunload = true;
+        },
+        'done': function () {
+            events.three_done = true;
+        }
+    });
+
+    expected.three_oncreate = true;
+    expected.three_init = true;
+    expected.three_onload = true;
+    deepEqual(events, expected);
+
+    carcas.onunload();
+    expected.one_onunload = true;
+    expected.two_onunload = true;
+    expected.three_onunload = true;
+    expected.one_done = true;
+    expected.two_done = true;
+    expected.three_done = true;
+    deepEqual(events, expected);
 });
