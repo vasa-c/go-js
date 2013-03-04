@@ -133,7 +133,7 @@ go("Carcas", ["Class", "Ext"], function (go) {
          *
          * @name go.Carcas#otherLibsLoader
          * @protected
-         * @type {Function(Array.<String [, Function])}
+         * @type {Function(Array.<String> [, Function])}
          */
         'otherLibsLoader': null,
 
@@ -187,7 +187,11 @@ go("Carcas", ["Class", "Ext"], function (go) {
             this.controllersList = {};
             this.modulesList = {};
             this.mo = this.modulesList;
-            // @todo
+            this.loader = new go.__Loader(this.includerForLoader, this.creatorForLoader);
+            if (params.controllers) {
+                controllers = go.Lang.each(params.controllers, function (c) {return "c:" + c; });
+                this.loader.include(controllers);
+            }
         },
 
         /**
@@ -197,7 +201,7 @@ go("Carcas", ["Class", "Ext"], function (go) {
          * @public
          * @param {String} name
          *        имя модуля
-         * @param {(String|Object)} [reqs]
+         * @param {(String|Object)} [deps]
          *        зависимости
          * @param {Function} fmodule
          *        функция-конструктор модуля
@@ -206,12 +210,13 @@ go("Carcas", ["Class", "Ext"], function (go) {
          * @throws go.Carcas.Exceptions.NotInited
          * @throws go.Carcas.Exceptions.ModuleRedeclare
          */
-        'module': function (name, reqs, fmodule) {
+        'module': function (name, deps, fmodule) {
             if (!fmodule) {
-                fmodule = reqs;
-                reqs = [];
+                fmodule = deps;
+                deps = [];
             }
-            // @todo        
+            deps = Carcas.Helpers.normalizeDeps(deps, "mo");
+            this.loader.loaded("mo:" + name, deps, fmodule);
         },
 
         /**
@@ -221,7 +226,7 @@ go("Carcas", ["Class", "Ext"], function (go) {
          * @public
          * @param {String} name
          *        имя контроллера
-         * @param {(String|Object)} [reqs]
+         * @param {(String|Object)} [deps]
          *        зависимости
          * @param {Object} props
          *        поля класса контроллера (расширение go.Carcas.Controller)
@@ -230,24 +235,91 @@ go("Carcas", ["Class", "Ext"], function (go) {
          * @throws go.Carcas.Exceptions.NotInited
          * @throws go.Carcas.Exceptions.ControllerRedeclare
          */
-        'controller': function (name, reqs, props) {
+        'controller': function (name, deps, props) {
             if (!props) {
-                props = reqs;
-                reqs = [];
+                props = deps;
+                deps = [];
             }
-            // @todo
+            deps = Carcas.Helpers.normalizeDeps(deps, "c");
+            this.loader.loaded("c:" + name, deps, props);
         },
 
         'includerForLoader': function (name) {
-
+            var prefix, folder;
+            name = name.split(":", 2);
+            if (name.length != 2) {
+                throw new Carcas.Exceptions.ErrorDependence("Error name " + name[0]);
+            }
+            prefix = name[0];
+            name = name[1];
+            switch (prefix) {
+                case 'c':
+                    folder = "controllers";
+                    break;
+                case 'mo':
+                    folder = "modules";
+                    break;
+                case 'go':
+                    return this.requestGoModule(name);
+                case 'l':
+                    return this.requestOtherLib(name);
+                default:
+                    throw new Carcas.Exceptions.ErrorDependence("Error prefix in " + prefix + ":" + name);
+            }
+            this.requestJSFile(this.baseDir + "/" + folder + "/" + name.replace(/\./g, "/") + ".js");
         },
 
         'creatorForLoader': function (name, data) {
-
+            var prefix;
+            name = name.split(":", 2);
+            if (name.length != 2) {
+                throw new Carcas.Exceptions.ErrorDependence("Error name " + name[0]);
+            }
+            prefix = name[0];
+            name = name[1];
+            switch (prefix) {
+                case 'c':
+                    this.createController(name, data);
+                    break;
+                case 'mo':
+                    this.createModule(name, data);
+                    break;
+                case 'go':
+                    break;
+                case 'l':
+                    break;
+                default:
+                    throw new Carcas.Exceptions.ErrorDependence("Error prefix in " + prefix + ":" + name);
+            }
         },
 
-        'requestJSFile': function () {
+        'requestJSFile': function (filename) {
+            go.__Loader.includeJSFile(filename);
+        },
 
+        'requestOtherLib': function (name) {
+            var _this = this;
+            this.otherLibsLoader.call(null, [name], function () {
+                _this.loader.loaded("l:" + name, [], true);
+            });
+        },
+
+        'requestGoModule': function (name) {
+            var _this = this;
+            go.include([name], function () {
+                _this.loader.loaded("go:" + name, [], true);
+            });
+        },
+
+        'createController': function (name, props) {
+            var CController = go.Class(Carcas.Controller, props),
+                controller = new CController(this);
+            go.Lang.setByPath(this.controllersList, name, controller);
+        },
+
+        'createModule': function (name, fmodule) {
+            var module = fmodule(this);
+            go.Lang.setByPath(this.modulesList, name, module);
         },
 
         'eoc': null

@@ -405,10 +405,17 @@ var go = (function (global) {
         }())
     };
 
+    /**
+     * @name go.__Loader.includeJSFile
+     * @param {String} src
+     */
+    go.__Loader.includeJSFile = function (src) {
+        doc.write('<script type="text/javascript" src="' + src + '"></script>');
+    };
+
     loader = (function () {
         function includer(name) {
-            var src = GO_DIR + name + ".js" + anticache;
-            doc.write('<script type="text/javascript" src="' + src + '"></script>');
+            go.__Loader.includeJSFile(GO_DIR + name + ".js" + anticache);
         }
         function creator(name, data) {
             go[name] = data(go, global);
