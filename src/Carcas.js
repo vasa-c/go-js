@@ -314,12 +314,20 @@ go("Carcas", ["Class", "Ext"], function (go) {
         'createController': function (name, props) {
             var CController = go.Class(Carcas.Controller, props),
                 controller = new CController(this);
-            go.Lang.setByPath(this.controllersList, name, controller);
+            this.setByPath(this.controllersList, name, controller);
         },
 
         'createModule': function (name, fmodule) {
             var module = fmodule(this);
-            go.Lang.setByPath(this.modulesList, name, module);
+            this.setByPath(this.modulesList, name, module);
+        },
+
+        'setByPath': function (context, name, obj) {
+            var current = go.Lang.getByPath(context, name);
+            if (current) {
+                go.Lang.extend(obj, current);
+            }
+            go.Lang.setByPath(context, name, obj);
         },
 
         'eoc': null

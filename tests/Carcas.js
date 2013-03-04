@@ -218,3 +218,59 @@ tests.test("Init and loading", function () {
     );
 
 });
+
+tests.test("Create parent module (controller)", function () {
+
+    var carcas, logs = [], expected;
+
+    carcas = new go.Carcas();
+    carcas.init({});
+
+    carcas.module("one.two.three", function (carcas) {
+        logs.push("init mo:one.two.three");
+        return {
+            'test': function () {
+                logs.push('mo:one.two.three');
+            }
+        };
+    });
+
+    carcas.module("one.two", function (carcas) {
+        logs.push("init mo:one.two");
+        return {
+            'test': function () {
+                logs.push('mo:one.two');
+                this.three.test();
+            }
+        };
+    });
+
+    carcas.controller("a.b.c", {
+        'oncreate': function () {
+            logs.push("oncreate c:a.b.c");
+        },
+        'test': function () {
+            logs.push("c:a.b.c");
+        }
+    });
+
+    carcas.controller("a.b", {
+        'oncreate': function () {
+            logs.push("oncreate c:a.b");
+            this.carcas.controllersList.a.b.c.test();
+            this.carcas.mo.one.two.test();
+        }
+    });
+
+    expected = [
+        "init mo:one.two.three",
+        "init mo:one.two",
+        "oncreate c:a.b.c",
+        "oncreate c:a.b",
+        "c:a.b.c",
+        "mo:one.two",
+        "mo:one.two.three"
+    ];
+
+    deepEqual(logs, expected);
+});
