@@ -405,16 +405,30 @@ var go = (function (global) {
         }())
     };
 
+    /**
+     * @name go.__Loader.includeJSFile
+     * @param {String} src
+     */
+    go.__Loader.includeJSFile = function (src) {
+        doc.write('<script type="text/javascript" src="' + src + '"></script>');
+    };
+
     loader = (function () {
         function includer(name) {
-            var src = GO_DIR + name + ".js" + anticache;
-            doc.write('<script type="text/javascript" src="' + src + '"></script>');
+            go.__Loader.includeJSFile(GO_DIR + name + ".js" + anticache);
         }
         function creator(name, data) {
             go[name] = data(go, global);
         }
         return new go.__Loader(includer, creator);
     }());
+
+    go.log = function () {
+        var console = global.console;
+        if (console && console.log) {
+            console.log.apply(console, arguments);
+        }
+    };
 
     /**
      * Инициализация библиотеки
@@ -766,6 +780,61 @@ go("Lang", function (go, global) {
                 }
             }
             return destination;
+        },
+
+        /**
+         * Получить значение по пути внутри объекта
+         *
+         * @name go.Lang.getByPath
+         * @param {Object} context
+         *        объект, в котором производится поиск (не указан - глобальный)
+         * @param {(String|Array.<String>)} path
+         *        путь - массив компонентов или строка вида "one.two.three"
+         * @param [bydefault]
+         *        значение по умолчанию, если путь не найден
+         * @return {*}
+         */
+        'getByPath': function (context, path, bydefault) {
+            var len, i, p;
+            context = context || global;
+            if (typeof path !== "object") {
+                path = path.split(".");
+            }
+            for (i = 0, len = path.length; i < len; i += 1) {
+                p = path[i];
+                if (!(context && context.hasOwnProperty(p))) {
+                    return bydefault;
+                }
+                context = context[p];
+            }
+            return context;
+        },
+
+        /**
+         * Установить значение по пути внутри объекта
+         *
+         * @name go.Lang.getByPath
+         * @param {Object} context
+         *        целевой объект
+         * @param {(String|Array.<String>)} path
+         *        путь - массив компонентов или строка вида "one.two.three"
+         * @param {*} value
+         *        значение
+         */
+        'setByPath': function (context, path, value) {
+            var len, i, p;
+            context = context || global;
+            if (typeof path !== "object") {
+                path = path.split(".");
+            }
+            for (i = 0, len = path.length - 1; i < len; i += 1) {
+                p = path[i];
+                if (!context.hasOwnProperty(p)) {
+                    context[p] = {};
+                }
+                context = context[p];
+            }
+            context[path[path.length - 1]] = value;
         },
 
         /**

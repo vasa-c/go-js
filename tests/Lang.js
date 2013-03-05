@@ -431,6 +431,57 @@ tests.test("merge", function () {
     deepEqual(destination, expected);
 });
 
+tests.test("getByPath", function () {
+
+    var context = {
+        'one': 1,
+        'two': {
+            'three': 3,
+            'four': {
+                'five': "five"
+            },
+            'six': null
+        }
+    };
+
+    equal(go.Lang.getByPath(context, "one"), 1);
+    deepEqual(go.Lang.getByPath(context, "two"), context.two);
+    equal(typeof go.Lang.getByPath(context, "three"), "undefined");
+    equal(go.Lang.getByPath(context, "three", 11), 11, "by default");
+
+    equal(go.Lang.getByPath(context, "two.four.five"), "five");
+    equal(go.Lang.getByPath(context, ["two", "four", "five"]), "five");
+
+    equal(typeof go.Lang.getByPath(context, "two.six.seven"), "undefined");
+    equal(typeof go.Lang.getByPath(context, "two.four.five.toString"), "undefined", "prototype");
+});
+
+tests.test("setByPath", function () {
+
+    var context = {
+        'one': 1,
+        'two': {
+            'three': 3,
+            'four': {
+                'five': "five"
+            },
+            'six': null
+        }
+    };
+
+    go.Lang.setByPath(context, "one", 2);
+    equal(context.one, 2);
+    go.Lang.setByPath(context, "two.three", 4);
+    equal(context.two.three, 4);
+    go.Lang.setByPath(context, ["two", "four"], 5);
+    equal(context.two.four, 5);
+    go.Lang.setByPath(context, "two.x.y.z", "xyz");
+    equal(typeof context.two.x, "object");
+    equal(typeof context.two.x.y, "object");
+    equal(context.two.x.y.z, "xyz");
+
+});
+
 tests.test("curry", function () {
 
     var cur, cur2;
