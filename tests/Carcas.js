@@ -6,7 +6,7 @@
  * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
  */
 /*jslint node: true, nomen: true */
-/*global window, document, go, tests, ok, equal, notEqual, deepEqual, throws */
+/*global go, tests, ok, equal, deepEqual */
 "use strict";
 
 tests.module("Carcas");
@@ -22,26 +22,26 @@ tests.test("Carcas.Helpers.normalizDeps()", function () {
     var normalize = go.Carcas.Helpers.normalizeDeps,
         deps, expected;
 
-    deps = ["c:page1", "mo:one.two", "mo:three.four", "layout.default", "l:fancybox"];
-    expected = ["c:page1", "mo:one.two", "mo:three.four", "c:layout.default", "l:fancybox"];
-    deepEqual(normalize(deps, "c"), expected, "deps as Array (and default prefix)");
+    deps = ["c:page1", "mo:one.two", "mo:three.four", "layout.def", "l:fancybox"];
+    expected = ["c:page1", "mo:one.two", "mo:three.four", "c:layout.def", "l:fancybox"];
+    deepEqual(normalize(deps, "c"), expected, "deps as Array (and def prefix)");
 
-    deps = "c:page1, mo:one.two, mo:three.four, layout.default, l:fancybox";
+    deps = "c:page1, mo:one.two, mo:three.four, layout.def, l:fancybox";
     deepEqual(normalize(deps, "c"), expected, "deps as String");
 
     deps = {
-        'controllers' : ["page1", "layout.default"],
+        'controllers' : ["page1", "layout.def"],
         'modules'     : ["one.two", "three.four"],
         'go'          : ["Cookie"]
     };
-    expected = ["c:page1", "c:layout.default", "mo:one.two", "mo:three.four", "go:Cookie"];
+    expected = ["c:page1", "c:layout.def", "mo:one.two", "mo:three.four", "go:Cookie"];
     deepEqual(normalize(deps), expected, "deps as Dict");
 
     deps = {
-        'controllers' : ["page1", "layout.default"],
+        'controllers' : ["page1", "layout.def"],
         'libs'        : ["fancybox"]
     };
-    expected = ["c:page1", "c:layout.default", "l:fancybox"];
+    expected = ["c:page1", "c:layout.def", "l:fancybox"];
     deepEqual(normalize(deps), expected, "deps as Dict (and empty nodes)");
 });
 
@@ -52,7 +52,7 @@ tests.test("Init and loading", function () {
     files = {
 
         '/carcas/controllers/page1.js' : function () {
-            carcas.controller("page1", "layouts.default, mo:one.Two", {
+            carcas.controller("page1", "layouts.def, mo:one.Two", {
                 'oncreate': function () {
                     controllersCreate.push("page1");
                 }
@@ -77,10 +77,10 @@ tests.test("Init and loading", function () {
             });
         },
 
-        '/carcas/controllers/layouts/default.js': function () {
-            carcas.controller("layouts.default", "mo:one.Two", {
+        '/carcas/controllers/layouts/def.js': function () {
+            carcas.controller("layouts.def", "mo:one.Two", {
                 'oncreate': function () {
-                    controllersCreate.push("default");
+                    controllersCreate.push("def");
                 }
             });
         },
@@ -89,11 +89,11 @@ tests.test("Init and loading", function () {
             carcas.module("one.Two", {
                 'modules' : ["one.Three", "Four"],
                 'libs'    : ["fancybox"]
-            }, function (carcas) {
+            }, function () {
                 return {
 
                 };
-            })
+            });
         },
 
         '/carcas/modules/one/Three.js': function () {
@@ -105,7 +105,7 @@ tests.test("Init and loading", function () {
         },
 
         '/carcas/modules/Four.js': function () {
-            carcas.module("Four", "go:Cookie", function (carcas) {
+            carcas.module("Four", "go:Cookie", function () {
                 return {
 
                 };
@@ -170,8 +170,8 @@ tests.test("Init and loading", function () {
     files.include("/carcas/controllers/search.js");
     deepEqual(
         requests,
-        ["/carcas/controllers/layouts/default.js", "/carcas/modules/one/Two.js"],
-        "page1 тянет за собой default и модуль"
+        ["/carcas/controllers/layouts/def.js", "/carcas/modules/one/Two.js"],
+        "page1 тянет за собой def и модуль"
     );
     ok(!carcas.controllersList.page1, "page1 ждёт зависимости и ещё не загрузился");
 
@@ -182,8 +182,8 @@ tests.test("Init and loading", function () {
     equal(carcas.controllersList.search.getRegistryA(), 5, "Правильно установлен carcas.registry");
 
     requests = [];
-    files.include("/carcas/controllers/layouts/default.js");
-    ok(!carcas.controllersList.layout, "default ждёт one.Two");
+    files.include("/carcas/controllers/layouts/def.js");
+    ok(!carcas.controllersList.layout, "def ждёт one.Two");
     deepEqual(requests, [], "Но запрос к one.Two уже послан");
 
     files.include("/carcas/modules/one/Two.js");
@@ -210,12 +210,12 @@ tests.test("Init and loading", function () {
 
     otherLibsLoader.requests[0][1](); // обработчик загрузки fancybox
     ok(carcas.controllersList.page1);
-    ok(carcas.controllersList.layouts.default);
+    ok(carcas.controllersList.layouts.def);
     ok(carcas.mo.one.Two);
 
     deepEqual(
         controllersCreate,
-        ["search", "default", "page1"],
+        ["search", "def", "page1"],
         "Правильный порядок создания контроллеров и вызов oncreate"
     );
 
@@ -229,7 +229,7 @@ tests.test("Create parent module (controller)", function () {
     carcas.setEventsListeners = go.Lang.f.empty;
     carcas.init({});
 
-    carcas.module("one.two.three", function (carcas) {
+    carcas.module("one.two.three", function () {
         logs.push("init mo:one.two.three");
         return {
             'test': function () {
@@ -238,7 +238,7 @@ tests.test("Create parent module (controller)", function () {
         };
     });
 
-    carcas.module("one.two", function (carcas) {
+    carcas.module("one.two", function () {
         logs.push("init mo:one.two");
         return {
             'test': function () {
