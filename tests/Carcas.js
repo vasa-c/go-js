@@ -98,10 +98,8 @@ tests.test("Init and loading", function () {
 
         '/carcas/modules/one/Three.js': function () {
             carcas.module("one.Three", function (carcas) {
-                return {
-                   'getCarcasFromModule': function () {
-                       return carcas;
-                   }
+                this.getCarcasFromModule = function () {
+                    return carcas;
                 };
             });
         },

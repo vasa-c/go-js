@@ -4,9 +4,11 @@
  * @package    go.js
  * @subpackage Carcas
  * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
+ * @uses       go.Class
+ * @uses       jQuery
  */
 /*jslint node: true, nomen: true */
-/*global go, window */
+/*global go, window, jQuery */
 
 "use strict";
 
@@ -34,7 +36,7 @@ go("Carcas", ["Class", "Ext"], function (go) {
              */
             'getInstance': function () {
                 if (!this.instance) {
-                    this.instance = new this();
+                    this.instance = new Carcas();
                 }
                 return this.instance;
             },
@@ -56,12 +58,15 @@ go("Carcas", ["Class", "Ext"], function (go) {
              * @alias go.Carcas#module
              * @public
              * @static
+             * @param {String} name
+             * @param {(String|Array.<String>|Object)} deps
+             * @param {Function} CModule
              * @return {Boolean}
              * @throws go.Carcas.Exceptions.NotInited
              * @throws go.Carcas.Exceptions.ModuleRedeclare
              */
-            'module': function (name, reqs, fmodule) {
-                return this.getInstance().module(name, reqs, fmodule);
+            'module': function (name, deps, CModule) {
+                return this.getInstance().module(name, deps, CModule);
             },
 
             /**
@@ -69,12 +74,15 @@ go("Carcas", ["Class", "Ext"], function (go) {
              * @alias go.Carcas#controller
              * @public
              * @static
+             * @param {String} name
+             * @param {(String|Array.<String>|Object)} deps
+             * @param {Object} props
              * @return {Boolean}
              * @throws go.Carcas.Exceptions.NotInited
              * @throws go.Carcas.Exceptions.ControllerRedeclare
              */
-            'controller': function (name, reqs, props) {
-                return this.getInstance().c(name, reqs, props);
+            'controller': function (name, deps, props) {
+                return this.getInstance().c(name, deps, props);
             }
         },
 
@@ -189,7 +197,7 @@ go("Carcas", ["Class", "Ext"], function (go) {
          * @throws {go.Carcas.Exceptions.AlreadyInited}
          */
         'init': function (params) {
-            var i, len, controllers;
+            var controllers;
             if (this.inited) {
                 throw new go.Carcas.Exceptions.AlreadyInited();
             }
@@ -215,22 +223,25 @@ go("Carcas", ["Class", "Ext"], function (go) {
          * @public
          * @param {String} name
          *        имя модуля
-         * @param {(String|Object)} [deps]
+         * @param {(String|Array.<String>|Object)} [deps]
          *        зависимости
-         * @param {Function} fmodule
+         * @param {Function} CModule
          *        функция-конструктор модуля
          * @return {Boolean}
          *         был ли модуль создан сразу же (все зависимости есть)
          * @throws go.Carcas.Exceptions.NotInited
          * @throws go.Carcas.Exceptions.ModuleRedeclare
          */
-        'module': function (name, deps, fmodule) {
-            if (!fmodule) {
-                fmodule = deps;
+        'module': function (name, deps, CModule) {
+            if (!this.inited) {
+                throw new go.Carcas.Exceptions.NotInited("Carcas is not inited");
+            }
+            if (!CModule) {
+                CModule = deps;
                 deps = [];
             }
             deps = Carcas.Helpers.normalizeDeps(deps, "mo");
-            this.loader.loaded("mo:" + name, deps, fmodule);
+            this.loader.loaded("mo:" + name, deps, CModule);
         },
 
         /**
@@ -250,6 +261,9 @@ go("Carcas", ["Class", "Ext"], function (go) {
          * @throws go.Carcas.Exceptions.ControllerRedeclare
          */
         'controller': function (name, deps, props) {
+            if (!this.inited) {
+                throw new go.Carcas.Exceptions.NotInited("Carcas is not inited");
+            }
             if (!props) {
                 props = deps;
                 deps = [];
@@ -258,10 +272,18 @@ go("Carcas", ["Class", "Ext"], function (go) {
             this.loader.loaded("c:" + name, deps, props);
         },
 
+        /**
+         * Колбэк includer для загрузчика
+         * @see go.__Loader
+         *
+         * @name go.Carcas#includerForLoader
+         * @private
+         * @param {String} name
+         */
         'includerForLoader': function (name) {
             var prefix, folder;
             name = name.split(":", 2);
-            if (name.length != 2) {
+            if (name.length !== 2) {
                 throw new Carcas.Exceptions.ErrorDependence("Error name " + name[0]);
             }
             prefix = name[0];
@@ -283,10 +305,19 @@ go("Carcas", ["Class", "Ext"], function (go) {
             this.requestJSFile(this.baseDir + "/" + folder + "/" + name.replace(/\./g, "/") + ".js");
         },
 
+        /**
+         * Колбэк creator для загрузчика
+         * @see go.__Loader
+         *
+         * @name go.Carcas#creatorForLoader
+         * @private
+         * @param {String} name
+         * @param {*} data
+         */
         'creatorForLoader': function (name, data) {
             var prefix;
             name = name.split(":", 2);
-            if (name.length != 2) {
+            if (name.length !== 2) {
                 throw new Carcas.Exceptions.ErrorDependence("Error name " + name[0]);
             }
             prefix = name[0];
@@ -307,10 +338,24 @@ go("Carcas", ["Class", "Ext"], function (go) {
             }
         },
 
+        /**
+         * Запрос на подключения JS-файла
+         *
+         * @name go.Carcas#requestJSFile
+         * @protected
+         * @param {String} filename
+         */
         'requestJSFile': function (filename) {
             go.__Loader.includeJSFile(filename);
         },
 
+        /**
+         * Запрос на подключения сторонних библиотек
+         *
+         * @name go.Carcas#requestOtherLib
+         * @protected
+         * @param {String} name
+         */
         'requestOtherLib': function (name) {
             var _this = this;
             this.otherLibsLoader.call(null, [name], function () {
@@ -318,6 +363,13 @@ go("Carcas", ["Class", "Ext"], function (go) {
             });
         },
 
+        /**
+         * Запрос на подключение модулей go
+         *
+         * @name go.Carcas#requestGoModule
+         * @protected
+         * @param {String} name
+         */
         'requestGoModule': function (name) {
             var _this = this;
             go.include([name], function () {
@@ -325,6 +377,16 @@ go("Carcas", ["Class", "Ext"], function (go) {
             });
         },
 
+        /**
+         * Создание объекта контроллера
+         *
+         * @name go.Carcas#createController
+         * @protected
+         * @param {String} name
+         *        имя контроллера
+         * @param {Object} props
+         *        расширение класса go.Carcas.Controller
+         */
         'createController': function (name, props) {
             var CController = go.Class(Carcas.Controller, props),
                 controller = new CController(name, this);
@@ -337,11 +399,33 @@ go("Carcas", ["Class", "Ext"], function (go) {
             }
         },
 
-        'createModule': function (name, fmodule) {
-            var module = fmodule(this);
+        /**
+         * Создание объекта модуля
+         *
+         * @name go.Carcas#createModule
+         * @protected
+         * @param {String} name
+         *        имя модуля
+         * @param {Function} CModule
+         *        функция-конструктор модуля
+         */
+        'createModule': function (name, CModule) {
+            var module = new CModule(this);
             this.setByPath(this.modulesList, name, module);
         },
 
+        /**
+         * Записать объект (модуль|контроллер) по нужному пути (в зависимости от имени) в хранилище
+         *
+         * @name go.Carcas#setByPath
+         * @protected
+         * @param {Object} context
+         *        хранилище
+         * @param {String} name
+         *        имя
+         * @param {Object} obj
+         *        объект
+         */
         'setByPath': function (context, name, obj) {
             var current = go.Lang.getByPath(context, name);
             if (current) {
@@ -350,12 +434,26 @@ go("Carcas", ["Class", "Ext"], function (go) {
             go.Lang.setByPath(context, name, obj);
         },
 
+        /**
+         * Установить слушаетели событий загрузки документа
+         *
+         * @name go.Carcas#setEventsListeners
+         * @protected
+         * @return void
+         */
         'setEventsListeners': function () {
-            $(document).ready(this.ondomload);
-            $(window).bind("load", this.onload);
-            $(window).bind("unload", this.onunload);
+            jQuery(document).ready(this.ondomload);
+            jQuery(window).bind("load", this.onload);
+            jQuery(window).bind("unload", this.onunload);
         },
 
+        /**
+         * Обработка загрузки DOM
+         *
+         * @name go.Carcas#ondomload
+         * @protected
+         * @return void
+         */
         'ondomload': function () {
             var list = this.controllersList, k;
             this.loadedStatus = 1;
@@ -366,6 +464,13 @@ go("Carcas", ["Class", "Ext"], function (go) {
             }
         },
 
+        /**
+         * Обработка полной загрузки документа
+         *
+         * @name go.Carcas#onload
+         * @protected
+         * @return void
+         */
         'onload': function () {
             var list = this.controllersList, k;
             this.loadedStatus = 2;
@@ -376,6 +481,13 @@ go("Carcas", ["Class", "Ext"], function (go) {
             }
         },
 
+        /**
+         * Обработка закрытия страницы
+         *
+         * @name go.Carcas#onunload
+         * @protected
+         * @return void
+         */
         'onunload': function () {
             var list = this.controllersList, k;
             for (k in list) {
@@ -386,6 +498,9 @@ go("Carcas", ["Class", "Ext"], function (go) {
             this.destroy();
         },
 
+        /**
+         * @destructs
+         */
         '__destruct': function () {
             var list = this.controllersList, k;
             for (k in list) {
@@ -442,7 +557,6 @@ go("Carcas", ["Class", "Ext"], function (go) {
          * @destructs
          */
         '__destruct': function () {
-console.log(1);
             this.done();
         },
 
@@ -626,7 +740,7 @@ console.log(1);
             return result;
         },
 
-        'nodes': [["c", "controllers"], ["mo", "modules"], ["go", "go"], ["l", "libs"]],
+        'nodes': [["c", "controllers"], ["mo", "modules"], ["go", "go"], ["l", "libs"]]
     };
 
     return Carcas;
