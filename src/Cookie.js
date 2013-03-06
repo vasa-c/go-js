@@ -20,9 +20,9 @@ if (!window.go) {
  * @name go.Cookie
  * @type {go.Cookie.CookieClass}
  */
-go("Cookie", ["Class", "Ext"], function (go) {
+go("Cookie", ["Class", "Ext"], function (go, global) {
 
-    var CookieClass, cookie, expiresS;
+    var CookieClass, cookie, expiresS, document = global.document;
 
     /**
      * @class go.Cookie.CookieClass
@@ -39,7 +39,7 @@ go("Cookie", ["Class", "Ext"], function (go) {
             'domain'  : undefined,
             'secure'  : false,
             'max-age' : false,
-            'delete-value': "delete"
+            'delete-value': "deleted"
         },
 
         /**
@@ -103,7 +103,20 @@ go("Cookie", ["Class", "Ext"], function (go) {
          * @return {Object}
          */
         'getAll': function () {
-            return this.loadCookieHeader();
+            var cooks = this.loadCookieHeader().split(";"),
+                cook,
+                result = {},
+                len = cooks.length,
+                i,
+                name,
+                value;
+            for (i = 0; i < len; i += 1) {
+                cook = cooks[i].split("=", 2);
+                name = cook[0].replace(/^\s+/, "").replace(/\s+$/, "");
+                value = (cook.length === 2) ? cook[1] : "";
+                result[name] = this.unescapeValue(value);
+            }
+            return result;
         },
 
         /**
@@ -128,10 +141,24 @@ go("Cookie", ["Class", "Ext"], function (go) {
          * @return {String}
          */
         'createCookieHeader': function (name, value, params) {
-            var header = [];
-            params = params || {};
+            var header = [], expires;
             header.push(name + "=" + this.escapeValue(value));
-            params = this.normalizeParams();
+            params = this.normalizeParams(params || {});
+            if (params.expires) {
+                expires = CookieClass.parseExpires(params.expires, this.getNow());
+                if (expires) {
+                    header.push("Expires=" + expires.toUTCString());
+                }
+            }
+            if (params.path) {
+                header.push("Path=" + params.path);
+            }
+            if (params.domain) {
+                header.push("Domain=" + params.domain);
+            };
+            if (params.secure) {
+                header.push("Secure");
+            }
             return header.join("; ");
         },
 
@@ -148,7 +175,7 @@ go("Cookie", ["Class", "Ext"], function (go) {
         },
 
         /**
-         * Приведение занчения, полученного из document.cookie в нормальный вид
+         * Приведение значения, полученного из document.cookie в нормальный вид
          *
          * @name go.Cookie.CookieClass#unescapeValue
          * @protected
@@ -159,12 +186,22 @@ go("Cookie", ["Class", "Ext"], function (go) {
             return decodeURIComponent(escapedValue);
         },
 
+        /**
+         * @name go.Cookie.CookieClass#saveCookieHeader
+         * @protected
+         * @param {String} header
+         */
         'saveCookieHeader': function (header) {
-
+            document.cookie = header;
         },
 
+        /**
+         * @name go.Cookie.CookieClass#loadCookieHeader
+         * @protected
+         * @return {String}
+         */
         'loadCookieHeader': function () {
-
+            return document.cookie;
         },
 
         /**
@@ -200,6 +237,7 @@ go("Cookie", ["Class", "Ext"], function (go) {
                     result[c] = this.options[c];
                 }
             }
+            return result;
         }
 
     });

@@ -92,9 +92,9 @@ tests.test("Test with wrapper", function () {
             h = header[0].split("=", 2);
             cooks[h[0]] = h[1];
             params[h[0]] = result;
-            for (i = 1, len = result.length; i < len; i += 1) {
+            for (i = 1, len = header.length; i < len; i += 1) {
                 h = header[i].split("=", 2);
-                result[h[0]] = (h[1] || true);
+                result[h[0].toLowerCase().replace(/^\s+/, "").replace(/\s+$/, "")] = (h[1] || true);
             }
         },
 
@@ -105,7 +105,7 @@ tests.test("Test with wrapper", function () {
             var k, result = [];
             for (k in cooks) {
                 if (cooks.hasOwnProperty(k)) {
-                    result.push(k + "=" + cooks[k]["value"]);
+                    result.push(k + "=" + cooks[k]);
                 }
             }
             return result.join("; ");
@@ -164,7 +164,7 @@ tests.test("Test with wrapper", function () {
 
     wrapper.remove("one");
     equal(cooks.one, "deleted");
-    equal((new Date(params.one.expires)).getTime() < now.getTime());
+    ok((new Date(params.one.expires)).getTime() < now.getTime());
 });
 
 tests.test("Test real", function () {
@@ -172,8 +172,8 @@ tests.test("Test real", function () {
     ok(!go.Cookie.get("yyy"));
     go.Cookie.set("xxx", 10);
     document.cookie = "yyy=20";
-    equal(go.Cookie.get("xxx", 10));
-    equal(go.Cookie.get("yyy", 20));
+    equal(go.Cookie.get("xxx"), 10);
+    equal(go.Cookie.get("yyy"), 20);
     go.Cookie.remove("xxx");
     go.Cookie.remove("yyy");
     ok(!go.Cookie.get("xxx"));
