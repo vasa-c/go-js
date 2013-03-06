@@ -294,7 +294,7 @@ go("Ext", ["Class"], function (go, global) {
          *
          * @name go.Ext.Nodes#initNodes
          * @protected
-         * @param {jQuerySelector} node
+         * @param {jQuery} node
          *        указатель на основной контейнер объекта
          * @todo протестировать лучше
          */
@@ -348,7 +348,7 @@ go("Ext", ["Class"], function (go, global) {
                 }
                 return nnode;
             } // create()
-            node = node ? jQuery(node) : jQuery(global);
+            node = node ? jQuery(node) : jQuery(global.document);
             this.node = node;
             this.nodesListeners = [];
             for (k in lnodes) {
