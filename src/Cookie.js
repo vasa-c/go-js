@@ -58,6 +58,7 @@ go("Cookie", ["Class", "Ext"], function (go, global) {
          * @param {String} name
          * @param {String} value
          * @param {Object} [params]
+         * @throws go.Cookie.CookieClass.Exceptions.ErrorExpires
          */
         'set': function (name, value, params) {
             var header = this.createCookieHeader(name, value, params);
@@ -71,6 +72,7 @@ go("Cookie", ["Class", "Ext"], function (go, global) {
          * @public
          * @param {Object.<String, String>} cooks
          * @param {Object} [params]
+         * @throws go.Cookie.CookieClass.Exceptions.ErrorExpires
          */
         'setList': function (cooks, params) {
             var name;
