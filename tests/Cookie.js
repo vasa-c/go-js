@@ -59,6 +59,9 @@ tests.test("Parse expires", function () {
     result = parse("session", now);
     ok(!result);
 
+    result = parse("forever", now);
+    ok(result.getFullYear() - now.getFullYear() >= 10);
+
     raises(
         function () {
             parse("vtrfg45et45t");

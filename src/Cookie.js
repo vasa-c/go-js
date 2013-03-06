@@ -302,6 +302,10 @@ go("Cookie", ["Class", "Ext"], function (go, global) {
                 return (new Date(10));
             case 'session':
                 return void(0);
+            case 'forever':
+                expires = now ? (new Date(now.getTime())) : new Date();
+                expires.setFullYear(expires.getFullYear() + 20);
+                return expires;
         }
         now = new Date(expires);
         if (isNaN(now.getTime())) {
