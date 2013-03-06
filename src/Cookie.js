@@ -191,7 +191,7 @@ go("Cookie", ["Class", "Ext"], function (go, global) {
          * @return {String}
          */
         'unescapeValue': function (escapedValue) {
-            return decodeURIComponent(escapedValue);
+            return decodeURIComponent(escapedValue.replace(/\+/g, " "));
         },
 
         /**
