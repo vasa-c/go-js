@@ -82,7 +82,7 @@ go("Carcas", ["Class", "Ext"], function (go) {
              * @throws go.Carcas.Exceptions.ControllerRedeclare
              */
             'controller': function (name, deps, props) {
-                return this.getInstance().c(name, deps, props);
+                return this.getInstance().controller(name, deps, props);
             }
         },
 
