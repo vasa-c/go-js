@@ -6,7 +6,7 @@
  * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
  */
 /*jslint node: true, nomen: true */
-/*global window, document, go, tests, ok, equal, notEqual, deepEqual, raises */
+/*global document, go, tests, ok, equal, deepEqual, raises */
 "use strict";
 
 tests.module("Cookie");
@@ -165,9 +165,18 @@ tests.test("Test with wrapper", function () {
     wrapper.remove("one");
     equal(cooks.one, "deleted");
     ok((new Date(params.one.expires)).getTime() < now.getTime());
+
+    wrapper.setOption("path", "");
+    wrapper.setOption("max-age", true);
+    wrapper.set("one", 5, {'expires': "Tue, 05 Mar 2013 16:41:06 GMT"});
+    deepEqual(params.one, {
+        'max-age': "3600"
+    });
 });
 
 tests.test("Test real", function () {
+    document.cookie = "xxx=deleted;Max-Age=0";
+    document.cookie = "yyy=deleted;Max-Age=0";
     ok(!go.Cookie.get("xxx"));
     ok(!go.Cookie.get("yyy"));
     go.Cookie.set("xxx", 10);

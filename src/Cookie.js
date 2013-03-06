@@ -8,7 +8,7 @@
  * @uses       go.Ext
  */
 /*jslint node: true, nomen: true */
-/*global window */
+/*global window, go */
 
 "use strict";
 
@@ -47,9 +47,7 @@ go("Cookie", ["Class", "Ext"], function (go, global) {
          * @param {Object} options
          */
         '__construct': function (options) {
-            if (options) {
-                this.initOptions(options);
-            }
+            this.initOptions(options || {});
         },
 
         /**
@@ -127,7 +125,7 @@ go("Cookie", ["Class", "Ext"], function (go, global) {
          * @param {String} name
          */
         'remove': function (name) {
-            this.set(name, this.options['delete-value'], {'expires': "delete"})
+            this.set(name, this.options['delete-value'], {'expires': "delete"});
         },
 
         /**
@@ -141,13 +139,23 @@ go("Cookie", ["Class", "Ext"], function (go, global) {
          * @return {String}
          */
         'createCookieHeader': function (name, value, params) {
-            var header = [], expires;
+            var header = [], expires, now, delta;
             header.push(name + "=" + this.escapeValue(value));
             params = this.normalizeParams(params || {});
             if (params.expires) {
-                expires = CookieClass.parseExpires(params.expires, this.getNow());
+                now = this.getNow();
+                expires = CookieClass.parseExpires(params.expires, now);
                 if (expires) {
-                    header.push("Expires=" + expires.toUTCString());
+                    delta = -1;
+                    if (this.options["max-age"]) {
+                        delta = expires.getTime() - now.getTime();
+                        if (delta >= 0) {
+                            header.push("Max-Age=" + Math.round(delta / 1000));
+                        }
+                    }
+                    if (delta < 0) {
+                        header.push("Expires=" + expires.toUTCString());
+                    }
                 }
             }
             if (params.path) {
@@ -155,7 +163,7 @@ go("Cookie", ["Class", "Ext"], function (go, global) {
             }
             if (params.domain) {
                 header.push("Domain=" + params.domain);
-            };
+            }
             if (params.secure) {
                 header.push("Secure");
             }
@@ -295,10 +303,9 @@ go("Cookie", ["Class", "Ext"], function (go, global) {
             case 'session':
                 return void(0);
         }
-
         now = new Date(expires);
-        if (Date.getTime() === NaN) {
-            throw new CookieClass.go.Cookie.CookieClass.Exceptions.ErrorExpires('Error expires "' + expires + '"');
+        if (isNaN(now.getTime())) {
+            throw new CookieClass.Exceptions.ErrorExpires('Error expires "' + expires + '"');
         }
         return now;
     };
