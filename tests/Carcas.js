@@ -416,3 +416,42 @@ tests.test("Exceptions", function () {
         "Module redeclare"
     );
 });
+
+tests.test("nodes", function () {
+
+    var TestCarcas, carcas, nodes;
+
+    TestCarcas = go.Class(go.Carcas, {
+
+        'setEventsListeners': function () {}
+
+    });
+
+
+    carcas = new TestCarcas();
+    carcas.init({});
+
+    carcas.controller("one", {
+
+        'nodes': {
+            'spans': "span.x",
+            'strong': "strong",
+            'em': "em"
+        },
+
+        'oncreate': function () {
+            this.node = $("<div><span class='x'>a</span><span class='x'>b</span><strong>x</strong></div>");
+        },
+
+        'init': function () {
+            nodes = this.nodes;
+        }
+
+    });
+
+    carcas.ondomload();
+    equal(nodes.spans.length, 2);
+    equal(nodes.strong.length, 1);
+    equal(nodes.em.length, 0);
+    equal(nodes.spans[0].firstChild.nodeValue, "a");
+});

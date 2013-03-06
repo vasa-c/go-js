@@ -488,7 +488,7 @@ go("Carcas", ["Class", "Ext"], function (go) {
             this.loadedStatus = 1;
             for (k in list) {
                 if (list.hasOwnProperty(k)) {
-                    list[k].init();
+                    list[k].ondomload();
                 }
             }
         },
@@ -598,6 +598,16 @@ go("Carcas", ["Class", "Ext"], function (go) {
          */
         'oncreate': function () {
             // переопределятеся у потомков
+        },
+
+        /**
+         * @name go.Carcas.Controller#ondomload
+         * @private
+         * @return void
+         */
+        'ondomload': function () {
+            this.initNodes(this.node);
+            this.init();
         },
 
         /**
