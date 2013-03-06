@@ -6,7 +6,7 @@
  * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
  */
 /*jslint node: true, nomen: true */
-/*global go, tests, ok, equal, deepEqual */
+/*global go, tests, ok, equal, deepEqual, throws */
 "use strict";
 
 tests.module("Carcas");
@@ -313,7 +313,7 @@ tests.test("Events", function () {
     expected.one_init = true;
     deepEqual(events, expected);
 
-    carcas.controller("two", {
+    carcas.controller("one.two", {
         'oncreate': function () {
             events.two_oncreate = true;
         },
@@ -340,7 +340,7 @@ tests.test("Events", function () {
     expected.two_onload = true;
     deepEqual(events, expected);
 
-    carcas.controller("three", {
+    carcas.controller("four.three", {
         'oncreate': function () {
             events.three_oncreate = true;
         },
@@ -371,4 +371,48 @@ tests.test("Events", function () {
     expected.two_done = true;
     expected.three_done = true;
     deepEqual(events, expected);
+});
+
+tests.test("Exceptions", function () {
+
+    throws(
+        function () {
+            var carcas = new go.Carcas();
+            carcas.init({});
+            carcas.init({});
+        },
+        go.Carcas.Exceptions.AlreadyInited,
+        "Already inited"
+    );
+
+    throws(
+        function () {
+            var carcas = new go.Carcas();
+            carcas.controller("test", {});
+        },
+        go.Carcas.Exceptions.NotInited,
+        "Not inited"
+    );
+
+    throws(
+        function () {
+            var carcas = new go.Carcas();
+            carcas.init({});
+            carcas.controller("test", null, {});
+            carcas.controller("test", null, {});
+        },
+        go.Carcas.Exceptions.ControllerRedeclare,
+        "Controller redeclare"
+    );
+
+    throws(
+        function () {
+            var carcas = new go.Carcas();
+            carcas.init({});
+            carcas.module("test", function () {});
+            carcas.module("test", function () {});
+        },
+        go.Carcas.Exceptions.ModuleRedeclare,
+        "Module redeclare"
+    );
 });

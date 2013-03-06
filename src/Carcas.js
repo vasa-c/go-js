@@ -177,6 +177,15 @@ go("Carcas", ["Class", "Ext"], function (go) {
         'loadedStatus': 0,
 
         /**
+         * Загруженные контроллеры и модули (имя => объект)
+         *
+         * @name go.Carcas#loadedObjects
+         * @private
+         * @type {Object}
+         */
+        'loadedObjects': null,
+
+        /**
          * @constructs
          */
         '__construct': function () {
@@ -208,6 +217,10 @@ go("Carcas", ["Class", "Ext"], function (go) {
             this.controllersList = {};
             this.modulesList = {};
             this.mo = this.modulesList;
+            this.loadedObjects = {
+                'c': {},
+                'mo': {}
+            };
             this.loader = new go.__Loader(this.includerForLoader, this.creatorForLoader);
             if (params.controllers) {
                 controllers = go.Lang.each(params.controllers, function (c) {return "c:" + c; });
@@ -236,6 +249,9 @@ go("Carcas", ["Class", "Ext"], function (go) {
             if (!this.inited) {
                 throw new go.Carcas.Exceptions.NotInited("Carcas is not inited");
             }
+            if (this.loadedObjects.mo[name]) {
+                throw new Carcas.Exceptions.ModuleRedeclare('Module "' + name + '" redeclare');
+            }
             if (!CModule) {
                 CModule = deps;
                 deps = [];
@@ -263,6 +279,9 @@ go("Carcas", ["Class", "Ext"], function (go) {
         'controller': function (name, deps, props) {
             if (!this.inited) {
                 throw new go.Carcas.Exceptions.NotInited("Carcas is not inited");
+            }
+            if (this.loadedObjects.c[name]) {
+                throw new Carcas.Exceptions.ControllerRedeclare('Controller "' + name + '" redeclare');
             }
             if (!props) {
                 props = deps;
@@ -388,9 +407,14 @@ go("Carcas", ["Class", "Ext"], function (go) {
          *        расширение класса go.Carcas.Controller
          */
         'createController': function (name, props) {
-            var CController = go.Class(Carcas.Controller, props),
-                controller = new CController(name, this);
+            var CController, controller;
+            if (this.loadedObjects.c[name]) {
+                throw new Carcas.Exceptions.ControllerRedeclare('Controller "' + name + '" redeclare');
+            }
+            CController = go.Class(Carcas.Controller, props);
+            controller = new CController(name, this);
             this.setByPath(this.controllersList, name, controller);
+            this.loadedObjects.c[name] = controller;
             if (this.loadedStatus > 0) {
                 controller.init();
                 if (this.loadedStatus > 1) {
@@ -410,8 +434,13 @@ go("Carcas", ["Class", "Ext"], function (go) {
          *        функция-конструктор модуля
          */
         'createModule': function (name, CModule) {
-            var module = new CModule(this);
+            var module;
+            if (this.loadedObjects.mo[name]) {
+                throw new Carcas.Exceptions.ModuleRedeclare('Module "' + name + '" redeclare');
+            }
+            module = new CModule(this);
             this.setByPath(this.modulesList, name, module);
+            this.loadedObjects.mo[name] = module;
         },
 
         /**
@@ -455,7 +484,7 @@ go("Carcas", ["Class", "Ext"], function (go) {
          * @return void
          */
         'ondomload': function () {
-            var list = this.controllersList, k;
+            var list = this.loadedObjects.c, k;
             this.loadedStatus = 1;
             for (k in list) {
                 if (list.hasOwnProperty(k)) {
@@ -472,7 +501,7 @@ go("Carcas", ["Class", "Ext"], function (go) {
          * @return void
          */
         'onload': function () {
-            var list = this.controllersList, k;
+            var list = this.loadedObjects.c, k;
             this.loadedStatus = 2;
             for (k in list) {
                 if (list.hasOwnProperty(k)) {
@@ -489,7 +518,7 @@ go("Carcas", ["Class", "Ext"], function (go) {
          * @return void
          */
         'onunload': function () {
-            var list = this.controllersList, k;
+            var list = this.loadedObjects.c, k;
             for (k in list) {
                 if (list.hasOwnProperty(k)) {
                     list[k].onunload();
@@ -502,7 +531,7 @@ go("Carcas", ["Class", "Ext"], function (go) {
          * @destructs
          */
         '__destruct': function () {
-            var list = this.controllersList, k;
+            var list = this.loadedObjects.c, k;
             for (k in list) {
                 if (list.hasOwnProperty(k)) {
                     list[k].destroy();
@@ -707,6 +736,10 @@ go("Carcas", ["Class", "Ext"], function (go) {
                 nodes,
                 node,
                 list;
+
+            if (!deps) {
+                return [];
+            }
 
             if (typeof deps === "string") {
                 deps = deps.split(",");
