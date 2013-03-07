@@ -120,14 +120,23 @@ tests.test("Init and loading", function () {
 
     TestCarcas = go.Class(go.Carcas, {
 
+        /**
+         * @override
+         */
         'requestJSFile': function (filename) {
             requests.push(filename);
         },
 
+        /**
+         * @override
+         */
         'requestGoModule': function (name) { // все нужные go.модули уже подгружены
             this.loader.loaded("go:" + name, [], true);
         },
 
+        /**
+         * @override
+         */
         'setEventsListeners': function () {
 
         },
@@ -280,10 +289,34 @@ tests.test("Create parent module (controller)", function () {
 
 tests.test("Events", function () {
 
-    var carcas, events = {}, expected = {};
+    var carcas, events = {}, expected = {}, TestCarcas, ondomload, onfullload, onunload;
 
-    carcas = new go.Carcas();
-    carcas.setEventsListeners = go.Lang.f.empty;
+    TestCarcas = go.Class(go.Carcas, {
+
+        /**
+         * @override
+         */
+        'getDOMObject': function () {
+            return {
+
+                'ondomload': function (handler) {
+                    ondomload = handler;
+                },
+
+                'onfullload': function (handler) {
+                    onfullload = handler;
+                },
+
+                'onunload': function (handler) {
+                    onunload = handler;
+                }
+
+            };
+        }
+
+    });
+
+    carcas = new TestCarcas();
     carcas.init({});
 
     deepEqual(events, expected);
@@ -309,7 +342,7 @@ tests.test("Events", function () {
     expected.one_oncreate = true;
     deepEqual(events, expected);
 
-    carcas.ondomload();
+    ondomload();
     expected.one_init = true;
     deepEqual(events, expected);
 
@@ -335,7 +368,7 @@ tests.test("Events", function () {
     expected.two_init = true;
     deepEqual(events, expected);
 
-    carcas.onload();
+    onfullload();
     expected.one_onload = true;
     expected.two_onload = true;
     deepEqual(events, expected);
@@ -363,7 +396,7 @@ tests.test("Events", function () {
     expected.three_onload = true;
     deepEqual(events, expected);
 
-    carcas.onunload();
+    onunload();
     expected.one_onunload = true;
     expected.two_onunload = true;
     expected.three_onunload = true;

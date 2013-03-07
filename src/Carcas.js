@@ -471,9 +471,10 @@ go("Carcas", ["Class", "Ext"], function (go) {
          * @return void
          */
         'setEventsListeners': function () {
-            jQuery(document).ready(this.ondomload);
-            jQuery(window).bind("load", this.onload);
-            jQuery(window).bind("unload", this.onunload);
+            var DOM = this.getDOMObject();
+            DOM.ondomload(this.ondomload);
+            DOM.onfullload(this.onload);
+            DOM.onunload(this.onunload);
         },
 
         /**
@@ -537,6 +538,17 @@ go("Carcas", ["Class", "Ext"], function (go) {
                     list[k].destroy();
                 }
             }
+        },
+
+        /**
+         * Получить объект с методами доступа к DOM
+         *
+         * @name go.Carcas#getDOMObject
+         * @protected
+         * @return {Object}
+         */
+        'getDOMObject': function () {
+            return Carcas.Helpers.DOM;
         },
 
         'eoc': null
@@ -783,7 +795,47 @@ go("Carcas", ["Class", "Ext"], function (go) {
             return result;
         },
 
-        'nodes': [["c", "controllers"], ["mo", "modules"], ["go", "go"], ["l", "libs"]]
+        'nodes': [["c", "controllers"], ["mo", "modules"], ["go", "go"], ["l", "libs"]],
+
+        /**
+         * @namespace go.Carcas.Helpers.DOM
+         *            весь интерфейс с DOM выносится сюда
+         */
+        'DOM': {
+
+            /**
+             * Повесить обработчик на загрузку DOM
+             *
+             * @name go.Carcas.Helpers.DOM.ondomload
+             * @public
+             * @param {Function} handler
+             */
+            'ondomload': function (handler) {
+                jQuery(document).ready(handler);
+            },
+
+            /**
+             * Повесить обработчик на полную загрузку документа
+             *
+             * @name go.Carcas.Helpers.DOM.onfullload
+             * @public
+             * @param {Function} handler
+             */
+            'onfullload': function (handler) {
+                jQuery(window).bind("load", handler);
+            },
+
+            /**
+             * Повесить обработчик на закрытие страницы
+             *
+             * @name go.Carcas.Helpers.DOM.onunload
+             * @public
+             * @param {Function} handler
+             */
+            'onunload': function (handler) {
+                jQuery(window).bind("unload", handler);
+            }
+        }
     };
 
     return Carcas;
