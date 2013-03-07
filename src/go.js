@@ -508,7 +508,7 @@ go("Lang", function (go, global) {
          * @return {Function}
          *         связанная с контекстом функция
          */
-        'bind': function (func, thisArg, args) {
+        'bind': function bind(func, thisArg, args) {
             var result;
             thisArg = thisArg || global;
             if (func.bind) {
@@ -539,7 +539,7 @@ go("Lang", function (go, global) {
          * @return {String}
          *         название типа
          */
-        'getType': function (value) {
+        'getType': function getType(value) {
             var type;
 
             if (value && (typeof value.go$type === "string")) {
@@ -639,7 +639,7 @@ go("Lang", function (go, global) {
          * @return {Boolean}
          *         является ли значение массивом
          */
-        'isArray': function (value, strict) {
+        'isArray': function isArray(value, strict) {
             switch (Lang.getType(value)) {
             case "array":
                 return true;
@@ -661,7 +661,7 @@ go("Lang", function (go, global) {
          * @return {Boolean}
          *         является ли значение простым словарём
          */
-        'isDict': function (value) {
+        'isDict': function isDict(value) {
             return (value && (value.constructor === Object));
         },
 
@@ -680,7 +680,7 @@ go("Lang", function (go, global) {
          * @return {Object|Array}
          *         результаты выполнения функции для всех элементов
          */
-        'each': function (iter, fn, thisArg, deep) {
+        'each': function each(iter, fn, thisArg, deep) {
 
             var result, i, len;
             thisArg = thisArg || global;
@@ -713,7 +713,7 @@ go("Lang", function (go, global) {
          * @return {Object|Array}
          *         копия исходного объекта
          */
-        'copy': function (source) {
+        'copy': function copy(source) {
             var result, i, len;
             if (Lang.isArray(source)) {
                 result = [];
@@ -744,7 +744,7 @@ go("Lang", function (go, global) {
          * @return {Object}
          *         расширенный destination
          */
-        'extend': function (destination, source, deep) {
+        'extend': function extend(destination, source, deep) {
             var k;
             /*jslint forin: true */
             for (k in source) {
@@ -767,7 +767,7 @@ go("Lang", function (go, global) {
          * @return {Object}
          *         расширенный destination
          */
-        'merge': function (destination, source) {
+        'merge': function merge(destination, source) {
             var k, value;
             for (k in source) {
                 if (source.hasOwnProperty(k)) {
@@ -794,7 +794,7 @@ go("Lang", function (go, global) {
          *        значение по умолчанию, если путь не найден
          * @return {*}
          */
-        'getByPath': function (context, path, bydefault) {
+        'getByPath': function getByPath(context, path, bydefault) {
             var len, i, p;
             context = context || global;
             if (typeof path !== "object") {
@@ -821,7 +821,7 @@ go("Lang", function (go, global) {
          * @param {*} value
          *        значение
          */
-        'setByPath': function (context, path, value) {
+        'setByPath': function setByPath(context, path, value) {
             var len, i, p;
             context = context || global;
             if (typeof path !== "object") {
@@ -843,12 +843,12 @@ go("Lang", function (go, global) {
          * @name go.Lang.curry
          * @param {Function} fn
          *        исходная функция
-         * @params {mixed} [arg1] ...
+         * @params {*...} [arg1]
          *         запоминаемые аргументы
          * @return {Function}
          *         каррированная функция
          */
-        'curry': function (fn) {
+        'curry': function curry(fn) {
             var slice = Array.prototype.slice,
                 cargs = slice.call(arguments, 1);
             return function () {
@@ -869,7 +869,7 @@ go("Lang", function (go, global) {
          * @return {Boolean}
          *         находится ли значение в массиве
          */
-        'inArray': function (needle, haystack) {
+        'inArray': function inArray(needle, haystack) {
             var i, len;
             for (i = 0, len = haystack.length; i < len; i += 1) {
                 if (haystack[i] === needle) {
@@ -889,7 +889,7 @@ go("Lang", function (go, global) {
          *         результат первой корректно завершившейся
          *         ни одна не сработала - undefined
          */
-        'tryDo': function (funcs) {
+        'tryDo': function tryDo(funcs) {
             var i, len, result;
             for (i = 0, len = funcs.length; i < len; i += 1) {
                 try {
@@ -911,7 +911,7 @@ go("Lang", function (go, global) {
          * @return {Object}
          *         переменные из запроса
          */
-        'parseQuery': function (query, sep) {
+        'parseQuery': function parseQuery(query, sep) {
             var result = {}, i, len, v;
             if (typeof query === "undefined") {
                 query = global.location.toString().split("#", 2)[0].split("?", 2)[1];
@@ -944,7 +944,7 @@ go("Lang", function (go, global) {
          * @return {String}
          *         строка запроса
          */
-        'buildQuery': function (vars, sep) {
+        'buildQuery': function buildQuery(vars, sep) {
             var query = [], buildValue, buildArray, buildDict;
             if (typeof vars === "string") {
                 return vars;
