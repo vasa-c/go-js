@@ -223,7 +223,11 @@ go("Carcas", ["Class", "Ext"], function (go) {
             };
             this.loader = new go.__Loader(this.includerForLoader, this.creatorForLoader);
             if (params.controllers) {
-                controllers = go.Lang.each(params.controllers, function (c) {return "c:" + c; });
+                controllers = params.controllers;
+                if (typeof controllers === "string") {
+                    controllers = [controllers];
+                }
+                controllers = go.Lang.each(controllers, function (c) {return "c:" + c; });
                 this.loader.include(controllers);
             }
             this.setEventsListeners();
