@@ -637,14 +637,22 @@ go("Lang", function (go, global) {
          *         является ли значение массивом
          */
         'isArray': function isArray(value, strict) {
+            if (Array.isArray) {
+                if (Array.isArray(value)) {
+                    return true;
+                }
+                if (strict) {
+                    return false;
+                }
+            }
             switch (Lang.getType(value)) {
-            case "array":
-                return true;
-            case "collection":
-            case "arguments":
-                return (!strict);
-            default:
-                return false;
+                case "array":
+                    return true;
+                case "collection":
+                case "arguments":
+                    return (!strict);
+                default:
+                    return false;
             }
         },
 
