@@ -554,30 +554,27 @@ go("Lang", function (go, global) {
                 return "null";
             }
 
-            switch (Object.prototype.toString.call(value)) {
-            case "[object Function]":
-                return "function";
-            case "[object Array]":
-                return "array";
-            case "[object RegExp]":
-                return "regexp";
-            case "[object Error]":
-                return "error";
-            case "[object Date]":
-                return "date";
-            case "[object HTMLCollection]":
-            case "[object NodeList]":
-                return "collection";
-            case "[object Text]":
-                return "textnode";
-            case "[object Arguments]":
-                return "arguments";
-            case "[object Number]":
-                return "number";
-            case "[object String]":
-                return "string";
-            case "[object Boolean]":
-                return "boolean";
+            if (!getType._str) {
+                getType._str = {
+                    '[object Function]' : "function",
+                    '[object Array]'    : "array",
+                    '[object RegExp]'   : "regexp",
+                    '[object Error]'    : "error",
+                    '[object Date]'     : "date",
+                    '[object HTMLCollection]' : "collection",
+                    '[object NodeList]' : "collection",
+                    '[object Text]'     : "textnode",
+                    '[object Arguments]': "arguments",
+                    '[object Number]'   : "number",
+                    '[object String]'   : "string",
+                    '[object Boolean]'  : "boolean"
+                };
+            }
+
+            type = Object.prototype.toString.call(value);
+            type = getType._str[type];
+            if (type) {
+                return type;
             }
 
             if (value.constructor) {
