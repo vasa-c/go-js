@@ -42,6 +42,20 @@ go("Carcas", ["Class", "Ext"], function (go) {
             },
 
             /**
+             * @name go.Carcas.setInstance
+             * @public
+             * @static
+             * @param {go.Carcas} instance
+             * @throws go.Carcas.Exceptions.MainInstanceCreated
+             */
+            'setInstance': function (instance) {
+                if (this.instance) {
+                    throw new go.Carcas.Exceptions.MainInstanceCreated();
+                }
+                this.instance = instance;
+            },
+
+            /**
              * @name go.Carcas.init
              * @alias go.Carcas#init
              * @public
@@ -756,7 +770,14 @@ go("Carcas", ["Class", "Ext"], function (go) {
              *        ошибочная зависимость
              * @augments go.Carcas.Exceptions.Base
              */
-            'ErrorDependence': create("go.Carcas.Exceptions.ErrorDependence", Base)
+            'ErrorDependence': create("go.Carcas.Exceptions.ErrorDependence", Base),
+
+            /**
+             * @class go.Carcas.Exceptions.MainInstanceCreated
+             *        попытка заменить уже созданный основной объект (через setInstance)
+             * @augments go.Carcas.Exceptions.Base
+             */
+            'MainInstanceCreated': create("go.Carcas.Exceptions.MainInstanceCreated", Base)
         };
     }());
 
