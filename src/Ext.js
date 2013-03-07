@@ -535,7 +535,7 @@ go("Ext", ["Class"], function (go, global) {
          *         был ли обработчик найден и удалён
          */
         'removeEventListener': function (eventType, listener) {
-            var elisteners = this.eventListeners, i, len;
+            var elisteners = this.eventListeners;
             if (!elisteners) {
                 return false;
             }
@@ -580,7 +580,7 @@ go("Ext", ["Class"], function (go, global) {
          *        данные события (если event - строка)
          */
         'fireEvent': function (event, eventData) {
-            var listener, i, len;
+            var listener;
             if ((!event) || (typeof event !== "object")) {
                 event = new Ext.Events.Event(event, eventData);
             }
