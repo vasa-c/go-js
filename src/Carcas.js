@@ -471,7 +471,7 @@ go("Carcas", ["Class", "Ext"], function (go) {
          * @return void
          */
         'setEventsListeners': function () {
-            var DOM = this.getDOMObject();
+            var DOM = this.DOMLayer;
             DOM.ondomload(this.ondomload);
             DOM.onfullload(this.onload);
             DOM.onunload(this.onunload);
@@ -541,17 +541,44 @@ go("Carcas", ["Class", "Ext"], function (go) {
         },
 
         /**
-         * Получить объект с методами доступа к DOM
-         *
-         * @name go.Carcas#getDOMObject
-         * @protected
-         * @return {Object}
+         * @name go.Carcas#DOMLayer
+         *       весь интерфейс с DOM выносится сюда
          */
-        'getDOMObject': function () {
-            return Carcas.Helpers.DOM;
-        },
+        'DOMLayer': {
 
-        'eoc': null
+            /**
+             * Повесить обработчик на загрузку DOM
+             *
+             * @name go.Carcas#DOMLayer.ondomload
+             * @public
+             * @param {Function} handler
+             */
+            'ondomload': function (handler) {
+                jQuery(document).ready(handler);
+            },
+
+            /**
+             * Повесить обработчик на полную загрузку документа
+             *
+             * @name go.Carcas#DOMLayer.onfullload
+             * @public
+             * @param {Function} handler
+             */
+            'onfullload': function (handler) {
+                jQuery(window).bind("load", handler);
+            },
+
+            /**
+             * Повесить обработчик на закрытие страницы
+             *
+             * @name go.Carcas#DOMLayer.onunload
+             * @public
+             * @param {Function} handler
+             */
+            'onunload': function (handler) {
+                jQuery(window).bind("unload", handler);
+            }
+        }
     });
 
     /**
@@ -795,47 +822,7 @@ go("Carcas", ["Class", "Ext"], function (go) {
             return result;
         },
 
-        'nodes': [["c", "controllers"], ["mo", "modules"], ["go", "go"], ["l", "libs"]],
-
-        /**
-         * @namespace go.Carcas.Helpers.DOM
-         *            весь интерфейс с DOM выносится сюда
-         */
-        'DOM': {
-
-            /**
-             * Повесить обработчик на загрузку DOM
-             *
-             * @name go.Carcas.Helpers.DOM.ondomload
-             * @public
-             * @param {Function} handler
-             */
-            'ondomload': function (handler) {
-                jQuery(document).ready(handler);
-            },
-
-            /**
-             * Повесить обработчик на полную загрузку документа
-             *
-             * @name go.Carcas.Helpers.DOM.onfullload
-             * @public
-             * @param {Function} handler
-             */
-            'onfullload': function (handler) {
-                jQuery(window).bind("load", handler);
-            },
-
-            /**
-             * Повесить обработчик на закрытие страницы
-             *
-             * @name go.Carcas.Helpers.DOM.onunload
-             * @public
-             * @param {Function} handler
-             */
-            'onunload': function (handler) {
-                jQuery(window).bind("unload", handler);
-            }
-        }
+        'nodes': [["c", "controllers"], ["mo", "modules"], ["go", "go"], ["l", "libs"]]
     };
 
     return Carcas;

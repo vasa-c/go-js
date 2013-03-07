@@ -296,22 +296,20 @@ tests.test("Events", function () {
         /**
          * @override
          */
-        'getDOMObject': function () {
-            return {
+        'DOMLayer': {
 
-                'ondomload': function (handler) {
-                    ondomload = handler;
-                },
+            'ondomload': function (handler) {
+                ondomload = handler;
+            },
 
-                'onfullload': function (handler) {
-                    onfullload = handler;
-                },
+            'onfullload': function (handler) {
+                onfullload = handler;
+            },
 
-                'onunload': function (handler) {
-                    onunload = handler;
-                }
+            'onunload': function (handler) {
+                onunload = handler;
+            }
 
-            };
         }
 
     });
