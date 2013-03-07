@@ -139,11 +139,11 @@ go("Carcas", ["Class", "Ext"], function (go) {
         /**
          * Загрузчик дополнительных библиотек
          *
-         * @name go.Carcas#otherLibsLoader
+         * @name go.Carcas#libsLoader
          * @protected
          * @type {Function(Array.<String> [, Function])}
          */
-        'otherLibsLoader': null,
+        'libsLoader': null,
 
         /**
          * Был ли каркас инициализован
@@ -213,7 +213,7 @@ go("Carcas", ["Class", "Ext"], function (go) {
             this.inited = true;
             this.baseDir  = params.baseDir;
             this.registry = (typeof params.registry === "object") ? params.registry : {};
-            this.otherLibsLoader = params.otherLibsLoader;
+            this.libsLoader = params.libsLoader;
             this.controllersList = {};
             this.modulesList = {};
             this.mo = this.modulesList;
@@ -381,7 +381,7 @@ go("Carcas", ["Class", "Ext"], function (go) {
          */
         'requestOtherLib': function (name) {
             var _this = this;
-            this.otherLibsLoader.call(null, [name], function () {
+            this.libsLoader.call(null, [name], function () {
                 _this.loader.loaded("l:" + name, [], true);
             });
         },

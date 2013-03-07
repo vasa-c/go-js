@@ -166,7 +166,7 @@ tests.test("Init and loading", function () {
         'baseDir'     : "/carcas",
         'registry'    : registry,
         'controllers' : ["page1", "search"],
-        'otherLibsLoader': otherLibsLoader
+        'libsLoader'  : otherLibsLoader
     });
     deepEqual(
         requests,
