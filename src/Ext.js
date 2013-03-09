@@ -6,9 +6,8 @@
  * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
  * @uses       go.Class
  */
-/*jslint node: true, nomen: true */
+/*jslint nomen: true */
 /*global go, window, jQuery */
-"use strict";
 
 if (!window.go) {
     throw new Error("go.core is not found");
@@ -18,7 +17,7 @@ if (!window.go) {
  * @namespace go.Ext
  */
 go("Ext", ["Class"], function (go, global) {
-
+    "use strict";
     var Ext = {};
 
     /**

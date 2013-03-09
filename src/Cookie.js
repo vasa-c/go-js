@@ -7,10 +7,8 @@
  * @uses       go.Class
  * @uses       go.Ext
  */
-/*jslint node: true, nomen: true */
+/*jslint nomen: true */
 /*global window, go */
-
-"use strict";
 
 if (!window.go) {
     throw new Error("go.core is not found");
@@ -21,6 +19,7 @@ if (!window.go) {
  * @type {go.Cookie.CookieClass}
  */
 go("Cookie", ["Class", "Ext"], function (go, global) {
+    "use strict";
 
     var CookieClass, cookie, expiresS, document = global.document;
 

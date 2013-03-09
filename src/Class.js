@@ -5,15 +5,15 @@
  * @subpackage Class
  * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
  */
-/*jslint node: true, nomen: true */
+/*jslint nomen: true */
 /*global go, window */
-"use strict";
 
 if (!window.go) {
     throw new Error("go.core is not found");
 }
 
 go("Class", function (go) {
+    "use strict";
 
     var
         Class,

@@ -7,17 +7,15 @@
  * @uses       go.Class
  * @uses       jQuery
  */
-/*jslint node: true, nomen: true */
+/*jslint nomen: true */
 /*global go, window, jQuery */
-
-"use strict";
 
 if (!window.go) {
     throw new Error("go.core is not found");
 }
 
 go("Carcas", ["Class", "Ext"], function (go) {
-
+    "use strict";
     /**
      * @class go.Carcas
      */

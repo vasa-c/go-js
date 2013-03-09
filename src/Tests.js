@@ -6,15 +6,15 @@
  * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
  * @uses       QUnit (http://docs.jquery.com/QUnit)
  */
-/*jslint node: true, nomen: true */
+/*jslint nomen: true */
 /*global go, window */
-"use strict";
 
 if (!window.go) {
     throw new Error("go.core is not found");
 }
 
 go("Tests", function (go, global) {
+    "use strict";
 
     /**
      * Прототип объектов тестирования.

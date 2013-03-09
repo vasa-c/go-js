@@ -10,14 +10,14 @@
  * @license MIT (http://www.opensource.org/licenses/mit-license.php)
  * @link    https://github.com/vasa-c/go-js
  */
-/*jslint node: true, nomen: true */
+/*jslint nomen: true */
 /*global window */
-"use strict";
 
 /**
  * @namespace go
  */
 var go = (function (global) {
+    "use strict";
 
     var VERSIONS = "1.0-beta",
 
@@ -484,6 +484,7 @@ var go = (function (global) {
  */
 go("Lang", function (go, global) {
     /*jslint unparam: false */
+    "use strict";
 
     var Lang = {
 
