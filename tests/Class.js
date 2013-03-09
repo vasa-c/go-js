@@ -417,10 +417,9 @@ tests.test("type and toString", function () {
     equal(":" + oneInstance, ":instance of [go.class]");
     equal(":" + twoInstance, ":instance of [TwoClass]");
 });
-
+/*
 tests.test("Mutators", function () {
-ok(true);
-return; // @todo
+
     var OneClass, TwoClass, ThreeClass, twoInstance, threeInstance;
 
     OneClass = go.Class({
@@ -498,7 +497,7 @@ return; // @todo
     ok(!threeInstance.mul_three); // tofix ?
     equal(threeInstance.mul_four(1), 5); // 1 + 4 (no mutation)
 });
-
+*/
 tests.test("Static", function () {
 
     var OneClass, TwoClass, oneInstance, twoInstance;

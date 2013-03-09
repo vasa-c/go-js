@@ -6,7 +6,7 @@
  * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
  */
 /*jslint node: true, nomen: true */
-/*global go, tests, ok, equal, deepEqual, throws */
+/*global go, tests, ok, equal, deepEqual, throws, $ */
 "use strict";
 
 tests.module("Carcas");
@@ -20,7 +20,8 @@ tests.test("Carcas.getInstance()", function () {
 tests.test("Carcas.Helpers.normalizDeps()", function () {
 
     var normalize = go.Carcas.Helpers.normalizeDeps,
-        deps, expected;
+        deps,
+        expected;
 
     deps = ["c:page1", "mo:one.two", "mo:three.four", "layout.def", "l:fancybox"];
     expected = ["c:page1", "mo:one.two", "mo:three.four", "c:layout.def", "l:fancybox"];
