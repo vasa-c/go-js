@@ -1109,7 +1109,7 @@ go("Lang", function (go, global, undefined) {
                     parent = global.Error;
                 }
                 defmessage = defmessage || "";
-                Exc = function Exc(message) {
+                Exc = function Exception(message) {
                     this.name    = name;
                     this.message = message || defmessage;
                     this.stack = (new Error()).stack;
