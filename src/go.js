@@ -307,16 +307,17 @@ var go = (function (global) {
 
             /**
              * Удалить обработчик из слушателя
-             * (удаляет только первый найденый)
              *
              * @name go.Lang.Listeners.Listener#remove
              * @public
              * @param {(Function|Number)} handler
              *        функция-обработчик или её ID
+             * @param {Boolean} [all]
+             *        удалять все одинаковые функции (по умолчанию, только первую найденную)
              * @return {Boolean}
              *         был ли обработчик найден и удалён
              */
-            remove = function remove(handler) {
+            remove = function remove(handler, all) {
                 var handlers = this._handlers,
                     len,
                     i,
@@ -326,7 +327,9 @@ var go = (function (global) {
                         if (handlers[i] === handler) {
                             handlers[i] = null;
                             removed = true;
-                            break;
+                            if (!all) {
+                                break;
+                            }
                         }
                     }
                 } else {

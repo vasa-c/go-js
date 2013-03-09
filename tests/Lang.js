@@ -659,6 +659,42 @@ tests.test("go.Lang.Listeners.create", function () {
     deepEqual(result, [1, 3, 1]);
 });
 
+tests.test("go.Lang.Listeners.Listener::remove(all)", function () {
+
+    var f1, f2, log, listener;
+
+    f1 = function () {
+        log.push(1);
+    };
+
+    f2 = function () {
+        log.push(2);
+    };
+
+    listener = go.Lang.Listeners.create();
+
+    listener.append(f2);
+    listener.append(f1);
+    listener.append(f2);
+    listener.append(f1);
+    listener.append(f2);
+    listener.append(f1, true);
+
+    log = [];
+    listener.ping();
+    deepEqual(log, [2, 1, 2, 1, 2]);
+
+    log = [];
+    listener.remove(f2);
+    listener.ping();
+    deepEqual(log, [1, 2, 1, 2]);
+
+    log = [];
+    listener.remove(f1, true);
+    listener.ping();
+    deepEqual(log, [2, 2]);
+});
+
 tests.test("go.Lang.Listeners.createCounter", function () {
 
     var f1, f2, f3, listener1, listener2, counter1, counter2, counter3, result;
