@@ -7,7 +7,7 @@
  * @uses       go.Class
  * @uses       go.Ext
  */
-/*jslint nomen: true */
+/*jslint nomen: true, es5: true */
 /*global window, go */
 
 if (!window.go) {
@@ -18,7 +18,7 @@ if (!window.go) {
  * @name go.Cookie
  * @type {go.Cookie.CookieClass}
  */
-go("Cookie", ["Class", "Ext"], function (go, global) {
+go("Cookie", ["Class", "Ext"], function (go, global, undefined) {
     "use strict";
 
     var CookieClass, cookie, expiresS, document = global.document;
@@ -91,7 +91,7 @@ go("Cookie", ["Class", "Ext"], function (go, global) {
          * @return {String}
          */
         'get': function (name) {
-             return this.getAll()[name];
+            return this.getAll()[name];
         },
 
         /**
@@ -291,22 +291,22 @@ go("Cookie", ["Class", "Ext"], function (go, global) {
         }
 
         switch (expires) {
-            case 'month':
-                expires = now ? (new Date(now.getTime())) : new Date();
-                expires.setMonth(expires.getMonth() + 1);
-                return expires;
-            case 'year':
-                expires = now ? (new Date(now.getTime())) : new Date();
-                expires.setFullYear(expires.getFullYear() + 1);
-                return expires;
-            case 'delete':
-                return (new Date(10));
-            case 'session':
-                return void(0);
-            case 'forever':
-                expires = now ? (new Date(now.getTime())) : new Date();
-                expires.setFullYear(expires.getFullYear() + 20);
-                return expires;
+        case 'month':
+            expires = now ? (new Date(now.getTime())) : new Date();
+            expires.setMonth(expires.getMonth() + 1);
+            return expires;
+        case 'year':
+            expires = now ? (new Date(now.getTime())) : new Date();
+            expires.setFullYear(expires.getFullYear() + 1);
+            return expires;
+        case 'delete':
+            return (new Date(10));
+        case 'session':
+            return undefined;
+        case 'forever':
+            expires = now ? (new Date(now.getTime())) : new Date();
+            expires.setFullYear(expires.getFullYear() + 20);
+            return expires;
         }
         now = new Date(expires);
         if (isNaN(now.getTime())) {
