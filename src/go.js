@@ -413,7 +413,7 @@ var go = (function (global) {
              *         сработал счётчик или нет
              */
             filled = function filled() {
-                if (!this._count) {
+                if (typeof this._count !== "number") {
                     this._count = 0;
                     this._handler.apply(null);
                     return true;
@@ -425,6 +425,9 @@ var go = (function (global) {
              * @alias go.Lang.Listeners.createCounter
              */
             function createCounter(count, handler) {
+                if (typeof count === "string") {
+                    count = parseInt(count, 10) || 0;
+                }
                 if (count === 0) {
                     handler();
                 }

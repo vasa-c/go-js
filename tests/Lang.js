@@ -750,5 +750,39 @@ tests.test("go.Lang.Listeners.createCounter", function () {
     counter3 = go.Lang.Listeners.createCounter(null, f1);
     counter3.filled();
     deepEqual(result, [1]);
+});
 
+tests.test("go.Lang.Listeners.Counter: filled and empty count", function () {
+
+    var ex, handler, counter;
+
+    handler = function () {
+        ex = true;
+    };
+
+    ex = false;
+    counter = go.Lang.Listeners.createCounter(0, handler);
+    ok(ex);
+
+    ex = false;
+    counter = go.Lang.Listeners.createCounter("0", handler);
+    ok(ex);
+
+    ex = false;
+    counter = go.Lang.Listeners.createCounter("2", handler);
+    ok(!ex);
+    counter();
+    ok(!ex);
+    counter();
+    ok(ex);
+
+    ex = false;
+    counter = go.Lang.Listeners.createCounter(null, handler);
+    ok(!ex);
+    counter.filled();
+    ok(ex);
+    ex = false;
+    counter.filled();
+    counter();
+    ok(!ex);
 });
