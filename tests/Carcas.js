@@ -6,7 +6,7 @@
  * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
  */
 /*jslint node: true, nomen: true */
-/*global go, tests, ok, equal, deepEqual */
+/*global go, tests, ok, equal, deepEqual, throws, $ */
 "use strict";
 
 tests.module("Carcas");
@@ -20,7 +20,8 @@ tests.test("Carcas.getInstance()", function () {
 tests.test("Carcas.Helpers.normalizDeps()", function () {
 
     var normalize = go.Carcas.Helpers.normalizeDeps,
-        deps, expected;
+        deps,
+        expected;
 
     deps = ["c:page1", "mo:one.two", "mo:three.four", "layout.def", "l:fancybox"];
     expected = ["c:page1", "mo:one.two", "mo:three.four", "c:layout.def", "l:fancybox"];
@@ -120,14 +121,23 @@ tests.test("Init and loading", function () {
 
     TestCarcas = go.Class(go.Carcas, {
 
+        /**
+         * @override
+         */
         'requestJSFile': function (filename) {
             requests.push(filename);
         },
 
+        /**
+         * @override
+         */
         'requestGoModule': function (name) { // все нужные go.модули уже подгружены
             this.loader.loaded("go:" + name, [], true);
         },
 
+        /**
+         * @override
+         */
         'setEventsListeners': function () {
 
         },
@@ -157,7 +167,7 @@ tests.test("Init and loading", function () {
         'baseDir'     : "/carcas",
         'registry'    : registry,
         'controllers' : ["page1", "search"],
-        'otherLibsLoader': otherLibsLoader
+        'libsLoader'  : otherLibsLoader
     });
     deepEqual(
         requests,
@@ -280,10 +290,32 @@ tests.test("Create parent module (controller)", function () {
 
 tests.test("Events", function () {
 
-    var carcas, events = {}, expected = {};
+    var carcas, events = {}, expected = {}, TestCarcas, ondomload, onfullload, onunload;
 
-    carcas = new go.Carcas();
-    carcas.setEventsListeners = go.Lang.f.empty;
+    TestCarcas = go.Class(go.Carcas, {
+
+        /**
+         * @override
+         */
+        'DOMLayer': {
+
+            'ondomload': function (handler) {
+                ondomload = handler;
+            },
+
+            'onfullload': function (handler) {
+                onfullload = handler;
+            },
+
+            'onunload': function (handler) {
+                onunload = handler;
+            }
+
+        }
+
+    });
+
+    carcas = new TestCarcas();
     carcas.init({});
 
     deepEqual(events, expected);
@@ -309,11 +341,11 @@ tests.test("Events", function () {
     expected.one_oncreate = true;
     deepEqual(events, expected);
 
-    carcas.ondomload();
+    ondomload();
     expected.one_init = true;
     deepEqual(events, expected);
 
-    carcas.controller("two", {
+    carcas.controller("one.two", {
         'oncreate': function () {
             events.two_oncreate = true;
         },
@@ -335,12 +367,12 @@ tests.test("Events", function () {
     expected.two_init = true;
     deepEqual(events, expected);
 
-    carcas.onload();
+    onfullload();
     expected.one_onload = true;
     expected.two_onload = true;
     deepEqual(events, expected);
 
-    carcas.controller("three", {
+    carcas.controller("four.three", {
         'oncreate': function () {
             events.three_oncreate = true;
         },
@@ -363,7 +395,7 @@ tests.test("Events", function () {
     expected.three_onload = true;
     deepEqual(events, expected);
 
-    carcas.onunload();
+    onunload();
     expected.one_onunload = true;
     expected.two_onunload = true;
     expected.three_onunload = true;
@@ -371,4 +403,87 @@ tests.test("Events", function () {
     expected.two_done = true;
     expected.three_done = true;
     deepEqual(events, expected);
+});
+
+tests.test("Exceptions", function () {
+
+    throws(
+        function () {
+            var carcas = new go.Carcas();
+            carcas.init({});
+            carcas.init({});
+        },
+        go.Carcas.Exceptions.AlreadyInited,
+        "Already inited"
+    );
+
+    throws(
+        function () {
+            var carcas = new go.Carcas();
+            carcas.controller("test", {});
+        },
+        go.Carcas.Exceptions.NotInited,
+        "Not inited"
+    );
+
+    throws(
+        function () {
+            var carcas = new go.Carcas();
+            carcas.init({});
+            carcas.controller("test", null, {});
+            carcas.controller("test", null, {});
+        },
+        go.Carcas.Exceptions.ControllerRedeclare,
+        "Controller redeclare"
+    );
+
+    throws(
+        function () {
+            var carcas = new go.Carcas();
+            carcas.init({});
+            carcas.module("test", function () {});
+            carcas.module("test", function () {});
+        },
+        go.Carcas.Exceptions.ModuleRedeclare,
+        "Module redeclare"
+    );
+});
+
+tests.test("nodes", function () {
+
+    var TestCarcas, carcas, nodes;
+
+    TestCarcas = go.Class(go.Carcas, {
+
+        'setEventsListeners': function () {}
+
+    });
+
+
+    carcas = new TestCarcas();
+    carcas.init({});
+
+    carcas.controller("one", {
+
+        'nodes': {
+            'spans': "span.x",
+            'strong': "strong",
+            'em': "em"
+        },
+
+        'oncreate': function () {
+            this.node = $("<div><span class='x'>a</span><span class='x'>b</span><strong>x</strong></div>");
+        },
+
+        'init': function () {
+            nodes = this.nodes;
+        }
+
+    });
+
+    carcas.ondomload();
+    equal(nodes.spans.length, 2);
+    equal(nodes.strong.length, 1);
+    equal(nodes.em.length, 0);
+    equal(nodes.spans[0].firstChild.nodeValue, "a");
 });

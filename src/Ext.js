@@ -6,19 +6,20 @@
  * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
  * @uses       go.Class
  */
-/*jslint node: true, nomen: true */
+/*jslint nomen: true, es5: true, todo: true */
 /*global go, window, jQuery */
-"use strict";
 
 if (!window.go) {
     throw new Error("go.core is not found");
 }
 
+/*jslint unparam: true */
 /**
  * @namespace go.Ext
  */
-go("Ext", ["Class"], function (go, global) {
-
+go("Ext", ["Class"], function (go, global, undefined) {
+    "use strict";
+    /*jslint unparam: false */
     var Ext = {};
 
     /**
@@ -218,7 +219,7 @@ go("Ext", ["Class"], function (go, global) {
          *
          * @name go.Ext.Nodes#nodes
          * @protected
-         * @type {Object.<string, jQuery>}
+         * @type {Object.<String, jQuery>}
          */
         'nodes': {},
 
@@ -235,6 +236,47 @@ go("Ext", ["Class"], function (go, global) {
          * @ignore
          */
         '__abstract': true,
+
+        /**
+         * Абстракция доступа к DOM
+         *
+         * @name go.Ext.Nodes#DOMLayer
+         * @protected
+         * @type {Object}
+         */
+        'DOMLayer': {
+
+            /**
+             * @name go.Ext.Nodes#DOMLayer.find
+             * @param {*} selector
+             * @param {*} [context]
+             * @return {Object}
+             */
+            'find': function (selector, context) {
+                return context ? jQuery(selector, context) : jQuery(selector);
+            },
+
+            /**
+             * @name go.Ext.Nodes#DOMLayer.bind
+             * @param {Object} node
+             * @param {String} eventType
+             * @param {Function} handler
+             */
+            'bind': function (node, eventType, handler) {
+                node.bind(eventType, handler);
+            },
+
+            /**
+             * @name go.Ext.Nodes#DOMLayer.unbind
+             * @param {Object} node
+             * @param {String} eventType
+             * @param {Function} handler
+             */
+            'unbind': function (node, eventType, handler) {
+                node.unbind(eventType, handler);
+            }
+
+        },
 
         /**
          * @ignore
@@ -273,7 +315,7 @@ go("Ext", ["Class"], function (go, global) {
 
         /**
          * @constructs
-         * @param {jQuerySelector} node
+         * @param {jQuery} node
          *        указатель на основной контейнер объекта
          */
         '__construct': function (node) {
@@ -294,7 +336,7 @@ go("Ext", ["Class"], function (go, global) {
          *
          * @name go.Ext.Nodes#initNodes
          * @protected
-         * @param {jQuerySelector} node
+         * @param {jQuery} node
          *        указатель на основной контейнер объекта
          * @todo протестировать лучше
          */
@@ -304,7 +346,8 @@ go("Ext", ["Class"], function (go, global) {
                 lnodes = this.nodes,
                 lnode,
                 k,
-                _this = this;
+                _this = this,
+                DOM = this.DOMLayer;
             function create(lnode) {
                 var nnode,
                     parent,
@@ -314,7 +357,7 @@ go("Ext", ["Class"], function (go, global) {
                 if (!lnode) {
                     return null;
                 }
-                if ((typeof lnode === "object") && (typeof lnode.length !== "undefined")) {
+                if ((typeof lnode === "object") && (lnode.length !== undefined)) {
                     return lnode;
                 }
                 if (typeof lnode === "function") {
@@ -327,8 +370,8 @@ go("Ext", ["Class"], function (go, global) {
                     };
                 }
                 if (lnode.selector) {
-                    parent = lnode.global ? jQuery(global) : node;
-                    nnode = parent.find(lnode.selector);
+                    parent = lnode.global ? DOM.find(global) : node;
+                    nnode = DOM.find(lnode.selector, parent);
                 } else if (lnode.creator) {
                     nnode = lnode.creator.call(_this, node, lnode);
                     nnode = create(nnode);
@@ -348,7 +391,7 @@ go("Ext", ["Class"], function (go, global) {
                 }
                 return nnode;
             } // create()
-            node = node ? jQuery(node) : jQuery(global);
+            node = node ? DOM.find(node) : DOM.find(global.document);
             this.node = node;
             this.nodesListeners = [];
             for (k in lnodes) {
@@ -379,7 +422,7 @@ go("Ext", ["Class"], function (go, global) {
          *
          * @name go.Ext.Nodes#bind
          * @protected
-         * @param {jQuerySelector} node
+         * @param {jQuery} node
          *        указатель на ноду
          * @param {String} eventType
          *        тип события
@@ -390,7 +433,7 @@ go("Ext", ["Class"], function (go, global) {
             if (typeof handler !== "function") {
                 handler = this[handler];
             }
-            jQuery(node).bind(eventType, handler);
+            this.DOMLayer.bind(this.DOMLayer.find(node), eventType, handler);
             this.nodesListeners.push([node, eventType, handler]);
         },
 
@@ -399,7 +442,7 @@ go("Ext", ["Class"], function (go, global) {
          *
          * @name go.Ext.Nodes#unbind
          * @protected
-         * @param {jQuerySelector} node
+         * @param {jQuery} node
          *        указатель на ноду
          * @param {String} eventType
          *        тип события
@@ -410,7 +453,7 @@ go("Ext", ["Class"], function (go, global) {
             if (typeof handler !== "function") {
                 handler = this[handler];
             }
-            jQuery(node).unbind(eventType, handler);
+            this.DOMLayer.unbind(this.DOMLayer.find(node), eventType, handler);
         },
 
         /**
@@ -489,7 +532,7 @@ go("Ext", ["Class"], function (go, global) {
          *         был ли обработчик найден и удалён
          */
         'removeEventListener': function (eventType, listener) {
-            var elisteners = this.eventListeners, i, len;
+            var elisteners = this.eventListeners;
             if (!elisteners) {
                 return false;
             }
@@ -534,7 +577,7 @@ go("Ext", ["Class"], function (go, global) {
          *        данные события (если event - строка)
          */
         'fireEvent': function (event, eventData) {
-            var listener, i, len;
+            var listener;
             if ((!event) || (typeof event !== "object")) {
                 event = new Ext.Events.Event(event, eventData);
             }
