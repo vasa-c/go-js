@@ -500,7 +500,7 @@ tests.test("Mutators", function () {
 */
 tests.test("Static", function () {
 
-    var OneClass, TwoClass, oneInstance, twoInstance;
+    var OneClass, TwoClass, NoStaticClass, oneInstance, twoInstance;
 
     OneClass = go.Class({
 
@@ -567,6 +567,11 @@ tests.test("Static", function () {
 
     ok(!oneInstance.getInstance);
     ok(!twoInstance.getInstance);
+
+    NoStaticClass = go.Class(go.Class(TwoClass, {}), {
+        'method': function () {}
+    });
+    ok(NoStaticClass.getInstance, "Наследование static через классы без определения новых static-членов");
 });
 
 tests.test("bind", function () {

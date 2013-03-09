@@ -229,15 +229,15 @@ go("Class", function (go, global, undefined) {
                         st = props.__static,
                         fields,
                         k;
+                    fields = this.fields;
                     if (st) {
-                        fields = this.fields;
                         go.Lang.extend(fields, st);
-                        for (k in fields) {
-                            if (fields.hasOwnProperty(k)) {
-                                C[k] = fields[k];
-                            }
-                        }
                         delete props.__static;
+                    }
+                    for (k in fields) {
+                        if (fields.hasOwnProperty(k)) {
+                            C[k] = fields[k];
+                        }
                     }
                 }
             },
