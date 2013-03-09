@@ -6,7 +6,7 @@
  *
  * @package go.js
  * @author  Григорьев Олег aka vasa_c (http://blgo.ru/)
- * @version 1.0-beta
+ * @version 2.0-beta
  * @license MIT (http://www.opensource.org/licenses/mit-license.php)
  * @link    https://github.com/vasa-c/go-js
  */
@@ -19,7 +19,7 @@
 var go = (function (global) {
     "use strict";
 
-    var VERSIONS = "1.0-beta",
+    var VERSION = "2.0-beta",
 
         /**
          * Http-адрес каталога в котором находится go.js и модули
@@ -43,7 +43,7 @@ var go = (function (global) {
         /**
          * Антикэш при подключении модулей
          *
-         * @return {String}
+         * @type {String}
          */
         anticache;
 
@@ -52,15 +52,15 @@ var go = (function (global) {
      *
      * @param {String} name
      *        имя модуля
-     * @param {Array.<String>} [deps]
+     * @param {(Array.<String>|String)} [deps]
      *        список зависимостей
-     * @param {Function} fmodule
+     * @param {Function} CModule
      *        функция-конструктор модуля
      * @return {Function}
      */
-    function go(name, deps, fmodule) {
+    function go(name, deps, CModule) {
         if (name) {
-            go.appendModule(name, deps, fmodule);
+            go.appendModule(name, deps, CModule);
         }
         return go;
     }
@@ -72,15 +72,15 @@ var go = (function (global) {
      * @name go.VERSION
      * @type {String}
      */
-    go.VERSION = VERSIONS;
+    go.VERSION = VERSION;
 
     /**
-     * go.include(): инициирование загрузки нужных модулей
+     * Инициирование загрузки нужных модулей
      * (только на этапе загрузки страницы)
      *
      * @name go.include
-     *
-     * @param {(String|Array<String>)} names
+     * @public
+     * @param {(String|Array.<String>)} names
      *        имя нужного модуля или список из нескольких имён
      * @param {Function} [listener]
      *        обработчик загрузки всех указанных модулей
@@ -90,23 +90,24 @@ var go = (function (global) {
     };
 
     /**
-     * go.appendModule(): добавление модуля в пространство имён
+     * Добавление модуля в пространство имён
      * (вызывается при определении модуля в соответствующем файле)
      *
      * @name go.appendModule
+     * @public
      * @param {String} name
      *        имя модуля
-     * @param {Array<String>} [deps]
+     * @param {(Array.<String>|String)} [deps]
      *        список зависимостей
-     * @param {Function} fmodule
+     * @param {Function} CModule
      *        функция-конструктор модуля
      */
-    go.appendModule = function (name, deps, fmodule) {
-        if (!fmodule) {
-            fmodule = deps;
+    go.appendModule = function (name, deps, CModule) {
+        if (!CModule) {
+            CModule = deps;
             deps = [];
         }
-        loader.loaded(name, deps, fmodule);
+        loader.loaded(name, deps, CModule);
     };
 
     /**
@@ -127,9 +128,9 @@ var go = (function (global) {
             /**
              * @constructs
              * @public
-             * @param {Function(string)} includer
+             * @param {Function(String)} includer
              *        внешняя функция, инициирующая запрос на загрузку модуля (получает аргументом название)
-             * @param {Function(string, *)} creator
+             * @param {Function(String, *)} creator
              *        внешнаяя функция, создающая модуль (получает имя и данные)
              */
             '__construct': function (includer, creator) {
@@ -221,7 +222,7 @@ var go = (function (global) {
              * См. конструктор
              * @name go.__Loader#includer
              * @private
-             * @type {Function(string)}
+             * @type {Function(String)}
              */
             'includer': null,
 
@@ -229,7 +230,7 @@ var go = (function (global) {
              * См. конструктор
              * @name go.__Loader#creator
              * @private
-             * @type {Function(string, *)}
+             * @type {Function(String, *)}
              */
             'creator': null,
 
@@ -241,7 +242,7 @@ var go = (function (global) {
              * поле "created"  - модуль создан
              * поле "listener" - слушатель на создание этого модуля
              *
-             * @name go.__Loader#reqs
+             * @name go.__Loader#modules
              * @private
              * @type {Object.<String, Object>}
              */
@@ -253,15 +254,22 @@ var go = (function (global) {
     go.__Loader.Listeners = {
 
         /**
+         * Создание простого слушателя
+         *
          * @name go.Lang.Listeners.create
-         * @param {(Function|Array.<Function>)} f
+         * @public
+         * @param {(Function|Array.<Function>)} [handlers]
+         *        привязанный к слушателю обработчики или список обработчиков
          * @return {go.Lang.Listeners.Listener}
+         *         объект слушателя
          */
         'create': (function () {
 
             var ping, append, remove;
 
             /**
+             * Вызов слушателя
+             *
              * @name go.Lang.Listeners.Listener#ping
              * @public
              * @return void
@@ -271,77 +279,90 @@ var go = (function (global) {
             };
 
             /**
+             * Добавить обработчик к слушателю
+             *
              * @name go.Lang.Listeners.Listener#append
              * @public
-             * @param {Function} f
+             * @param {Function} handler
+             *        обработчик
              * @param {Boolean} [check]
+             *        проверять на наличие
              * @return {Number}
+             *         ID установленного обработчика
              */
-            append = function append(f, check) {
-                var list = this.list,
+            append = function append(handler, check) {
+                var handlers = this._handlers,
                     len,
                     i;
                 if (check) {
-                    for (i = 0, len = list.length; i < len; i += 1) {
-                        if (list[i] === f) {
+                    for (i = 0, len = handlers.length; i < len; i += 1) {
+                        if (handlers[i] === handler) {
                             return i;
                         }
                     }
                 }
-                list.push(f);
-                return list.length - 1;
+                handlers.push(handler);
+                return handlers.length - 1;
             };
 
             /**
-             * @name go.Lang.Listeners.Listener#ping
+             * Удалить обработчик из слушателя
+             * (удаляет только первый найденый)
+             *
+             * @name go.Lang.Listeners.Listener#remove
              * @public
-             * @param {(Function|Number)} f
+             * @param {(Function|Number)} handler
+             *        функция-обработчик или её ID
              * @return {Boolean}
+             *         был ли обработчик найден и удалён
              */
-            remove = function remove(f) {
-                var list = this.list,
+            remove = function remove(handler) {
+                var handlers = this._handlers,
                     len,
                     i,
                     removed = false;
-                if (typeof f === "function") {
-                    for (i = 0, len = list.length; i < len; i += 1) {
-                        if (list[i] === f) {
-                            list[i] = null;
+                if (typeof handler === "function") {
+                    for (i = 0, len = handlers.length; i < len; i += 1) {
+                        if (handlers[i] === handler) {
+                            handlers[i] = null;
                             removed = true;
                             break;
                         }
                     }
                 } else {
-                    if (list[f]) {
-                        list[f] = null;
+                    if (handlers[handler]) {
+                        handlers[handler] = null;
                         removed = true;
                     }
                 }
                 return removed;
             };
 
-            function create(list) {
+            /**
+             * @alias go.Lang.Listeners.create
+             */
+            function create(handlers) {
                 var listener;
 
-                if (typeof list === "function") {
-                    list = [list];
-                } else if (Object.prototype.toString.call(list) !== '[object Array]') {
-                    list = [];
+                if (typeof handlers === "function") {
+                    handlers = [handlers];
+                } else if (!handlers) {
+                    handlers = [];
                 }
 
                 listener = function () {
-                    var current,
-                        len = list.length,
+                    var handler,
+                        len = handlers.length,
                         i;
                     for (i = 0; i < len; i += 1) {
-                        current = list[i];
-                        if (current) {
-                            current.apply(null, arguments);
+                        handler = handlers[i];
+                        if (handler) {
+                            handler.apply(null, arguments);
                         }
                     }
                 };
 
-                listener.list = list;
+                listener._handlers = handlers;
                 listener.ping = ping;
                 listener.append = append;
                 listener.remove = remove;
@@ -353,9 +374,12 @@ var go = (function (global) {
         }()),
 
         /**
+         * Создать слушатель-счётчик
+         *
          * @name go.Lang.Listeners.createCounter
+         * @public
          * @param {Number} count
-         * @param {Function} listener
+         * @param {Function} handler
          * @return {(Function|go.Lang.Listeners.Counter)}
          */
         'createCounter': (function () {
@@ -363,42 +387,54 @@ var go = (function (global) {
             var inc, filled;
 
             /**
+             * Увеличить счётчик
+             *
              * @name go.Lang.Listeners.Counter#inc
+             * @public
              * @param {Number} [i=1]
+             * @return {Number}
              */
             inc = function inc(i) {
-                if (this.count !== 0) {
-                    this.count += (i || 1);
+                if (this._count !== 0) {
+                    this._count += (i || 1);
                 }
+                return this.count;
             };
 
             /**
+             * Обозначить счётчик заполненным
+             *
              * @name go.Lang.Listeners.Counter#filled
+             * @public
              * @return {Boolean}
+             *         сработал счётчик или нет
              */
             filled = function filled() {
-                if (!this.count) {
-                    this.count = 0;
-                    this.listener.apply(null);
+                if (!this._count) {
+                    this._count = 0;
+                    this._handler.apply(null);
                     return true;
                 }
                 return false;
             };
 
-            function createCounter(count, listener) {
+            /**
+             * @alias go.Lang.Listeners.createCounter
+             */
+            function createCounter(count, handler) {
                 if (count === 0) {
-                    listener();
+                    handler();
                 }
                 function Counter() {
-                    if (Counter.count > 0) {
-                        Counter.count -= 1;
-                        if (Counter.count === 0) {
-                            Counter.listener.apply(null);
+                    if (Counter._count > 0) {
+                        Counter._count -= 1;
+                        if (Counter._count === 0) {
+                            Counter._handler.apply(null);
                         }
                     }
                 }
-                Counter.count = count;
-                Counter.listener = listener;
+                Counter._count = count;
+                Counter._handler = handler;
                 Counter.inc = inc;
                 Counter.filled = filled;
                 return Counter;
@@ -409,6 +445,8 @@ var go = (function (global) {
     };
 
     /**
+     * Запрос на подключение JS-файла
+     *
      * @name go.__Loader.includeJSFile
      * @param {String} src
      */
@@ -426,6 +464,12 @@ var go = (function (global) {
         return new go.__Loader(includer, creator);
     }());
 
+    /**
+     * Вывод отладочной информации, если есть куда
+     *
+     * @name go.log
+     * @public
+     */
     go.log = function () {
         var console = global.console;
         if (console && console.log) {
