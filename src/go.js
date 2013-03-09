@@ -10,7 +10,7 @@
  * @license MIT (http://www.opensource.org/licenses/mit-license.php)
  * @link    https://github.com/vasa-c/go-js
  */
-/*jslint nomen: true */
+/*jslint nomen: true, es5: true, todo: true */
 /*global window */
 
 /**
@@ -299,22 +299,25 @@ var go = (function (global) {
              * @return {Boolean}
              */
             remove = function remove(f) {
-                var list = this.list, len, i;
-                if (typeof f !== "function") {
+                var list = this.list,
+                    len,
+                    i,
+                    removed = false;
+                if (typeof f === "function") {
+                    for (i = 0, len = list.length; i < len; i += 1) {
+                        if (list[i] === f) {
+                            list[i] = null;
+                            removed = true;
+                            break;
+                        }
+                    }
+                } else {
                     if (list[f]) {
                         list[f] = null;
-                        return true;
-                    } else {
-                        return false;
+                        removed = true;
                     }
                 }
-                for (i = 0, len = list.length; i < len; i += 1) {
-                    if (list[i] === f) {
-                        list[i] = null;
-                        return true;
-                    }
-                }
-                return false;
+                return removed;
             };
 
             function create(list) {
@@ -482,9 +485,9 @@ var go = (function (global) {
 /**
  * @namespace go.Lang
  */
-go("Lang", function (go, global) {
-    /*jslint unparam: false */
+go("Lang", function (go, global, undefined) {
     "use strict";
+    /*jslint unparam: false */
 
     var Lang = {
 
@@ -647,13 +650,13 @@ go("Lang", function (go, global) {
                 }
             }
             switch (Lang.getType(value)) {
-                case "array":
-                    return true;
-                case "collection":
-                case "arguments":
-                    return (!strict);
-                default:
-                    return false;
+            case "array":
+                return true;
+            case "collection":
+            case "arguments":
+                return (!strict);
+            default:
+                return false;
             }
         },
 
@@ -919,7 +922,7 @@ go("Lang", function (go, global) {
          */
         'parseQuery': function parseQuery(query, sep) {
             var result = {}, i, len, v;
-            if (typeof query === "undefined") {
+            if (query === undefined) {
                 query = global.location.toString().split("#", 2)[0].split("?", 2)[1];
             } else if (typeof query !== "string") {
                 return query;
