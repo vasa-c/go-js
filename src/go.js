@@ -547,6 +547,7 @@ go("Lang", function (go, global, undefined) {
          * Если для функции определён свой метод bind(), то используется он
          *
          * @name go.Lang.bind
+         * @public
          * @param {Function} func
          *        функция
          * @param {Object} [thisArg]
@@ -559,7 +560,7 @@ go("Lang", function (go, global, undefined) {
         'bind': function bind(func, thisArg, args) {
             var result;
             thisArg = thisArg || global;
-            if (func.bind) {
+            if (typeof func.bind === "function") {
                 if (args) {
                     args = [thisArg].concat(args);
                 } else {
@@ -567,11 +568,11 @@ go("Lang", function (go, global, undefined) {
                 }
                 result = func.bind.apply(func, args);
             } else if (args) {
-                result = function () {
+                result = function binded() {
                     return func.apply(thisArg, args.concat(Array.prototype.slice.call(arguments, 0)));
                 };
             } else {
-                result = function () {
+                result = function binded() {
                     return func.apply(thisArg, arguments);
                 };
             }
@@ -582,13 +583,14 @@ go("Lang", function (go, global, undefined) {
          * Получение расширенного типа значения
          *
          * @name go.Lang.getType
-         * @param {mixed} value
+         * @public
+         * @param {*} value
          *        проверяемое значение
          * @return {String}
          *         название типа
          */
         'getType': function getType(value) {
-            var type;
+            var type, w;
 
             if (value && (typeof value.go$type === "string")) {
                 return value.go$type;
@@ -626,11 +628,12 @@ go("Lang", function (go, global, undefined) {
             }
 
             if (value.constructor) {
+                w = global;
                 if (value instanceof Array) {
                     return "array";
                 }
-                if (window.HTMLElement) {
-                    if (value instanceof window.HTMLElement) {
+                if (global.HTMLElement) {
+                    if (value instanceof w.HTMLElement) {
                         return "element";
                     }
                 } else {
@@ -638,13 +641,13 @@ go("Lang", function (go, global, undefined) {
                         return "element";
                     }
                 }
-                if (window.Text && (value instanceof window.Text)) {
+                if (w.Text && (value instanceof w.Text)) {
                     return "textnode";
                 }
-                if (window.HTMLCollection && (value instanceof window.HTMLCollection)) {
+                if (w.HTMLCollection && (value instanceof w.HTMLCollection)) {
                     return "collection";
                 }
-                if (window.NodeList && (value instanceof window.NodeList)) {
+                if (w.NodeList && (value instanceof w.NodeList)) {
                     return "collection";
                 }
                 if ((typeof value.length === "number") && (!value.slice)) {
@@ -676,6 +679,7 @@ go("Lang", function (go, global, undefined) {
          * Является ли значение массивом
          *
          * @name go.Lang.isArray
+         * @public
          * @param {mixed} value
          *        проверяемое значение
          * @param {Boolean} [strict=false]
@@ -706,9 +710,10 @@ go("Lang", function (go, global, undefined) {
 
         /**
          * Является ли объект простым словарём.
-         * То есть любым объектом, не имеющий более специфического типа.
+         * То есть любым объектом, не имеющим более специфического типа.
          *
          * @name go.Lang.isDict
+         * @public
          * @param {Object} value
          *        проверяемое значение
          * @return {Boolean}
@@ -722,22 +727,21 @@ go("Lang", function (go, global, undefined) {
          * Обход элементов объекта
          *
          * @name go.Lang.each
-         * @param {Object|Array} iter
+         * @public
+         * @param {(Object|Array)} iter
          *        итерируемый объект (или порядковый массив)
-         * @param {Function} fn
+         * @param {Function(value, key, iter)} fn
          *        тело цикла
          * @param {Object} [thisArg=global]
          *        контект, в котором следует выполнять тело цикла
          * @param {Boolean} [deep=false]
          *        обходить ли прототипы
-         * @return {Object|Array}
+         * @return {(Object|Array)}
          *         результаты выполнения функции для всех элементов
          */
         'each': function each(iter, fn, thisArg, deep) {
-
             var result, i, len;
             thisArg = thisArg || global;
-
             if (Lang.isArray(iter)) {
                 result = [];
                 for (i = 0, len = iter.length; i < len; i += 1) {
@@ -753,7 +757,6 @@ go("Lang", function (go, global, undefined) {
                 }
                 /*jslint forin: false */
             }
-
             return result;
         },
 
@@ -761,9 +764,10 @@ go("Lang", function (go, global, undefined) {
          * Копирование объекта или массива
          *
          * @name go.Lang.copy
-         * @param {Object|Array} source
+         * @public
+         * @param {(Object|Array)} source
          *        исходный объект
-         * @return {Object|Array}
+         * @return {(Object|Array)}
          *         копия исходного объекта
          */
         'copy': function copy(source) {
@@ -788,6 +792,7 @@ go("Lang", function (go, global, undefined) {
          * Расширение объекта свойствами другого
          *
          * @name go.Lang.extend
+         * @public
          * @param {Object} destination
          *        исходный объект (расширяется на месте)
          * @param {Object} source
@@ -813,8 +818,9 @@ go("Lang", function (go, global, undefined) {
          * Рекурсивное слияние двух объектов на месте
          *
          * @name go.Lang.merge
+         * @public
          * @param {Object} destination
-         *        исходных объект (изменяется)
+         *        исходный объект (изменяется)
          * @param {Object} source
          *        источник новых свойств
          * @return {Object}
@@ -839,6 +845,7 @@ go("Lang", function (go, global, undefined) {
          * Получить значение по пути внутри объекта
          *
          * @name go.Lang.getByPath
+         * @public
          * @param {Object} context
          *        объект, в котором производится поиск (не указан - глобальный)
          * @param {(String|Array.<String>)} path
@@ -867,6 +874,7 @@ go("Lang", function (go, global, undefined) {
          * Установить значение по пути внутри объекта
          *
          * @name go.Lang.getByPath
+         * @public
          * @param {Object} context
          *        целевой объект
          * @param {(String|Array.<String>)} path
@@ -894,9 +902,10 @@ go("Lang", function (go, global, undefined) {
          * Каррирование функции
          *
          * @name go.Lang.curry
+         * @public
          * @param {Function} fn
          *        исходная функция
-         * @params {*...} [arg1]
+         * @param {* ...} [args]
          *         запоминаемые аргументы
          * @return {Function}
          *         каррированная функция
@@ -915,6 +924,7 @@ go("Lang", function (go, global, undefined) {
          * (строгая проверка)
          *
          * @name go.Lang.inArray
+         * @public
          * @param {mixed} needle
          *        значение
          * @param {Array} haystack
@@ -936,9 +946,10 @@ go("Lang", function (go, global, undefined) {
          * Выполнить первую корректную функцию
          *
          * @name go.Lang.tryDo
-         * @param {Function[]} funcs
+         * @public
+         * @param {Array.<Function>} funcs
          *        список функций
-         * @return {mixed}
+         * @return {*}
          *         результат первой корректно завершившейся
          *         ни одна не сработала - undefined
          */
@@ -957,6 +968,7 @@ go("Lang", function (go, global, undefined) {
          * Разбор GET или POST запроса
          *
          * @name go.Lang.parseQuery
+         * @public
          * @param {String} [query=window.location]
          *        строка запроса
          * @param {String} [sep="&"]
@@ -990,7 +1002,8 @@ go("Lang", function (go, global, undefined) {
          * Сформировать строку запроса на основе набора переменных
          *
          * @name go.Lang.buildQuery
-         * @param {Object|String} vars
+         * @public
+         * @param {(Object|String)} vars
          *        набор переменных (или сразу строка)
          * @param {String} [sep="&"]
          *        разделитель
@@ -1041,6 +1054,7 @@ go("Lang", function (go, global, undefined) {
              * Функция, не делающая ничего
              *
              * @name go.Lang.f.empty
+             * @public
              * @return void
              */
             'empty': function () {
@@ -1050,6 +1064,7 @@ go("Lang", function (go, global, undefined) {
              * Функция, просто возвращающая FALSE
              *
              * @name go.Lang.f.ffalse
+             * @public
              * @return {Boolean}
              */
             'ffalse': function () {
