@@ -934,6 +934,9 @@ go("Lang", function (go, global, undefined) {
          */
         'inArray': function inArray(needle, haystack) {
             var i, len;
+            if (Array.prototype.indexOf) {
+                return (Array.prototype.indexOf.call(haystack, needle) !== -1);
+            }
             for (i = 0, len = haystack.length; i < len; i += 1) {
                 if (haystack[i] === needle) {
                     return true;
