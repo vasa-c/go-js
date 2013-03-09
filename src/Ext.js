@@ -6,18 +6,20 @@
  * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
  * @uses       go.Class
  */
-/*jslint nomen: true */
+/*jslint nomen: true, es5: true, todo: true */
 /*global go, window, jQuery */
 
 if (!window.go) {
     throw new Error("go.core is not found");
 }
 
+/*jslint unparam: true */
 /**
  * @namespace go.Ext
  */
-go("Ext", ["Class"], function (go, global) {
+go("Ext", ["Class"], function (go, global, undefined) {
     "use strict";
+    /*jslint unparam: false */
     var Ext = {};
 
     /**
@@ -251,11 +253,7 @@ go("Ext", ["Class"], function (go, global) {
              * @return {Object}
              */
             'find': function (selector, context) {
-                if (context) {
-                    return jQuery(selector, context);
-                } else {
-                    return jQuery(selector);
-                }
+                return context ? jQuery(selector, context) : jQuery(selector);
             },
 
             /**
@@ -359,7 +357,7 @@ go("Ext", ["Class"], function (go, global) {
                 if (!lnode) {
                     return null;
                 }
-                if ((typeof lnode === "object") && (typeof lnode.length !== "undefined")) {
+                if ((typeof lnode === "object") && (lnode.length === undefined)) {
                     return lnode;
                 }
                 if (typeof lnode === "function") {
