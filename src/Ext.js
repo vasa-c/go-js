@@ -357,7 +357,7 @@ go("Ext", ["Class"], function (go, global, undefined) {
                 if (!lnode) {
                     return null;
                 }
-                if ((typeof lnode === "object") && (lnode.length === undefined)) {
+                if ((typeof lnode === "object") && (lnode.length !== undefined)) {
                     return lnode;
                 }
                 if (typeof lnode === "function") {
