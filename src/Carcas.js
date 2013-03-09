@@ -14,7 +14,7 @@ if (!window.go) {
     throw new Error("go.core is not found");
 }
 
-go("Carcas", ["Class", "Ext"], function (go) {
+go("Carcas", ["Class", "Ext"], function (go, global) {
     "use strict";
     /**
      * @class go.Carcas
@@ -324,18 +324,18 @@ go("Carcas", ["Class", "Ext"], function (go) {
             prefix = name[0];
             name = name[1];
             switch (prefix) {
-                case 'c':
-                    folder = "controllers";
-                    break;
-                case 'mo':
-                    folder = "modules";
-                    break;
-                case 'go':
-                    return this.requestGoModule(name);
-                case 'l':
-                    return this.requestOtherLib(name);
-                default:
-                    throw new Carcas.Exceptions.ErrorDependence("Error prefix in " + prefix + ":" + name);
+            case 'c':
+                folder = "controllers";
+                break;
+            case 'mo':
+                folder = "modules";
+                break;
+            case 'go':
+                return this.requestGoModule(name);
+            case 'l':
+                return this.requestOtherLib(name);
+            default:
+                throw new Carcas.Exceptions.ErrorDependence("Error prefix in " + prefix + ":" + name);
             }
             this.requestJSFile(this.baseDir + "/" + folder + "/" + name.replace(/\./g, "/") + ".js");
         },
@@ -358,18 +358,18 @@ go("Carcas", ["Class", "Ext"], function (go) {
             prefix = name[0];
             name = name[1];
             switch (prefix) {
-                case 'c':
-                    this.createController(name, data);
-                    break;
-                case 'mo':
-                    this.createModule(name, data);
-                    break;
-                case 'go':
-                    break;
-                case 'l':
-                    break;
-                default:
-                    throw new Carcas.Exceptions.ErrorDependence("Error prefix in " + prefix + ":" + name);
+            case 'c':
+                this.createController(name, data);
+                break;
+            case 'mo':
+                this.createModule(name, data);
+                break;
+            case 'go':
+                break;
+            case 'l':
+                break;
+            default:
+                throw new Carcas.Exceptions.ErrorDependence("Error prefix in " + prefix + ":" + name);
             }
         },
 
@@ -570,7 +570,7 @@ go("Carcas", ["Class", "Ext"], function (go) {
              * @param {Function} handler
              */
             'ondomload': function (handler) {
-                jQuery(document).ready(handler);
+                jQuery(global.document).ready(handler);
             },
 
             /**
@@ -581,7 +581,7 @@ go("Carcas", ["Class", "Ext"], function (go) {
              * @param {Function} handler
              */
             'onfullload': function (handler) {
-                jQuery(window).bind("load", handler);
+                jQuery(global).bind("load", handler);
             },
 
             /**
@@ -592,7 +592,7 @@ go("Carcas", ["Class", "Ext"], function (go) {
              * @param {Function} handler
              */
             'onunload': function (handler) {
-                jQuery(window).bind("unload", handler);
+                jQuery(global).bind("unload", handler);
             }
         }
     });
@@ -712,7 +712,7 @@ go("Carcas", ["Class", "Ext"], function (go) {
         /**
          * @return {String}
          */
-        'toString': function() {
+        'toString': function () {
             return "[Controller " + this.name + "]";
         },
 
