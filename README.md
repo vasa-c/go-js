@@ -1,6 +1,6 @@
 # go.js: упрощение некоторых вещей в JS
 
-* Текущая версия: 1.0 beta
+* Текущая версия: 2.0 beta
 * [Документация](https://github.com/vasa-c/go-js/wiki)
 * [Стабильные версии](https://github.com/vasa-c/go-js/downloads)
 * [Текущая версия (не стабильная)](https://github.com/vasa-c/go-js/zipball/master)
