@@ -5,7 +5,7 @@
  * @subpackage Class
  * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
  */
-/*jslint nomen: true */
+/*jslint nomen: true, es5: true, todo: true */
 /*global go, window */
 
 if (!window.go) {
@@ -585,7 +585,8 @@ go("Class", function (go) {
              * @param {Object} instance
              */
             '__destruct': function (instance) {
-                this.__method.call(this, instance, "__destruct");
+                var func = this.__method; // jslint'у не нравится this.__method.call()
+                func.call(this, instance, "__destruct");
             },
 
             /**
