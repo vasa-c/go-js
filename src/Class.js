@@ -299,8 +299,10 @@ go("Class", function (go, global, undefined) {
                         names = [];
                         for (k in props) {
                             if (props.hasOwnProperty(k)) {
-                                if (reg.test(k)) {
-                                    names.push(k);
+                                if (typeof props[k] === "function") {
+                                    if (reg.test(k)) {
+                                        names.push(k);
+                                    }
                                 }
                             }
                         }
