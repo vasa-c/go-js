@@ -13,7 +13,7 @@
         "use strict";
         var tests;
         (function () {
-            var modules = [null, "Lang", "Class", "Ext", "Carcas", "Cookie"], cmodules;
+            var modules = [null, "Lang", "Class", "Ext", "Carcas", "Cookie"], cmodules, loaded = 0;
             cmodules = (function (go, modules) {
                 var result,
                     smods,
@@ -40,9 +40,19 @@
             }(go, modules));
             tests = new go.Tests(cmodules, "./");
             $(document).ready(function () {
-                tests.run();
-                tests.destroy();
+                loaded += 1;
+                run();
             });
+            window.onLoadIframe = function () {
+                loaded += 1;
+                run();
+            };
+            function run() {
+                if (loaded === 2) {
+                    tests.run();
+                    tests.destroy();
+                }
+            }
         }());
         </script>
     </head>
@@ -53,5 +63,6 @@
         <h2 id="qunit-userAgent"></h2>
         <ol id="qunit-tests"></ol>
         <div id="qunit-fixture">test markup, will be hidden</div>
+        <iframe src="iframe.html" id="iframe" style="display:none"></iframe>
     </body>
 </html>

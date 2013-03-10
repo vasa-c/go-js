@@ -206,14 +206,30 @@ tests.test("getType", function () {
     ConstructorEObject.prototype.go$type = "user";
     equal(go.Lang.getType(instance), "user", "user defined type");
 });
+/*
+tests.test("getType and iframe", function () {
+    var iframe = document.getElementById("iframe");
+    function getResult(code) {
+        return iframe.contentWindow.getResult(code);
+    }
 
+    equal(go.Lang.getType(iframe.contentWindow.getResult), "function");
+    equal(go.Lang.getType(iframe.contentWindow.alert), "function");
+    equal(go.Lang.getType(getResult("[1, 2, 3]")), "array");
+    equal(go.Lang.getType(getResult("({x:5})")), "object");
+    equal(go.Lang.getType(getResult("document.getElementById('test')"), "object"));
+    equal(go.Lang.getType(getResult("document.getElementById('test').firstChild"), "textnode"));
+    equal(go.Lang.getType(getResult("document.getElementsByTagName('div')"), "collection"));
+});
+*/
 tests.test("isArray", function () {
 
     var astrict   = [1, 2, 3],
         asimilar1 = arguments,
         asimilar2 = document.body.childNodes,
         anone1    = {'x': 1},
-        anone2    = 5;
+        anone2    = 5,
+        iframe = document.getElementById("iframe");
 
     ok(go.Lang.isArray(astrict));
     ok(go.Lang.isArray(asimilar1));
@@ -226,6 +242,10 @@ tests.test("isArray", function () {
     ok(!go.Lang.isArray(asimilar2, true));
     ok(!go.Lang.isArray(anone1, true));
     ok(!go.Lang.isArray(anone2, true));
+
+    ok(go.Lang.isArray(iframe.contentWindow.getResult('[1, 2, 3]'), true), "[] and iframe");
+    ok(go.Lang.isArray(iframe.contentWindow.getResult('new Array()'), true), "new Array() and iframe");
+    ok(go.Lang.isArray(iframe.contentWindow.getResult('document.getElementsByTagName("div")'), false), "collection and iframe");
 });
 
 tests.test("isDict", function () {
