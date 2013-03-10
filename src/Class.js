@@ -349,7 +349,7 @@ go("Class", function (go, global, undefined) {
          * @public
          * @return void
          * @throws go.Class.Exceptions.Final
-         *         попытка создать финальный класс
+         *         попытка расширить финальный класс
          */
         'create': function () {
             this.createClass();
@@ -1064,6 +1064,8 @@ go("Class", function (go, global, undefined) {
      *        список методов и свойств класса
      * @return {Function}
      *         функция-конструктор экземпляров требуемого класса
+     * @throws go.Class.Exceptions.Final
+     *         попытка расширить финальный класс
      */
     Class = function (parents, props) {
         var creator, C;
