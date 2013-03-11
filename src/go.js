@@ -604,13 +604,18 @@ go("Lang", function (go, global, undefined) {
 
             type = typeof value;
             if ((type !== "object") && (type !== "function")) {
+                /* Все кроме object соответствуют своему typeof
+                   "function" - иногда этот тип возвращают регулярки (Chrome) или коллекции (Safari)
+                 */
                 return type;
             }
             if (value === null) {
+                /* typeof null === "object" */
                 return "null";
             }
 
             if (!getType._str) {
+                /* Определение по toString */
                 getType._str = {
                     '[object Function]' : "function",
                     '[object Array]'    : "array",
@@ -633,33 +638,13 @@ go("Lang", function (go, global, undefined) {
                 return type;
             }
 
-            if (value.constructor) {
-                w = global;
-                if (value instanceof Array) {
-                    return "array";
+            /* toString не помог - скорее всего, это DOM-элементы (или любые host-объекты в старых IE) */
+
+            if ((!(value instanceof Object)) || (!value.constructor)) {
+                /* Это либо данные из iframe (наследуются не от нашего Object) или host-объекты в IE (без конструктора) */
+                if (Object.prototype.toString.call(value).indexOf("[object HTML") === 0) {
+                    return "element";
                 }
-                if (global.HTMLElement) {
-                    if (value instanceof w.HTMLElement) {
-                        return "element";
-                    }
-                } else {
-                    if (value.nodeType === 1) {
-                        return "element";
-                    }
-                }
-                if (w.Text && (value instanceof w.Text)) {
-                    return "textnode";
-                }
-                if (w.HTMLCollection && (value instanceof w.HTMLCollection)) {
-                    return "collection";
-                }
-                if (w.NodeList && (value instanceof w.NodeList)) {
-                    return "collection";
-                }
-                if ((typeof value.length === "number") && (!value.slice)) {
-                    return "arguments";
-                }
-            } else {
                 if (value.nodeType === 1) {
                     return "element";
                 }
@@ -678,6 +663,31 @@ go("Lang", function (go, global, undefined) {
                 }
             }
 
+            w = global;
+            if (value instanceof Array) {
+                return "array";
+            }
+            if (w.HTMLElement) {
+                if (value instanceof w.HTMLElement) {
+                    return "element";
+                }
+            } else if (value.nodeType === 1) {
+                return "element";
+            }
+            if (w.Text && (value instanceof w.Text)) {
+                return "textnode";
+            }
+            if (w.HTMLCollection && (value instanceof w.HTMLCollection)) {
+                return "collection";
+            }
+            if (w.NodeList && (value instanceof w.NodeList)) {
+                return "collection";
+            }
+            if ((typeof value.length === "number") && (!value.slice)) {
+                return "arguments";
+            }
+
+            /* Не удалось ничего более конкретного определить, пусть будет просто "object" */
             return "object";
         },
 
@@ -726,7 +736,31 @@ go("Lang", function (go, global, undefined) {
          *         является ли значение простым словарём
          */
         'isDict': function isDict(value) {
-            return (value && (value.constructor === Object));
+            if (!value) {
+                return false;
+            }
+            if (value instanceof Object) {
+                /* instanceof Object - значит создан в текущем фрейме */
+                return (value.constructor === Object); // следовательно словарь должен быть создан напрямую от Object
+            }
+            /* iframe или host-объект в старых IE */
+            try {
+                /* IE может выкинуть исключение для host-объектов */
+                if (!value.constructor) {
+                    return false;
+                }
+                if (typeof value.constructor.name === "string") {
+                    return (value.constructor.name === "Object");
+                }
+                /* constructor.name в IE нет, разбираем текстовое представление */
+                if ((value.constructor + ":").indexOf("function Object()") !== -1) {
+                    return true;
+                }
+            } catch (e) {
+                /* Host-объект в IE - не словарь */
+                return false;
+            }
+            return false;
         },
 
         /**

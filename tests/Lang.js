@@ -206,7 +206,7 @@ tests.test("getType", function () {
     ConstructorEObject.prototype.go$type = "user";
     equal(go.Lang.getType(instance), "user", "user defined type");
 });
-/*
+
 tests.test("getType and iframe", function () {
     var iframe = document.getElementById("iframe");
     function getResult(code) {
@@ -217,11 +217,12 @@ tests.test("getType and iframe", function () {
     equal(go.Lang.getType(iframe.contentWindow.alert), "function");
     equal(go.Lang.getType(getResult("[1, 2, 3]")), "array");
     equal(go.Lang.getType(getResult("({x:5})")), "object");
-    equal(go.Lang.getType(getResult("document.getElementById('test')"), "object"));
-    equal(go.Lang.getType(getResult("document.getElementById('test').firstChild"), "textnode"));
-    equal(go.Lang.getType(getResult("document.getElementsByTagName('div')"), "collection"));
+    equal(go.Lang.getType(getResult("document.getElementById('test')")), "element");
+    equal(go.Lang.getType(getResult("document.getElementById('test').firstChild")), "textnode");
+    equal(go.Lang.getType(getResult("document.getElementsByTagName('div')")), "collection");
+    equal(go.Lang.getType(getResult("/\s/")), "regexp");
 });
-*/
+
 tests.test("isArray", function () {
 
     var astrict   = [1, 2, 3],
@@ -246,9 +247,13 @@ tests.test("isArray", function () {
     ok(go.Lang.isArray(iframe.contentWindow.getResult('[1, 2, 3]'), true), "[] and iframe");
     ok(go.Lang.isArray(iframe.contentWindow.getResult('new Array()'), true), "new Array() and iframe");
     ok(go.Lang.isArray(iframe.contentWindow.getResult('document.getElementsByTagName("div")'), false), "collection and iframe");
+    ok(!go.Lang.isArray(iframe.contentWindow.getResult('document.getElementsByTagName("div")'), true), "collection and iframe");
 });
 
 tests.test("isDict", function () {
+
+    var iframe = document.getElementById("iframe"),
+        createNoDict;
 
     ok(go.Lang.isDict({'a': 1, 'b': 2}));
     ok(!go.Lang.isDict([1, 2]));
@@ -257,6 +262,11 @@ tests.test("isDict", function () {
     ok(!go.Lang.isDict(1));
     ok(!go.Lang.isDict(null));
     ok(!go.Lang.isDict());
+
+    ok(go.Lang.isDict(iframe.contentWindow.getResult('({x:5})')), "dict and iframe");
+    ok(!go.Lang.isDict(iframe.contentWindow.getResult('[1,2,3]')), "array and iframe");
+    createNoDict = "(function () {var C = function () {}; C.prototype.x=5; return (new C());})()";
+    ok(!go.Lang.isDict(iframe.contentWindow.getResult(createNoDict)), "no dict and iframe");
 });
 
 tests.test("each array", function () {
