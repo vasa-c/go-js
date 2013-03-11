@@ -49,9 +49,9 @@ tests.test("Parse expires", function () {
     equal(result.toUTCString().replace("UTC", "GMT"), "Fri, 13 Mar 2009 23:31:30 GMT");
     result = parse("year", nowc);
     equal(result.toUTCString().replace("UTC", "GMT"), "Sat, 13 Feb 2010 23:31:30 GMT");
-    nowc = new Date("Fri, 07 Dec 2012 23:31:30 GMT");
+    nowc = new Date("Fri, 14 Dec 2012 23:31:30 GMT");
     result = parse("month", nowc);
-    equal(result.toUTCString().replace("UTC", "GMT"), "Mon, 07 Jan 2013 23:31:30 GMT");
+    equal(result.toUTCString().replace("UTC", "GMT"), "Mon, 14 Jan 2013 23:31:30 GMT");
 
     result = parse("delete", now);
     ok(result.getTime() < now.getTime());
@@ -79,7 +79,7 @@ tests.test("Parse expires", function () {
 
 tests.test("Test with wrapper", function () {
 
-    var WrapperClass, cooks, params, wrapper, now = new Date("Tue, 05 Mar 2013 15:41:06 GMT");
+    var WrapperClass, cooks, params, wrapper, now = new Date("Tue, 12 Mar 2013 15:41:06 GMT");
 
     /**
      * @augments go.Cookie.CookieClass
@@ -148,9 +148,10 @@ tests.test("Test with wrapper", function () {
     });
 
     deepEqual(params.one, {});
-    deepEqual(params.two, {'expires': "Tue, 05 Mar 2013 15:41:16 GMT", 'path': "/"});
+
+    deepEqual(params.two, {'expires': "Tue, 12 Mar 2013 15:41:16 GMT", 'path': "/"});
     deepEqual(params.three, {'domain': ".example.com", 'secure': true});
-    deepEqual(params.four, {'expires': "Tue, 05 Mar 2013 16:41:06 GMT", 'path': "/path/"});
+    deepEqual(params.four, {'expires': "Tue, 12 Mar 2013 16:41:06 GMT", 'path': "/path/"});
 
     equal(wrapper.get("start"), 5);
     equal(wrapper.get("one"), 10);
@@ -171,7 +172,7 @@ tests.test("Test with wrapper", function () {
 
     wrapper.setOption("path", "");
     wrapper.setOption("max-age", true);
-    wrapper.set("one", 5, {'expires': "Tue, 05 Mar 2013 16:41:06 GMT"});
+    wrapper.set("one", 5, {'expires': "Tue, 12 Mar 2013 16:41:06 GMT"});
     deepEqual(params.one, {
         'max-age': "3600"
     });
