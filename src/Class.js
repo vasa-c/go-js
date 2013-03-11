@@ -383,7 +383,7 @@ go("Class", function (go, global, undefined) {
          * @throws go.Class.Exceptions.Abstract
          */
         'createClass': function () {
-            this.Class = function C() {
+            var C = function () {
                 if (C.__abstract) {
                     throw new Class.Exceptions.Abstract("Cannot instantiate abstract class");
                 }
@@ -396,7 +396,8 @@ go("Class", function (go, global, undefined) {
                 this.__destroyed = false;
                 this.__construct.apply(this, arguments);
             };
-            this.Class.__props = this.props;
+            C.__props = this.props;
+            this.Class = C;
         },
 
         /**
