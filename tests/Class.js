@@ -417,8 +417,8 @@ tests.test("type and toString", function () {
     equal(":" + oneInstance, ":instance of [go.class]");
     equal(":" + twoInstance, ":instance of [TwoClass]");
 });
-/*
-tests.test("Mutators", function () {
+
+tests.test("Mutators (class)", function () {
 
     var OneClass, TwoClass, ThreeClass, twoInstance, threeInstance;
 
@@ -427,15 +427,22 @@ tests.test("Mutators", function () {
         '__mutators': {
             'mul': {
                 'value': 2,
-                'eachForClass': function (name, prop) {
-                    var value;
-                    if (name.split("_")[0] === "mul") {
-                        value = this.value;
-                        return function (x) {
-                            return prop(x) * value;
-                        };
+                'processClass': function (props) {
+                    var name, prop, value = this.value, fields = this.fields;
+
+                    for (name in props) {
+                        if (props.hasOwnProperty(name)) {
+                            prop = props[name];
+                            if ((typeof prop === "function") && (name.split("_", 2)[0] === "mul")) {
+                                props[name] = this.createFunc(prop, value);
+                            }
+                        }
                     }
-                    return null;
+                },
+                'createFunc': function (f, value) {
+                    return function (x) {
+                        return f(x) * value;
+                    };
                 }
             }
         },
@@ -488,19 +495,20 @@ tests.test("Mutators", function () {
 
     twoInstance = new TwoClass();
 
-    equal(twoInstance.norm(1), 1);
-    equal(twoInstance.mul_one(1), 4); // (x+1) * 2
-    equal(twoInstance.mul_two(1), 15); // (x+4) * 3
-    equal(twoInstance.mul_three(1), 12); // (x+3) * 3
+    equal(twoInstance.norm(1), 1, "norm() - no mutation");
+    equal(twoInstance.mul_one(1), 4, "two.mul_one(1): (x+1)*2 [inherit value=2]");
+    equal(twoInstance.mul_two(1), 15, "two.mul_two(1): (x+4)*3 [override value=3]");
+    equal(twoInstance.mul_three(1), 12, "two.mul_three(1): (x+3)*3 [self value=3]"); // (x+3) * 3
+
+    equal(twoInstance.__parentMethod(OneClass, "mul_two", 3), 10, "parent access"); // (x + 2) * 2
 
     threeInstance = new ThreeClass();
-    ok(!threeInstance.mul_three); // tofix ?
-    equal(threeInstance.mul_four(1), 5); // 1 + 4 (no mutation)
+    equal(threeInstance.mul_four(1), 5, "mul_four: no mutation (mutator disabled)");
 });
-*/
-tests.test("Static", function () {
 
-    var OneClass, TwoClass, oneInstance, twoInstance;
+tests.test("static", function () {
+
+    var OneClass, TwoClass, NoStaticClass, oneInstance, twoInstance;
 
     OneClass = go.Class({
 
@@ -538,6 +546,10 @@ tests.test("Static", function () {
 
             'getPhrase': function () {
                 return "two";
+            },
+
+            'twoStatic': function () {
+                return 'Two';
             }
 
         }
@@ -567,6 +579,14 @@ tests.test("Static", function () {
 
     ok(!oneInstance.getInstance);
     ok(!twoInstance.getInstance);
+
+    ok(TwoClass.twoStatic);
+    ok(!OneClass.twoStatic);
+
+    NoStaticClass = go.Class(go.Class(TwoClass, {}), {
+        'method': function () {}
+    });
+    ok(NoStaticClass.getInstance, "Наследование static через классы без определения новых static-членов");
 });
 
 tests.test("bind", function () {

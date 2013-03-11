@@ -6,7 +6,7 @@
  *
  * @package go.js
  * @author  Григорьев Олег aka vasa_c (http://blgo.ru/)
- * @version 1.0-beta
+ * @version 2.0-beta
  * @license MIT (http://www.opensource.org/licenses/mit-license.php)
  * @link    https://github.com/vasa-c/go-js
  */
@@ -19,7 +19,7 @@
 var go = (function (global) {
     "use strict";
 
-    var VERSIONS = "1.0-beta",
+    var VERSION = "2.0-beta",
 
         /**
          * Http-адрес каталога в котором находится go.js и модули
@@ -43,7 +43,7 @@ var go = (function (global) {
         /**
          * Антикэш при подключении модулей
          *
-         * @return {String}
+         * @type {String}
          */
         anticache;
 
@@ -52,15 +52,15 @@ var go = (function (global) {
      *
      * @param {String} name
      *        имя модуля
-     * @param {Array.<String>} [deps]
+     * @param {(Array.<String>|String)} [deps]
      *        список зависимостей
-     * @param {Function} fmodule
+     * @param {Function} CModule
      *        функция-конструктор модуля
      * @return {Function}
      */
-    function go(name, deps, fmodule) {
+    function go(name, deps, CModule) {
         if (name) {
-            go.appendModule(name, deps, fmodule);
+            go.appendModule(name, deps, CModule);
         }
         return go;
     }
@@ -72,15 +72,15 @@ var go = (function (global) {
      * @name go.VERSION
      * @type {String}
      */
-    go.VERSION = VERSIONS;
+    go.VERSION = VERSION;
 
     /**
-     * go.include(): инициирование загрузки нужных модулей
+     * Инициирование загрузки нужных модулей
      * (только на этапе загрузки страницы)
      *
      * @name go.include
-     *
-     * @param {(String|Array<String>)} names
+     * @public
+     * @param {(String|Array.<String>)} names
      *        имя нужного модуля или список из нескольких имён
      * @param {Function} [listener]
      *        обработчик загрузки всех указанных модулей
@@ -90,23 +90,24 @@ var go = (function (global) {
     };
 
     /**
-     * go.appendModule(): добавление модуля в пространство имён
+     * Добавление модуля в пространство имён
      * (вызывается при определении модуля в соответствующем файле)
      *
      * @name go.appendModule
+     * @public
      * @param {String} name
      *        имя модуля
-     * @param {Array<String>} [deps]
+     * @param {(Array.<String>|String)} [deps]
      *        список зависимостей
-     * @param {Function} fmodule
+     * @param {Function} CModule
      *        функция-конструктор модуля
      */
-    go.appendModule = function (name, deps, fmodule) {
-        if (!fmodule) {
-            fmodule = deps;
+    go.appendModule = function (name, deps, CModule) {
+        if (!CModule) {
+            CModule = deps;
             deps = [];
         }
-        loader.loaded(name, deps, fmodule);
+        loader.loaded(name, deps, CModule);
     };
 
     /**
@@ -127,9 +128,9 @@ var go = (function (global) {
             /**
              * @constructs
              * @public
-             * @param {Function(string)} includer
+             * @param {Function(String)} includer
              *        внешняя функция, инициирующая запрос на загрузку модуля (получает аргументом название)
-             * @param {Function(string, *)} creator
+             * @param {Function(String, *)} creator
              *        внешнаяя функция, создающая модуль (получает имя и данные)
              */
             '__construct': function (includer, creator) {
@@ -221,7 +222,7 @@ var go = (function (global) {
              * См. конструктор
              * @name go.__Loader#includer
              * @private
-             * @type {Function(string)}
+             * @type {Function(String)}
              */
             'includer': null,
 
@@ -229,7 +230,7 @@ var go = (function (global) {
              * См. конструктор
              * @name go.__Loader#creator
              * @private
-             * @type {Function(string, *)}
+             * @type {Function(String, *)}
              */
             'creator': null,
 
@@ -241,7 +242,7 @@ var go = (function (global) {
              * поле "created"  - модуль создан
              * поле "listener" - слушатель на создание этого модуля
              *
-             * @name go.__Loader#reqs
+             * @name go.__Loader#modules
              * @private
              * @type {Object.<String, Object>}
              */
@@ -253,15 +254,22 @@ var go = (function (global) {
     go.__Loader.Listeners = {
 
         /**
+         * Создание простого слушателя
+         *
          * @name go.Lang.Listeners.create
-         * @param {(Function|Array.<Function>)} f
+         * @public
+         * @param {(Function|Array.<Function>)} [handlers]
+         *        привязанный к слушателю обработчики или список обработчиков
          * @return {go.Lang.Listeners.Listener}
+         *         объект слушателя
          */
         'create': (function () {
 
             var ping, append, remove;
 
             /**
+             * Вызов слушателя
+             *
              * @name go.Lang.Listeners.Listener#ping
              * @public
              * @return void
@@ -271,77 +279,93 @@ var go = (function (global) {
             };
 
             /**
+             * Добавить обработчик к слушателю
+             *
              * @name go.Lang.Listeners.Listener#append
              * @public
-             * @param {Function} f
+             * @param {Function} handler
+             *        обработчик
              * @param {Boolean} [check]
+             *        проверять на наличие
              * @return {Number}
+             *         ID установленного обработчика
              */
-            append = function append(f, check) {
-                var list = this.list,
+            append = function append(handler, check) {
+                var handlers = this._handlers,
                     len,
                     i;
                 if (check) {
-                    for (i = 0, len = list.length; i < len; i += 1) {
-                        if (list[i] === f) {
+                    for (i = 0, len = handlers.length; i < len; i += 1) {
+                        if (handlers[i] === handler) {
                             return i;
                         }
                     }
                 }
-                list.push(f);
-                return list.length - 1;
+                handlers.push(handler);
+                return handlers.length - 1;
             };
 
             /**
-             * @name go.Lang.Listeners.Listener#ping
+             * Удалить обработчик из слушателя
+             *
+             * @name go.Lang.Listeners.Listener#remove
              * @public
-             * @param {(Function|Number)} f
+             * @param {(Function|Number)} handler
+             *        функция-обработчик или её ID
+             * @param {Boolean} [all]
+             *        удалять все одинаковые функции (по умолчанию, только первую найденную)
              * @return {Boolean}
+             *         был ли обработчик найден и удалён
              */
-            remove = function remove(f) {
-                var list = this.list,
+            remove = function remove(handler, all) {
+                var handlers = this._handlers,
                     len,
                     i,
                     removed = false;
-                if (typeof f === "function") {
-                    for (i = 0, len = list.length; i < len; i += 1) {
-                        if (list[i] === f) {
-                            list[i] = null;
+                if (typeof handler === "function") {
+                    for (i = 0, len = handlers.length; i < len; i += 1) {
+                        if (handlers[i] === handler) {
+                            handlers[i] = null;
                             removed = true;
-                            break;
+                            if (!all) {
+                                break;
+                            }
                         }
                     }
                 } else {
-                    if (list[f]) {
-                        list[f] = null;
+                    if (handlers[handler]) {
+                        handlers[handler] = null;
                         removed = true;
                     }
                 }
                 return removed;
             };
 
-            function create(list) {
+            /**
+             * @alias go.Lang.Listeners.create
+             */
+            function create(handlers) {
                 var listener;
 
-                if (typeof list === "function") {
-                    list = [list];
-                } else if (Object.prototype.toString.call(list) !== '[object Array]') {
-                    list = [];
+                if (typeof handlers === "function") {
+                    handlers = [handlers];
+                } else if (!handlers) {
+                    handlers = [];
                 }
 
                 listener = function () {
-                    var current,
-                        len = list.length,
+                    var handler,
+                        len = handlers.length,
                         i;
                     for (i = 0; i < len; i += 1) {
-                        current = list[i];
-                        if (current) {
-                            current.apply(null, arguments);
+                        handler = handlers[i];
+                        if (handler) {
+                            handler.apply(null, arguments);
                         }
                     }
                 };
 
-                listener.list = list;
+                listener._handlers = handlers;
                 listener.ping = ping;
                 listener.append = append;
                 listener.remove = remove;
@@ -353,9 +377,12 @@ var go = (function (global) {
         }()),
 
         /**
+         * Создать слушатель-счётчик
+         *
          * @name go.Lang.Listeners.createCounter
+         * @public
          * @param {Number} count
-         * @param {Function} listener
+         * @param {Function} handler
          * @return {(Function|go.Lang.Listeners.Counter)}
          */
         'createCounter': (function () {
@@ -363,42 +390,57 @@ var go = (function (global) {
             var inc, filled;
 
             /**
+             * Увеличить счётчик
+             *
              * @name go.Lang.Listeners.Counter#inc
+             * @public
              * @param {Number} [i=1]
+             * @return {Number}
              */
             inc = function inc(i) {
-                if (this.count !== 0) {
-                    this.count += (i || 1);
+                if (this._count !== 0) {
+                    this._count += (i || 1);
                 }
+                return this.count;
             };
 
             /**
+             * Обозначить счётчик заполненным
+             *
              * @name go.Lang.Listeners.Counter#filled
+             * @public
              * @return {Boolean}
+             *         сработал счётчик или нет
              */
             filled = function filled() {
-                if (!this.count) {
-                    this.count = 0;
-                    this.listener.apply(null);
+                if (typeof this._count !== "number") {
+                    this._count = 0;
+                    this._handler.apply(null);
                     return true;
                 }
                 return false;
             };
 
-            function createCounter(count, listener) {
+            /**
+             * @alias go.Lang.Listeners.createCounter
+             */
+            function createCounter(count, handler) {
+                if (typeof count === "string") {
+                    count = parseInt(count, 10) || 0;
+                }
                 if (count === 0) {
-                    listener();
+                    handler();
                 }
                 function Counter() {
-                    if (Counter.count > 0) {
-                        Counter.count -= 1;
-                        if (Counter.count === 0) {
-                            Counter.listener.apply(null);
+                    if (Counter._count > 0) {
+                        Counter._count -= 1;
+                        if (Counter._count === 0) {
+                            Counter._handler.apply(null);
                         }
                     }
                 }
-                Counter.count = count;
-                Counter.listener = listener;
+                Counter._count = count;
+                Counter._handler = handler;
                 Counter.inc = inc;
                 Counter.filled = filled;
                 return Counter;
@@ -409,6 +451,8 @@ var go = (function (global) {
     };
 
     /**
+     * Запрос на подключение JS-файла
+     *
      * @name go.__Loader.includeJSFile
      * @param {String} src
      */
@@ -426,6 +470,12 @@ var go = (function (global) {
         return new go.__Loader(includer, creator);
     }());
 
+    /**
+     * Вывод отладочной информации, если есть куда
+     *
+     * @name go.log
+     * @public
+     */
     go.log = function () {
         var console = global.console;
         if (console && console.log) {
@@ -503,6 +553,7 @@ go("Lang", function (go, global, undefined) {
          * Если для функции определён свой метод bind(), то используется он
          *
          * @name go.Lang.bind
+         * @public
          * @param {Function} func
          *        функция
          * @param {Object} [thisArg]
@@ -515,7 +566,7 @@ go("Lang", function (go, global, undefined) {
         'bind': function bind(func, thisArg, args) {
             var result;
             thisArg = thisArg || global;
-            if (func.bind) {
+            if (typeof func.bind === "function") {
                 if (args) {
                     args = [thisArg].concat(args);
                 } else {
@@ -523,11 +574,11 @@ go("Lang", function (go, global, undefined) {
                 }
                 result = func.bind.apply(func, args);
             } else if (args) {
-                result = function () {
+                result = function binded() {
                     return func.apply(thisArg, args.concat(Array.prototype.slice.call(arguments, 0)));
                 };
             } else {
-                result = function () {
+                result = function binded() {
                     return func.apply(thisArg, arguments);
                 };
             }
@@ -538,13 +589,14 @@ go("Lang", function (go, global, undefined) {
          * Получение расширенного типа значения
          *
          * @name go.Lang.getType
-         * @param {mixed} value
+         * @public
+         * @param {*} value
          *        проверяемое значение
          * @return {String}
          *         название типа
          */
         'getType': function getType(value) {
-            var type;
+            var type, w;
 
             if (value && (typeof value.go$type === "string")) {
                 return value.go$type;
@@ -552,13 +604,18 @@ go("Lang", function (go, global, undefined) {
 
             type = typeof value;
             if ((type !== "object") && (type !== "function")) {
+                /* Все кроме object соответствуют своему typeof
+                   "function" - иногда этот тип возвращают регулярки (Chrome) или коллекции (Safari)
+                 */
                 return type;
             }
             if (value === null) {
+                /* typeof null === "object" */
                 return "null";
             }
 
             if (!getType._str) {
+                /* Определение по toString */
                 getType._str = {
                     '[object Function]' : "function",
                     '[object Array]'    : "array",
@@ -581,32 +638,13 @@ go("Lang", function (go, global, undefined) {
                 return type;
             }
 
-            if (value.constructor) {
-                if (value instanceof Array) {
-                    return "array";
+            /* toString не помог - скорее всего, это DOM-элементы (или любые host-объекты в старых IE) */
+
+            if ((!(value instanceof Object)) || (!value.constructor)) {
+                /* Это либо данные из iframe (наследуются не от нашего Object) или host-объекты в IE (без конструктора) */
+                if (Object.prototype.toString.call(value).indexOf("[object HTML") === 0) {
+                    return "element";
                 }
-                if (window.HTMLElement) {
-                    if (value instanceof window.HTMLElement) {
-                        return "element";
-                    }
-                } else {
-                    if (value.nodeType === 1) {
-                        return "element";
-                    }
-                }
-                if (window.Text && (value instanceof window.Text)) {
-                    return "textnode";
-                }
-                if (window.HTMLCollection && (value instanceof window.HTMLCollection)) {
-                    return "collection";
-                }
-                if (window.NodeList && (value instanceof window.NodeList)) {
-                    return "collection";
-                }
-                if ((typeof value.length === "number") && (!value.slice)) {
-                    return "arguments";
-                }
-            } else {
                 if (value.nodeType === 1) {
                     return "element";
                 }
@@ -625,6 +663,31 @@ go("Lang", function (go, global, undefined) {
                 }
             }
 
+            w = global;
+            if (value instanceof Array) {
+                return "array";
+            }
+            if (w.HTMLElement) {
+                if (value instanceof w.HTMLElement) {
+                    return "element";
+                }
+            } else if (value.nodeType === 1) {
+                return "element";
+            }
+            if (w.Text && (value instanceof w.Text)) {
+                return "textnode";
+            }
+            if (w.HTMLCollection && (value instanceof w.HTMLCollection)) {
+                return "collection";
+            }
+            if (w.NodeList && (value instanceof w.NodeList)) {
+                return "collection";
+            }
+            if ((typeof value.length === "number") && (!value.slice)) {
+                return "arguments";
+            }
+
+            /* Не удалось ничего более конкретного определить, пусть будет просто "object" */
             return "object";
         },
 
@@ -632,6 +695,7 @@ go("Lang", function (go, global, undefined) {
          * Является ли значение массивом
          *
          * @name go.Lang.isArray
+         * @public
          * @param {mixed} value
          *        проверяемое значение
          * @param {Boolean} [strict=false]
@@ -662,38 +726,62 @@ go("Lang", function (go, global, undefined) {
 
         /**
          * Является ли объект простым словарём.
-         * То есть любым объектом, не имеющий более специфического типа.
+         * То есть любым объектом, не имеющим более специфического типа.
          *
          * @name go.Lang.isDict
+         * @public
          * @param {Object} value
          *        проверяемое значение
          * @return {Boolean}
          *         является ли значение простым словарём
          */
         'isDict': function isDict(value) {
-            return (value && (value.constructor === Object));
+            if (!value) {
+                return false;
+            }
+            if (value instanceof Object) {
+                /* instanceof Object - значит создан в текущем фрейме */
+                return (value.constructor === Object); // следовательно словарь должен быть создан напрямую от Object
+            }
+            /* iframe или host-объект в старых IE */
+            try {
+                /* IE может выкинуть исключение для host-объектов */
+                if (!value.constructor) {
+                    return false;
+                }
+                if (typeof value.constructor.name === "string") {
+                    return (value.constructor.name === "Object");
+                }
+                /* constructor.name в IE нет, разбираем текстовое представление */
+                if ((value.constructor + ":").indexOf("function Object()") !== -1) {
+                    return true;
+                }
+            } catch (e) {
+                /* Host-объект в IE - не словарь */
+                return false;
+            }
+            return false;
         },
 
         /**
          * Обход элементов объекта
          *
          * @name go.Lang.each
-         * @param {Object|Array} iter
+         * @public
+         * @param {(Object|Array)} iter
          *        итерируемый объект (или порядковый массив)
-         * @param {Function} fn
+         * @param {Function(value, key, iter)} fn
          *        тело цикла
          * @param {Object} [thisArg=global]
          *        контект, в котором следует выполнять тело цикла
          * @param {Boolean} [deep=false]
          *        обходить ли прототипы
-         * @return {Object|Array}
+         * @return {(Object|Array)}
          *         результаты выполнения функции для всех элементов
          */
         'each': function each(iter, fn, thisArg, deep) {
-
             var result, i, len;
             thisArg = thisArg || global;
-
             if (Lang.isArray(iter)) {
                 result = [];
                 for (i = 0, len = iter.length; i < len; i += 1) {
@@ -709,7 +797,6 @@ go("Lang", function (go, global, undefined) {
                 }
                 /*jslint forin: false */
             }
-
             return result;
         },
 
@@ -717,9 +804,10 @@ go("Lang", function (go, global, undefined) {
          * Копирование объекта или массива
          *
          * @name go.Lang.copy
-         * @param {Object|Array} source
+         * @public
+         * @param {(Object|Array)} source
          *        исходный объект
-         * @return {Object|Array}
+         * @return {(Object|Array)}
          *         копия исходного объекта
          */
         'copy': function copy(source) {
@@ -744,6 +832,7 @@ go("Lang", function (go, global, undefined) {
          * Расширение объекта свойствами другого
          *
          * @name go.Lang.extend
+         * @public
          * @param {Object} destination
          *        исходный объект (расширяется на месте)
          * @param {Object} source
@@ -769,8 +858,9 @@ go("Lang", function (go, global, undefined) {
          * Рекурсивное слияние двух объектов на месте
          *
          * @name go.Lang.merge
+         * @public
          * @param {Object} destination
-         *        исходных объект (изменяется)
+         *        исходный объект (изменяется)
          * @param {Object} source
          *        источник новых свойств
          * @return {Object}
@@ -795,6 +885,7 @@ go("Lang", function (go, global, undefined) {
          * Получить значение по пути внутри объекта
          *
          * @name go.Lang.getByPath
+         * @public
          * @param {Object} context
          *        объект, в котором производится поиск (не указан - глобальный)
          * @param {(String|Array.<String>)} path
@@ -823,6 +914,7 @@ go("Lang", function (go, global, undefined) {
          * Установить значение по пути внутри объекта
          *
          * @name go.Lang.getByPath
+         * @public
          * @param {Object} context
          *        целевой объект
          * @param {(String|Array.<String>)} path
@@ -850,9 +942,10 @@ go("Lang", function (go, global, undefined) {
          * Каррирование функции
          *
          * @name go.Lang.curry
+         * @public
          * @param {Function} fn
          *        исходная функция
-         * @params {*...} [arg1]
+         * @param {* ...} [args]
          *         запоминаемые аргументы
          * @return {Function}
          *         каррированная функция
@@ -871,6 +964,7 @@ go("Lang", function (go, global, undefined) {
          * (строгая проверка)
          *
          * @name go.Lang.inArray
+         * @public
          * @param {mixed} needle
          *        значение
          * @param {Array} haystack
@@ -880,6 +974,9 @@ go("Lang", function (go, global, undefined) {
          */
         'inArray': function inArray(needle, haystack) {
             var i, len;
+            if (Array.prototype.indexOf) {
+                return (Array.prototype.indexOf.call(haystack, needle) !== -1);
+            }
             for (i = 0, len = haystack.length; i < len; i += 1) {
                 if (haystack[i] === needle) {
                     return true;
@@ -892,9 +989,10 @@ go("Lang", function (go, global, undefined) {
          * Выполнить первую корректную функцию
          *
          * @name go.Lang.tryDo
-         * @param {Function[]} funcs
+         * @public
+         * @param {Array.<Function>} funcs
          *        список функций
-         * @return {mixed}
+         * @return {*}
          *         результат первой корректно завершившейся
          *         ни одна не сработала - undefined
          */
@@ -913,6 +1011,7 @@ go("Lang", function (go, global, undefined) {
          * Разбор GET или POST запроса
          *
          * @name go.Lang.parseQuery
+         * @public
          * @param {String} [query=window.location]
          *        строка запроса
          * @param {String} [sep="&"]
@@ -946,7 +1045,8 @@ go("Lang", function (go, global, undefined) {
          * Сформировать строку запроса на основе набора переменных
          *
          * @name go.Lang.buildQuery
-         * @param {Object|String} vars
+         * @public
+         * @param {(Object|String)} vars
          *        набор переменных (или сразу строка)
          * @param {String} [sep="&"]
          *        разделитель
@@ -997,6 +1097,7 @@ go("Lang", function (go, global, undefined) {
              * Функция, не делающая ничего
              *
              * @name go.Lang.f.empty
+             * @public
              * @return void
              */
             'empty': function () {
@@ -1006,6 +1107,7 @@ go("Lang", function (go, global, undefined) {
              * Функция, просто возвращающая FALSE
              *
              * @name go.Lang.f.ffalse
+             * @public
              * @return {Boolean}
              */
             'ffalse': function () {
@@ -1041,7 +1143,7 @@ go("Lang", function (go, global, undefined) {
                     parent = global.Error;
                 }
                 defmessage = defmessage || "";
-                Exc = function Exc(message) {
+                Exc = function Exception(message) {
                     this.name    = name;
                     this.message = message || defmessage;
                     this.stack = (new Error()).stack;

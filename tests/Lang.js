@@ -207,13 +207,30 @@ tests.test("getType", function () {
     equal(go.Lang.getType(instance), "user", "user defined type");
 });
 
+tests.test("getType and iframe", function () {
+    var iframe = document.getElementById("iframe");
+    function getResult(code) {
+        return iframe.contentWindow.getResult(code);
+    }
+
+    equal(go.Lang.getType(iframe.contentWindow.getResult), "function");
+    equal(go.Lang.getType(iframe.contentWindow.alert), "function");
+    equal(go.Lang.getType(getResult("[1, 2, 3]")), "array");
+    equal(go.Lang.getType(getResult("({x:5})")), "object");
+    equal(go.Lang.getType(getResult("document.getElementById('test')")), "element");
+    equal(go.Lang.getType(getResult("document.getElementById('test').firstChild")), "textnode");
+    equal(go.Lang.getType(getResult("document.getElementsByTagName('div')")), "collection");
+    equal(go.Lang.getType(getResult("/\s/")), "regexp");
+});
+
 tests.test("isArray", function () {
 
     var astrict   = [1, 2, 3],
         asimilar1 = arguments,
         asimilar2 = document.body.childNodes,
         anone1    = {'x': 1},
-        anone2    = 5;
+        anone2    = 5,
+        iframe = document.getElementById("iframe");
 
     ok(go.Lang.isArray(astrict));
     ok(go.Lang.isArray(asimilar1));
@@ -226,9 +243,17 @@ tests.test("isArray", function () {
     ok(!go.Lang.isArray(asimilar2, true));
     ok(!go.Lang.isArray(anone1, true));
     ok(!go.Lang.isArray(anone2, true));
+
+    ok(go.Lang.isArray(iframe.contentWindow.getResult('[1, 2, 3]'), true), "[] and iframe");
+    ok(go.Lang.isArray(iframe.contentWindow.getResult('new Array()'), true), "new Array() and iframe");
+    ok(go.Lang.isArray(iframe.contentWindow.getResult('document.getElementsByTagName("div")'), false), "collection and iframe");
+    ok(!go.Lang.isArray(iframe.contentWindow.getResult('document.getElementsByTagName("div")'), true), "collection and iframe");
 });
 
 tests.test("isDict", function () {
+
+    var iframe = document.getElementById("iframe"),
+        createNoDict;
 
     ok(go.Lang.isDict({'a': 1, 'b': 2}));
     ok(!go.Lang.isDict([1, 2]));
@@ -237,6 +262,11 @@ tests.test("isDict", function () {
     ok(!go.Lang.isDict(1));
     ok(!go.Lang.isDict(null));
     ok(!go.Lang.isDict());
+
+    ok(go.Lang.isDict(iframe.contentWindow.getResult('({x:5})')), "dict and iframe");
+    ok(!go.Lang.isDict(iframe.contentWindow.getResult('[1,2,3]')), "array and iframe");
+    createNoDict = "(function () {var C = function () {}; C.prototype.x=5; return (new C());})()";
+    ok(!go.Lang.isDict(iframe.contentWindow.getResult(createNoDict)), "no dict and iframe");
 });
 
 tests.test("each array", function () {
@@ -659,6 +689,42 @@ tests.test("go.Lang.Listeners.create", function () {
     deepEqual(result, [1, 3, 1]);
 });
 
+tests.test("go.Lang.Listeners.Listener::remove(all)", function () {
+
+    var f1, f2, log, listener;
+
+    f1 = function () {
+        log.push(1);
+    };
+
+    f2 = function () {
+        log.push(2);
+    };
+
+    listener = go.Lang.Listeners.create();
+
+    listener.append(f2);
+    listener.append(f1);
+    listener.append(f2);
+    listener.append(f1);
+    listener.append(f2);
+    listener.append(f1, true);
+
+    log = [];
+    listener.ping();
+    deepEqual(log, [2, 1, 2, 1, 2]);
+
+    log = [];
+    listener.remove(f2);
+    listener.ping();
+    deepEqual(log, [1, 2, 1, 2]);
+
+    log = [];
+    listener.remove(f1, true);
+    listener.ping();
+    deepEqual(log, [2, 2]);
+});
+
 tests.test("go.Lang.Listeners.createCounter", function () {
 
     var f1, f2, f3, listener1, listener2, counter1, counter2, counter3, result;
@@ -714,5 +780,39 @@ tests.test("go.Lang.Listeners.createCounter", function () {
     counter3 = go.Lang.Listeners.createCounter(null, f1);
     counter3.filled();
     deepEqual(result, [1]);
+});
 
+tests.test("go.Lang.Listeners.Counter: filled and empty count", function () {
+
+    var ex, handler, counter;
+
+    handler = function () {
+        ex = true;
+    };
+
+    ex = false;
+    counter = go.Lang.Listeners.createCounter(0, handler);
+    ok(ex);
+
+    ex = false;
+    counter = go.Lang.Listeners.createCounter("0", handler);
+    ok(ex);
+
+    ex = false;
+    counter = go.Lang.Listeners.createCounter("2", handler);
+    ok(!ex);
+    counter();
+    ok(!ex);
+    counter();
+    ok(ex);
+
+    ex = false;
+    counter = go.Lang.Listeners.createCounter(null, handler);
+    ok(!ex);
+    counter.filled();
+    ok(ex);
+    ex = false;
+    counter.filled();
+    counter();
+    ok(!ex);
 });
