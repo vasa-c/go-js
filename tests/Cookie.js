@@ -30,7 +30,7 @@ tests.test("Parse expires", function () {
     equal(result.getTime() - now.getTime(), 1200000);
 
     result = parse(1234567890123, now);
-    equal(result.toUTCString(), "Fri, 13 Feb 2009 23:31:30 GMT");
+    equal(result.toUTCString().replace("UTC", "GMT"), "Fri, 13 Feb 2009 23:31:30 GMT"); // replace для IE
 
     result = parse("minute", now);
     equal(result.getTime() - now.getTime(), 60000);
@@ -46,12 +46,12 @@ tests.test("Parse expires", function () {
 
     nowc = new Date("Fri, 13 Feb 2009 23:31:30 GMT");
     result = parse("month", nowc);
-    equal(result.toUTCString(), "Fri, 13 Mar 2009 23:31:30 GMT");
+    equal(result.toUTCString().replace("UTC", "GMT"), "Fri, 13 Mar 2009 23:31:30 GMT");
     result = parse("year", nowc);
-    equal(result.toUTCString(), "Sat, 13 Feb 2010 23:31:30 GMT");
+    equal(result.toUTCString().replace("UTC", "GMT"), "Sat, 13 Feb 2010 23:31:30 GMT");
     nowc = new Date("Fri, 07 Dec 2012 23:31:30 GMT");
     result = parse("month", nowc);
-    equal(result.toUTCString(), "Mon, 07 Jan 2013 23:31:30 GMT");
+    equal(result.toUTCString().replace("UTC", "GMT"), "Mon, 07 Jan 2013 23:31:30 GMT");
 
     result = parse("delete", now);
     ok(result.getTime() < now.getTime());
@@ -178,8 +178,8 @@ tests.test("Test with wrapper", function () {
 });
 
 tests.test("Test real", function () {
-    document.cookie = "xxx=deleted;Max-Age=0";
-    document.cookie = "yyy=deleted;Max-Age=0";
+    document.cookie = "xxx=deleted;Expires=Fri, 02 Jan 1970 00:00:00 GMT";
+    document.cookie = "yyy=deleted;Expires=Fri, 02 Jan 1970 00:00:00 GMT";
     ok(!go.Cookie.get("xxx"));
     ok(!go.Cookie.get("yyy"));
     go.Cookie.set("xxx", 10);
