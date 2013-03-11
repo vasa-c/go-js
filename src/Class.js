@@ -1059,6 +1059,7 @@ go("Class", function (go, global, undefined) {
      * Функция создания нового класса
      *
      * @name go.Class
+     * @function
      * @public
      * @param {(Function|Array.<Function>)} [parents]
      *        класс-предок или список предков
@@ -1069,7 +1070,7 @@ go("Class", function (go, global, undefined) {
      * @throws go.Class.Exceptions.Final
      *         попытка расширить финальный класс
      */
-    Class = function (parents, props) {
+    Class = function Class(parents, props) {
         var creator, C;
         creator = new ClassCreator(parents, props);
         creator.create();
