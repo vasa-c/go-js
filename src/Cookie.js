@@ -155,7 +155,7 @@ go("Cookie", ["Class", "Ext"], function (go, global, undefined) {
                         }
                     }
                     if (delta < 0) {
-                        header.push("Expires=" + expires.toUTCString());
+                        header.push("Expires=" + expires.toUTCString().replace("UTC", "GMT")); // replace for IE
                     }
                 }
             }
