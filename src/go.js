@@ -651,8 +651,11 @@ go("Lang", function (go, global, undefined) {
                 if (value.nodeType === 3) {
                     return "textnode";
                 }
-                if (typeof value.length === "number") {
+                if (value.item) {
                     return "collection";
+                }
+                if (typeof value.length === "number") {
+                    return "arguments";
                 }
                 /* Идентификация host-функции в старых IE (typeof === "object") по строковому представлению
                  * Также у них нет toString(), так что складываем со строкой.
