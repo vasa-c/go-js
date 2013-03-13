@@ -122,7 +122,6 @@ tests.test("bind() arguments + no builtin Function.bind", function () {
 tests.test("getType", function () {
 
     var undef,
-        ConstructorEArray,
         div,
         span,
         collection,
@@ -162,10 +161,6 @@ tests.test("getType", function () {
     equal(go.Lang.getType([1, 2, 3]), "array", "literal array");
     equal(go.Lang.getType(new Array(1, 2, 3)), "array", "new Array");
     equal(go.Lang.getType([]), "array", "empty Array");
-
-    ConstructorEArray = function () {};
-    ConstructorEArray.prototype = new Array();
-    equal(go.Lang.getType(new ConstructorEArray()), "array", "extended Array");
 
     equal(go.Lang.getType(/\s/), "regexp", "literal RegExp");
     equal(go.Lang.getType(new RegExp("^a")), "regexp", "new RegExp");

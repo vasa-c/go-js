@@ -596,98 +596,95 @@ go("Lang", function (go, global, undefined) {
          *         название типа
          */
         'getType': function getType(value) {
-            var type, w;
+            var type, name;
 
             if (value && (typeof value.go$type === "string")) {
                 return value.go$type;
             }
 
+            /* typeof отсеивает основные типы */
             type = typeof value;
             if ((type !== "object") && (type !== "function")) {
-                /* Все кроме object соответствуют своему typeof
-                   "function" - иногда этот тип возвращают регулярки (Chrome) или коллекции (Safari)
-                 */
+                /* function - иногда это может быть регулярка в Chrome или HTMLCollection в Safari */
                 return type;
             }
+
+            /* typeof null === "object" */
             if (value === null) {
-                /* typeof null === "object" */
                 return "null";
             }
 
+            /* Определяем тип по строковому представлению */
             if (!getType._str) {
-                /* Определение по toString */
                 getType._str = {
                     '[object Function]' : "function",
                     '[object Array]'    : "array",
                     '[object RegExp]'   : "regexp",
                     '[object Error]'    : "error",
                     '[object Date]'     : "date",
-                    '[object HTMLCollection]' : "collection",
-                    '[object NodeList]' : "collection",
                     '[object Text]'     : "textnode",
                     '[object Arguments]': "arguments",
                     '[object Number]'   : "number",
                     '[object String]'   : "string",
-                    '[object Boolean]'  : "boolean"
+                    '[object Boolean]'  : "boolean",
+                    '[object NodeList]' : "collection",
+                    '[object HTMLCollection]': "collection"
                 };
             }
-
-            type = Object.prototype.toString.call(value);
-            type = getType._str[type];
+            name = Object.prototype.toString.call(value);
+            type = getType._str[name];
             if (type) {
                 return type;
             }
 
-            /* toString не помог - скорее всего, это DOM-элементы (или любые host-объекты в старых IE) */
+            /* DOM-элементы имеют представление [object HTML{tag}Element] */
+            if (name.indexOf("[object HTML") === 0) {
+                return "element";
+            }
 
-            if ((!(value instanceof Object)) || (!value.constructor)) {
-                /* Это либо данные из iframe (наследуются не от нашего Object) или host-объекты в IE (без конструктора) */
-                if (Object.prototype.toString.call(value).indexOf("[object HTML") === 0) {
-                    return "element";
-                }
+            /* Все основные браузеры здесь уже определились. Остался IE < 9 */
+            if (!(value instanceof Object)) {
+                /* host-объект из IE<9 или объект из другого фрейма */
                 if (value.nodeType === 1) {
                     return "element";
                 }
                 if (value.nodeType === 3) {
                     return "textnode";
                 }
-                if (typeof value.length === "number") {
-                    return "collection";
+                if (value.item) {
+                    /* collection имеет свойство item, но оно не итерируемое */
+                    /*jslint forin: true */
+                    for (name in value) {
+                        if (name === "item") {
+                            break;
+                        }
+                    }
+                    /*jslint forin: false */
+                    if (name !== "item") {
+                        return "collection";
+                    }
                 }
-                /* Идентификация host-функции в старых IE (typeof === "object") по строковому представлению
-                 * Также у них нет toString(), так что складываем со строкой.
-                 * Сложение с пустой строкой не нравится JSLint
-                 */
                 if ((value + ":").indexOf("function") !== -1) {
+                    /* Идентификация host-функции в старых IE (typeof === "object") по строковому представлению
+                     * Также у них нет toString(), так что складываем со строкой.
+                     * Сложение с пустой строкой не нравится JSLint
+                     */
                     return "function";
                 }
             }
 
-            w = global;
-            if (value instanceof Array) {
-                return "array";
-            }
-            if (w.HTMLElement) {
-                if (value instanceof w.HTMLElement) {
-                    return "element";
+            if (typeof value.length === "number") {
+                /* arguments имеет свойство number, но оно не итерируемое */
+                /*jslint forin: true */
+                for (name in value) {
+                    if (name === "length") {
+                        return "object";
+                    }
                 }
-            } else if (value.nodeType === 1) {
-                return "element";
-            }
-            if (w.Text && (value instanceof w.Text)) {
-                return "textnode";
-            }
-            if (w.HTMLCollection && (value instanceof w.HTMLCollection)) {
-                return "collection";
-            }
-            if (w.NodeList && (value instanceof w.NodeList)) {
-                return "collection";
-            }
-            if ((typeof value.length === "number") && (!value.slice)) {
+                /*jslint forin: false */
                 return "arguments";
             }
 
-            /* Не удалось ничего более конкретного определить, пусть будет просто "object" */
             return "object";
         },
 
