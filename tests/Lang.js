@@ -272,6 +272,43 @@ tests.test("isArray", function () {
     ok(!go.Lang.isArray(iframe.contentWindow.getResult('document.getElementsByTagName("div")'), true), "collection and iframe");
 });
 
+tests.test("toArray", function () {
+
+    var toArray, value, expected;
+
+    toArray = go.Lang.toArray;
+
+    deepEqual(toArray([1, 2, 3]), [1, 2, 3], "array");
+
+    value = (function () {return arguments; }(4, 5, 6));
+    deepEqual(toArray(value), [4, 5, 6], "arguments");
+
+    value = document.getElementsByTagName("div");
+    expected = (function (collection) {
+        var len = collection.length,
+            i,
+            result = [];
+        for (i = 0; i < len; i += 1) {
+            result.push(collection[i]);
+        }
+        return result;
+    }(value));
+    deepEqual(toArray(value), expected, "collection");
+
+    value = {'x': "a", 'y': "b", 'z': "c"};
+    tests.equalShuffledArrays(toArray(value), ["a", "b", "c"], "dict");
+
+    deepEqual(toArray(1), [1], "number");
+    deepEqual(toArray("string"), ["string"], "string");
+    deepEqual(toArray(true), [true], "true");
+    deepEqual(toArray(false), [false], "false");
+    deepEqual(toArray(undefined), [], "null");
+    deepEqual(toArray(undefined), [], "undefined");
+
+    value = (function () {return new (function () {})(); }());
+    deepEqual(toArray(value), [value], "object (no dict)");
+});
+
 tests.test("isDict", function () {
 
     var iframe = document.getElementById("iframe"),

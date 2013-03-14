@@ -752,6 +752,46 @@ go("Lang", function (go, global, undefined) {
         },
 
         /**
+         * Перевод значения к виду массива
+         *
+         * @name go.Lang.toArray
+         * @public
+         * @param {*} value
+         * @return {Array}
+         */
+        'toArray': function toArray(value) {
+            var len, i, result;
+            switch (Lang.getType(value)) {
+            case "array":
+                return value;
+            case "arguments":
+                return Array.prototype.slice.call(value);
+            case "collection":
+                result = [];
+                for (i = 0, len = value.length; i < len; i += 1) {
+                    result.push(value[i]);
+                }
+                return result;
+            case "undefined":
+            case "null":
+                return [];
+            case "object":
+                if (!Lang.isDict(value)) {
+                    return [value];
+                }
+                result = [];
+                for (i in value) {
+                    if (value.hasOwnProperty(i)) {
+                        result.push(value[i]);
+                    }
+                }
+                return result;
+            default:
+                return [value];
+            }
+        },
+
+        /**
          * Является ли объект простым словарём.
          * То есть любым объектом, не имеющим более специфического типа.
          *
