@@ -312,7 +312,8 @@ tests.test("toArray", function () {
 tests.test("isDict", function () {
 
     var iframe = document.getElementById("iframe"),
-        createNoDict;
+        createNoDict,
+        rproto;
 
     ok(go.Lang.isDict({'a': 1, 'b': 2}));
     ok(!go.Lang.isDict([1, 2]));
@@ -326,6 +327,12 @@ tests.test("isDict", function () {
     ok(!go.Lang.isDict(iframe.contentWindow.getResult('[1,2,3]')), "array and iframe");
     createNoDict = "(function () {var C = function () {}; C.prototype.x=5; return (new C());})()";
     ok(!go.Lang.isDict(iframe.contentWindow.getResult(createNoDict)), "no dict and iframe");
+
+    if (Object.getPrototypeOf) {
+        /* Для IE < 9 не сработает */
+        rproto = (function () {var C = function () {}; C.prototype={'x': 5}; return (new C());})();
+        ok(!go.Lang.isDict(rproto), "replace proto");
+    }
 });
 
 tests.test("each array", function () {

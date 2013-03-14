@@ -806,25 +806,37 @@ go("Lang", function (go, global, undefined) {
             if (!value) {
                 return false;
             }
-            if (value instanceof Object) {
-                /* instanceof Object - значит создан в текущем фрейме */
-                return (value.constructor === Object); // следовательно словарь должен быть создан напрямую от Object
+            if (value.constructor === Object) {
+                if (Object.getPrototypeOf && (Object.getPrototypeOf(value) !== Object.prototype)) {
+                    /* Случай с переопределённым прототипом и не восстановленным constructor */
+                    return false;
+                }
+                return true;
             }
-            /* iframe или host-объект в старых IE */
+            if (value instanceof Object) {
+                /* value из нашего фрейма, значит constructor должен был быть Object */
+                return false;
+            }
+            /**
+             * Для всех нормальных браузеров дальше достаточно сравнить value.constructor.name === "Object"
+             *
+             * Для IE приходится измываться, так как там нет constructor.name.
+             * Более того, при попытке доступа к свойствам constructor, IE даже может выкидывать исключения для host-объектов
+             */
             try {
-                /* IE может выкинуть исключение для host-объектов */
                 if (!value.constructor) {
                     return false;
                 }
-                if (typeof value.constructor.name === "string") {
-                    return (value.constructor.name === "Object");
-                }
-                /* constructor.name в IE нет, разбираем текстовое представление */
-                if ((value.constructor + ":").indexOf("function Object()") !== -1) {
+                if (value.constructor.name !== undefined) {
+                    if (value.constructor.name === "Object") {
+                        return true;
+                    }
+                } else if ((value.constructor + ":").indexOf("function Object()") !== -1) {
+                    /* Нет name - IE. Более того, в IE даже toString() может не быть */
                     return true;
                 }
             } catch (e) {
-                /* Host-объект в IE - не словарь */
+                /* Исключение - host-объект в старом IE */
                 return false;
             }
             return false;
