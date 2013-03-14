@@ -586,6 +586,36 @@ go("Lang", function (go, global, undefined) {
         },
 
         /**
+         * Связывание метода по имени.
+         *
+         * Допускает отсутствие метода в момент связывания.
+         *
+         * @name go.Lang.bindMethod
+         * @public
+         * @param {Object} context
+         *        объект, содержащий метод
+         * @param {String} methodName
+         *        имя метода
+         * @param {Array} [args]
+         *        аргументы, вставляемые в начало вызова функции
+         * @return {Function}
+         *         связанная функция
+         */
+        'bindMethod': function bindMethod(context, methodName, args) {
+            var f;
+            if (args && args.length) {
+                f = function bindedMethod() {
+                    return context[methodName].apply(context, args.concat(Array.prototype.slice.call(arguments)));
+                };
+            } else {
+                f = function bindedMethod() {
+                    return context[methodName].apply(context, arguments);
+                };
+            }
+            return f;
+        },
+
+        /**
          * Получение расширенного типа значения
          *
          * @name go.Lang.getType

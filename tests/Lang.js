@@ -119,6 +119,33 @@ tests.test("bind() arguments + no builtin Function.bind", function () {
     equal(f2(1, 2, 3, 4), "x, a, b, 1, 2");
 });
 
+tests.test("bindMethod()", function () {
+
+    var obj, f;
+
+    obj = {
+        'x': 10
+    };
+
+    f = go.Lang.bindMethod(obj, "method");
+
+    obj.method = function (m) {
+        return this.x * m;
+    };
+    equal(f(2), 20, "call binded method");
+
+    obj.method = function (m) {
+        return this.x + m;
+    };
+    equal(f(2), 12, "replace method");
+
+    f = go.Lang.bindMethod(obj, "method", [1, 2, 3]);
+    obj.method = function () {
+        return Array.prototype.slice.call(arguments, 0);
+    };
+    deepEqual(f(4, 5), [1, 2, 3, 4, 5], "carry");
+});
+
 tests.test("getType", function () {
 
     var undef,
@@ -215,7 +242,7 @@ tests.test("getType and iframe", function () {
     equal(go.Lang.getType(getResult("document.getElementById('test')")), "element");
     equal(go.Lang.getType(getResult("document.getElementById('test').firstChild")), "textnode");
     equal(go.Lang.getType(getResult("document.getElementsByTagName('div')")), "collection");
-    equal(go.Lang.getType(getResult("/\s/")), "regexp");
+    equal(go.Lang.getType(getResult("/\\s/")), "regexp");
 });
 
 tests.test("isArray", function () {
