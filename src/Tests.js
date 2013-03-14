@@ -7,7 +7,7 @@
  * @uses       QUnit (http://docs.jquery.com/QUnit)
  */
 /*jslint nomen: true */
-/*global go, window */
+/*global go, window, ok, deepEqual */
 
 if (!window.go) {
     throw new Error("go.core is not found");
@@ -116,6 +116,44 @@ go("Tests", function (go, global) {
          */
         'module': function () {
             this.calls.push([this.QUNIT.module, arguments]);
+        },
+
+        /**
+         * Сравнение двух перемешанных массивов
+         *
+         * Списки значений в массивах должны совпадать, но порядок может различаться.
+         *
+         * @param {Array} actual
+         * @param {Array} expected
+         * @param {String} message
+         */
+        'equalShuffledArrays': function (actual, expected, message) {
+            var toString = Object.prototype.toString,
+                o1 = {},
+                o2 = {},
+                len,
+                i;
+
+            if (toString.call(actual) !== "[object Array]") {
+                ok(false, message);
+                return;
+            }
+            if (toString.call(expected) !== "[object Array]") {
+                ok(false, message);
+                return;
+            }
+            len = actual.length;
+            if (expected.length !== len) {
+                ok(false, message);
+                return;
+            }
+
+            for (i = 0; i < len; i += 1) {
+                o1[actual[i]] = true;
+                o2[expected[i]] = true;
+            }
+
+            deepEqual(o1, o2, message);
         },
 
         /**
