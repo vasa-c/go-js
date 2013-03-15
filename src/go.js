@@ -11,7 +11,6 @@
  * @link    https://github.com/vasa-c/go-js
  */
 /*jslint nomen: true, es5: true, todo: true */
-/*global window */
 
 /**
  * @namespace go
@@ -529,7 +528,7 @@ var go = (function (global) {
     }());
 
     return go;
-}(window));
+}(this));
 
 /*jslint unparam: true */
 /**
