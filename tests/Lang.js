@@ -335,6 +335,27 @@ tests.test("isDict", function () {
     }
 });
 
+tests.test("getObjectKeys", function () {
+
+    var Func, instance;
+
+    tests.equalShuffledArrays(go.Lang.getObjectKeys({'x': 5, 'y': 6}), ["x", "y"]);
+
+    Func = function () {
+        this.name = "name";
+        this.prop = "prop";
+    };
+    Func.x = 5;
+    Func.z = 7;
+    tests.equalShuffledArrays(go.Lang.getObjectKeys(Func), ["x", "z"]);
+
+    Func.prototype = {
+        'p': 2
+    };
+    instance = new Func();
+    tests.equalShuffledArrays(go.Lang.getObjectKeys(instance), ["name", "prop"]);
+});
+
 tests.test("each array", function () {
 
     var iter, fn, expected, div;

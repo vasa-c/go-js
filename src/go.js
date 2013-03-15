@@ -539,11 +539,12 @@ go("Lang", function (go, global, undefined) {
     /*jslint unparam: false */
 
     var Lang,
-        nativeObject   = global.Object,
+        nativeObject = global.Object,
         nativeToString = nativeObject.prototype.toString,
-        nativeSlice    = Array.prototype.slice,
-        nativeIsArray  = Array.isArray,
-        nativeGetPrototypeOf = nativeObject.getPrototypeOf;
+        nativeSlice = Array.prototype.slice,
+        nativeIsArray = Array.isArray,
+        nativeGetPrototypeOf = nativeObject.getPrototypeOf,
+        nativeKeys = Object.keys;
 
     Lang = {
 
@@ -725,6 +726,57 @@ go("Lang", function (go, global, undefined) {
         },
 
         /**
+         * Является ли объект простым словарём.
+         * То есть любым объектом, не имеющим более специфического типа.
+         *
+         * @name go.Lang.isDict
+         * @public
+         * @param {Object} value
+         *        проверяемое значение
+         * @return {Boolean}
+         *         является ли значение простым словарём
+         */
+        'isDict': function isDict(value) {
+            if (!value) {
+                return false;
+            }
+            if (value.constructor === nativeObject) {
+                if (nativeGetPrototypeOf && (nativeGetPrototypeOf(value) !== nativeObject.prototype)) {
+                    /* Случай с переопределённым прототипом и не восстановленным constructor */
+                    return false;
+                }
+                return true;
+            }
+            if (value instanceof nativeObject) {
+                /* value из нашего фрейма, значит constructor должен был быть Object */
+                return false;
+            }
+            /**
+             * Для всех нормальных браузеров дальше достаточно сравнить value.constructor.name === "Object"
+             *
+             * Для IE приходится измываться, так как там нет constructor.name.
+             * Более того, при попытке доступа к свойствам constructor, IE даже может выкидывать исключения для host-объектов
+             */
+            try {
+                if (!value.constructor) {
+                    return false;
+                }
+                if (value.constructor.name !== undefined) {
+                    if (value.constructor.name === "Object") {
+                        return true;
+                    }
+                } else if ((value.constructor + ":").indexOf("function Object()") !== -1) {
+                    /* Нет name - IE. Более того, в IE даже toString() может не быть */
+                    return true;
+                }
+            } catch (e) {
+                /* Исключение - host-объект в старом IE */
+                return false;
+            }
+            return false;
+        },
+
+        /**
          * Является ли значение массивом
          *
          * @name go.Lang.isArray
@@ -798,54 +850,51 @@ go("Lang", function (go, global, undefined) {
         },
 
         /**
-         * Является ли объект простым словарём.
-         * То есть любым объектом, не имеющим более специфического типа.
+         * Присутствует ли значение в массиве
+         * (строгая проверка)
          *
-         * @name go.Lang.isDict
+         * @name go.Lang.inArray
          * @public
-         * @param {Object} value
-         *        проверяемое значение
+         * @param {mixed} needle
+         *        значение
+         * @param {Array} haystack
+         *        порядковый массив
          * @return {Boolean}
-         *         является ли значение простым словарём
+         *         находится ли значение в массиве
          */
-        'isDict': function isDict(value) {
-            if (!value) {
-                return false;
+        'inArray': function inArray(needle, haystack) {
+            var i, len;
+            if (Array.prototype.indexOf) {
+                return (Array.prototype.indexOf.call(haystack, needle) !== -1);
             }
-            if (value.constructor === nativeObject) {
-                if (nativeGetPrototypeOf && (nativeGetPrototypeOf(value) !== nativeObject.prototype)) {
-                    /* Случай с переопределённым прототипом и не восстановленным constructor */
-                    return false;
-                }
-                return true;
-            }
-            if (value instanceof nativeObject) {
-                /* value из нашего фрейма, значит constructor должен был быть Object */
-                return false;
-            }
-            /**
-             * Для всех нормальных браузеров дальше достаточно сравнить value.constructor.name === "Object"
-             *
-             * Для IE приходится измываться, так как там нет constructor.name.
-             * Более того, при попытке доступа к свойствам constructor, IE даже может выкидывать исключения для host-объектов
-             */
-            try {
-                if (!value.constructor) {
-                    return false;
-                }
-                if (value.constructor.name !== undefined) {
-                    if (value.constructor.name === "Object") {
-                        return true;
-                    }
-                } else if ((value.constructor + ":").indexOf("function Object()") !== -1) {
-                    /* Нет name - IE. Более того, в IE даже toString() может не быть */
+            for (i = 0, len = haystack.length; i < len; i += 1) {
+                if (haystack[i] === needle) {
                     return true;
                 }
-            } catch (e) {
-                /* Исключение - host-объект в старом IE */
-                return false;
             }
             return false;
+        },
+
+        /**
+         * Получить собственные ключи объекта
+         *
+         * @name go.Lang.getObjectKeys
+         * @public
+         * @param {Object} object
+         * @return {Array}
+         */
+        'getObjectKeys': function (object) {
+            var k, keys;
+            if (nativeKeys) {
+                return nativeKeys(object);
+            }
+            keys = [];
+            for (k in object) {
+                if (object.hasOwnProperty(k)) {
+                    keys.push(k);
+                }
+            }
+            return keys;
         },
 
         /**
@@ -1042,32 +1091,6 @@ go("Lang", function (go, global, undefined) {
                 var args = cargs.concat(slice.call(arguments));
                 return fn.apply(global, args);
             };
-        },
-
-        /**
-         * Присутствует ли значение в массиве
-         * (строгая проверка)
-         *
-         * @name go.Lang.inArray
-         * @public
-         * @param {mixed} needle
-         *        значение
-         * @param {Array} haystack
-         *        порядковый массив
-         * @return {Boolean}
-         *         находится ли значение в массиве
-         */
-        'inArray': function inArray(needle, haystack) {
-            var i, len;
-            if (Array.prototype.indexOf) {
-                return (Array.prototype.indexOf.call(haystack, needle) !== -1);
-            }
-            for (i = 0, len = haystack.length; i < len; i += 1) {
-                if (haystack[i] === needle) {
-                    return true;
-                }
-            }
-            return false;
         },
 
         /**
