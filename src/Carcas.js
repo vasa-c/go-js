@@ -14,7 +14,7 @@ if (!window.go) {
     throw new Error("go.core is not found");
 }
 
-go("Carcas", ["Class", "Ext", "LangExt"], function (go, global) {
+go("Carcas", ["Class", "Ext"], function (go, global) {
     "use strict";
     /**
      * @class go.Carcas
@@ -472,11 +472,22 @@ go("Carcas", ["Class", "Ext", "LangExt"], function (go, global) {
          *        объект
          */
         'setByPath': function (context, name, obj) {
-            var current = go.Lang.getByPath(context, name);
-            if (current) {
-                go.Lang.extend(obj, current);
+            var i, len, c;
+            if (typeof name === "string") {
+                name = name.split(".");
             }
-            go.Lang.setByPath(context, name, obj);
+            for (i = 0, len = name.length - 1; i < len; i += 1) {
+                c = name[i];
+                if (!context[c]) {
+                     context[c] = {};
+                }
+                context = context[c];
+            }
+            c = name[len];
+            if (context[c]) {
+                obj = go.Lang.extend(obj, context[c]);
+            }
+            context[c] = obj;
         },
 
         /**
