@@ -538,7 +538,14 @@ go("Lang", function (go, global, undefined) {
     "use strict";
     /*jslint unparam: false */
 
-    var Lang = {
+    var Lang,
+        nativeObject   = global.Object,
+        nativeToString = nativeObject.prototype.toString,
+        nativeSlice    = Array.prototype.slice,
+        nativeIsArray  = Array.isArray,
+        nativeGetPrototypeOf = nativeObject.getPrototypeOf;
+
+    Lang = {
 
         /**
          * @lends go.Lang
@@ -574,7 +581,7 @@ go("Lang", function (go, global, undefined) {
                 result = func.bind.apply(func, args);
             } else if (args) {
                 result = function binded() {
-                    return func.apply(thisArg, args.concat(Array.prototype.slice.call(arguments, 0)));
+                    return func.apply(thisArg, args.concat(nativeSlice.call(arguments, 0)));
                 };
             } else {
                 result = function binded() {
@@ -604,7 +611,7 @@ go("Lang", function (go, global, undefined) {
             var f;
             if (args && args.length) {
                 f = function bindedMethod() {
-                    return context[methodName].apply(context, args.concat(Array.prototype.slice.call(arguments)));
+                    return context[methodName].apply(context, args.concat(nativeSlice.call(arguments)));
                 };
             } else {
                 f = function bindedMethod() {
@@ -660,7 +667,7 @@ go("Lang", function (go, global, undefined) {
                     '[object HTMLCollection]': "collection"
                 };
             }
-            name = Object.prototype.toString.call(value);
+            name = nativeToString.call(value);
             type = getType._str[name];
             if (type) {
                 return type;
@@ -722,7 +729,7 @@ go("Lang", function (go, global, undefined) {
          *
          * @name go.Lang.isArray
          * @public
-         * @param {mixed} value
+         * @param {*} value
          *        проверяемое значение
          * @param {Boolean} [strict=false]
          *        точная проверка - именно массивом
@@ -731,8 +738,8 @@ go("Lang", function (go, global, undefined) {
          *         является ли значение массивом
          */
         'isArray': function isArray(value, strict) {
-            if (Array.isArray) {
-                if (Array.isArray(value)) {
+            if (nativeIsArray) {
+                if (nativeIsArray(value)) {
                     return true;
                 }
                 if (strict) {
@@ -764,7 +771,7 @@ go("Lang", function (go, global, undefined) {
             case "array":
                 return value;
             case "arguments":
-                return Array.prototype.slice.call(value);
+                return nativeSlice.call(value, 0);
             case "collection":
                 result = [];
                 for (i = 0, len = value.length; i < len; i += 1) {
@@ -805,14 +812,14 @@ go("Lang", function (go, global, undefined) {
             if (!value) {
                 return false;
             }
-            if (value.constructor === Object) {
-                if (Object.getPrototypeOf && (Object.getPrototypeOf(value) !== Object.prototype)) {
+            if (value.constructor === nativeObject) {
+                if (nativeGetPrototypeOf && (nativeGetPrototypeOf(value) !== nativeObject.prototype)) {
                     /* Случай с переопределённым прототипом и не восстановленным constructor */
                     return false;
                 }
                 return true;
             }
-            if (value instanceof Object) {
+            if (value instanceof nativeObject) {
                 /* value из нашего фрейма, значит constructor должен был быть Object */
                 return false;
             }
