@@ -127,10 +127,10 @@ var go = (function (global) {
             /**
              * @constructs
              * @public
-             * @param {Function(String)} includer
-             *        внешняя функция, инициирующая запрос на загрузку модуля (получает аргументом название)
-             * @param {Function(String, *)} creator
-             *        внешнаяя функция, создающая модуль (получает имя и данные)
+             * @param {Function} includer
+             *        внешняя функция, инициирующая запрос на загрузку модуля: Function(String name)
+             * @param {Function} creator
+             *        внешнаяя функция, создающая модуль: Function(String name, * data)
              */
             '__construct': function (includer, creator) {
                 this.includer = includer;
@@ -848,8 +848,8 @@ go("Lang", function (go, global, undefined) {
          * @public
          * @param {(Object|Array)} iter
          *        итерируемый объект (или порядковый массив)
-         * @param {Function(value, key, iter)} fn
-         *        тело цикла
+         * @param {Function} fn
+         *        тело цикла (value, key, iter)
          * @param {Object} [thisArg=global]
          *        контект, в котором следует выполнять тело цикла
          * @param {Boolean} [deep=false]
@@ -1023,8 +1023,8 @@ go("Lang", function (go, global, undefined) {
          * @public
          * @param {Function} fn
          *        исходная функция
-         * @param {* ...} [args]
-         *         запоминаемые аргументы
+         * @param {... *} [args]
+         *        запоминаемые аргументы
          * @return {Function}
          *         каррированная функция
          */
