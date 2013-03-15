@@ -14,7 +14,7 @@ if (!window.go) {
     throw new Error("go.core is not found");
 }
 
-go("Carcas", ["Class", "Ext"], function (go, global) {
+go("Carcas", ["Class", "Ext", "LangExt"], function (go, global) {
     "use strict";
     /**
      * @class go.Carcas
