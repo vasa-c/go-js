@@ -544,7 +544,8 @@ go("Lang", function (go, global, undefined) {
         nativeSlice = Array.prototype.slice,
         nativeIsArray = Array.isArray,
         nativeGetPrototypeOf = nativeObject.getPrototypeOf,
-        nativeKeys = Object.keys;
+        nativeKeys = Object.keys,
+        nativeMap = Array.prototype.map;
 
     Lang = {
 
@@ -907,7 +908,7 @@ go("Lang", function (go, global, undefined) {
          * @param {Function} fn
          *        тело цикла (value, key, iter)
          * @param {Object} [thisArg=global]
-         *        контект, в котором следует выполнять тело цикла
+         *        контекст, в котором следует выполнять тело цикла
          * @param {Boolean} [deep=false]
          *        обходить ли прототипы
          * @return {(Object|Array)}
@@ -917,6 +918,9 @@ go("Lang", function (go, global, undefined) {
             var result, i, len;
             thisArg = thisArg || global;
             if (Lang.isArray(iter)) {
+                if (nativeMap) {
+                    return nativeMap.call(iter, fn, thisArg);
+                }
                 result = [];
                 for (i = 0, len = iter.length; i < len; i += 1) {
                     result.push(fn.call(thisArg, iter[i], i, iter));

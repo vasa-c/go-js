@@ -362,10 +362,10 @@ tests.test("each array", function () {
 
     iter = [1, 2, 3];
     fn = function (value, key, iter) {
-        return value + ":" + key + ":" + iter.length;
+        return value + ":" + key + ":" + iter.length + ":" + this.name;
     };
-    expected = ["1:0:3", "2:1:3", "3:2:3"];
-    deepEqual(go.Lang.each(iter, fn), expected, "iterate array");
+    expected = ["1:0:3:t", "2:1:3:t", "3:2:3:t"];
+    deepEqual(go.Lang.each(iter, fn, {'name': "t"}), expected, "iterate array");
 
     div = document.createElement("div");
     div.innerHTML = "<span>one</span> <span>two</span>";
