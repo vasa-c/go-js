@@ -12,7 +12,7 @@ if (!window.go) {
     throw new Error("go.core is not found");
 }
 
-go("Class", function (go, global, undefined) {
+go("Class", function (go, global) {
     "use strict";
 
     var Class,
@@ -89,7 +89,7 @@ go("Class", function (go, global, undefined) {
          * @protected
          * @param {Function} Parent
          *        родительский класс
-         * @param {...} [args]
+         * @param {... *} [args]
          *        аргументы конструктора
          */
         '__parentConstruct': function (Parent) {
@@ -119,7 +119,7 @@ go("Class", function (go, global, undefined) {
          *        родительский класс
          * @param {String} name
          *        имя метода
-         * @param {...} [args]
+         * @param {... *} [args]
          *        аргументы метода
          * @return {*}
          *         результат выполнения запрошенного метода
@@ -320,6 +320,8 @@ go("Class", function (go, global, undefined) {
         this.__construct(parents, props);
     };
     ClassCreator.prototype = {
+
+        'constructor': ClassCreator,
 
         /**
          * @constructs
@@ -684,6 +686,8 @@ go("Class", function (go, global, undefined) {
     };
     MutatorsList.prototype = {
 
+        'constructor': MutatorsList,
+
         /**
          * Целевой класс
          *
@@ -982,7 +986,7 @@ go("Class", function (go, global, undefined) {
                  * @param {Object} props
                  */
                 'processClass': function (props) {
-                    // для переопределения у потомков
+                    return props;
                 },
 
                 /**
@@ -992,7 +996,7 @@ go("Class", function (go, global, undefined) {
                  * @param {Object} instance
                  */
                 'processInstance': function (instance) {
-                    // для переопределения у потомков
+                    return instance;
                 },
 
                 /**

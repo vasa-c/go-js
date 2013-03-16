@@ -426,7 +426,7 @@ go("Ext", ["Class"], function (go, global, undefined) {
          *        указатель на ноду
          * @param {String} eventType
          *        тип события
-         * @param {(String|Function(e))} handler
+         * @param {(String|Function)} handler
          *        обработчик - функция или имя метода данного объекта
          */
         'bind': function (node, eventType, handler) {
@@ -446,7 +446,7 @@ go("Ext", ["Class"], function (go, global, undefined) {
          *        указатель на ноду
          * @param {String} eventType
          *        тип события
-         * @param {(String|Function(e))} handler
+         * @param {(String|Function)} handler
          *        обработчик - функция или имя метода данного объекта
          */
         'unbind': function (node, eventType, handler) {

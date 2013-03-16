@@ -119,6 +119,33 @@ tests.test("bind() arguments + no builtin Function.bind", function () {
     equal(f2(1, 2, 3, 4), "x, a, b, 1, 2");
 });
 
+tests.test("bindMethod()", function () {
+
+    var obj, f;
+
+    obj = {
+        'x': 10
+    };
+
+    f = go.Lang.bindMethod(obj, "method");
+
+    obj.method = function (m) {
+        return this.x * m;
+    };
+    equal(f(2), 20, "call binded method");
+
+    obj.method = function (m) {
+        return this.x + m;
+    };
+    equal(f(2), 12, "replace method");
+
+    f = go.Lang.bindMethod(obj, "method", [1, 2, 3]);
+    obj.method = function () {
+        return Array.prototype.slice.call(arguments, 0);
+    };
+    deepEqual(f(4, 5), [1, 2, 3, 4, 5], "carry");
+});
+
 tests.test("getType", function () {
 
     var undef,
@@ -215,7 +242,7 @@ tests.test("getType and iframe", function () {
     equal(go.Lang.getType(getResult("document.getElementById('test')")), "element");
     equal(go.Lang.getType(getResult("document.getElementById('test').firstChild")), "textnode");
     equal(go.Lang.getType(getResult("document.getElementsByTagName('div')")), "collection");
-    equal(go.Lang.getType(getResult("/\s/")), "regexp");
+    equal(go.Lang.getType(getResult("/\\s/")), "regexp");
 });
 
 tests.test("isArray", function () {
@@ -245,10 +272,48 @@ tests.test("isArray", function () {
     ok(!go.Lang.isArray(iframe.contentWindow.getResult('document.getElementsByTagName("div")'), true), "collection and iframe");
 });
 
+tests.test("toArray", function () {
+
+    var toArray, value, expected;
+
+    toArray = go.Lang.toArray;
+
+    deepEqual(toArray([1, 2, 3]), [1, 2, 3], "array");
+
+    value = (function () {return arguments; }(4, 5, 6));
+    deepEqual(toArray(value), [4, 5, 6], "arguments");
+
+    value = document.getElementsByTagName("div");
+    expected = (function (collection) {
+        var len = collection.length,
+            i,
+            result = [];
+        for (i = 0; i < len; i += 1) {
+            result.push(collection[i]);
+        }
+        return result;
+    }(value));
+    deepEqual(toArray(value), expected, "collection");
+
+    value = {'x': "a", 'y': "b", 'z': "c"};
+    tests.equalShuffledArrays(toArray(value), ["a", "b", "c"], "dict");
+
+    deepEqual(toArray(1), [1], "number");
+    deepEqual(toArray("string"), ["string"], "string");
+    deepEqual(toArray(true), [true], "true");
+    deepEqual(toArray(false), [false], "false");
+    deepEqual(toArray(undefined), [], "null");
+    deepEqual(toArray(undefined), [], "undefined");
+
+    value = (function () {return new (function () {})(); }());
+    deepEqual(toArray(value), [value], "object (no dict)");
+});
+
 tests.test("isDict", function () {
 
     var iframe = document.getElementById("iframe"),
-        createNoDict;
+        createNoDict,
+        rproto;
 
     ok(go.Lang.isDict({'a': 1, 'b': 2}));
     ok(!go.Lang.isDict([1, 2]));
@@ -262,6 +327,33 @@ tests.test("isDict", function () {
     ok(!go.Lang.isDict(iframe.contentWindow.getResult('[1,2,3]')), "array and iframe");
     createNoDict = "(function () {var C = function () {}; C.prototype.x=5; return (new C());})()";
     ok(!go.Lang.isDict(iframe.contentWindow.getResult(createNoDict)), "no dict and iframe");
+
+    if (Object.getPrototypeOf) {
+        /* Для IE < 9 не сработает */
+        rproto = (function () {var C = function () {}; C.prototype={'x': 5}; return (new C());})();
+        ok(!go.Lang.isDict(rproto), "replace proto");
+    }
+});
+
+tests.test("getObjectKeys", function () {
+
+    var Func, instance;
+
+    tests.equalShuffledArrays(go.Lang.getObjectKeys({'x': 5, 'y': 6}), ["x", "y"]);
+
+    Func = function () {
+        this.name = "name";
+        this.prop = "prop";
+    };
+    Func.x = 5;
+    Func.z = 7;
+    tests.equalShuffledArrays(go.Lang.getObjectKeys(Func), ["x", "z"]);
+
+    Func.prototype = {
+        'p': 2
+    };
+    instance = new Func();
+    tests.equalShuffledArrays(go.Lang.getObjectKeys(instance), ["name", "prop"]);
 });
 
 tests.test("each array", function () {
@@ -270,10 +362,10 @@ tests.test("each array", function () {
 
     iter = [1, 2, 3];
     fn = function (value, key, iter) {
-        return value + ":" + key + ":" + iter.length;
+        return value + ":" + key + ":" + iter.length + ":" + this.name;
     };
-    expected = ["1:0:3", "2:1:3", "3:2:3"];
-    deepEqual(go.Lang.each(iter, fn), expected, "iterate array");
+    expected = ["1:0:3:t", "2:1:3:t", "3:2:3:t"];
+    deepEqual(go.Lang.each(iter, fn, {'name': "t"}), expected, "iterate array");
 
     div = document.createElement("div");
     div.innerHTML = "<span>one</span> <span>two</span>";
@@ -456,72 +548,6 @@ tests.test("merge", function () {
     deepEqual(destination, expected);
 });
 
-tests.test("getByPath", function () {
-
-    var context = {
-        'one': 1,
-        'two': {
-            'three': 3,
-            'four': {
-                'five': "five"
-            },
-            'six': null
-        }
-    };
-
-    equal(go.Lang.getByPath(context, "one"), 1);
-    deepEqual(go.Lang.getByPath(context, "two"), context.two);
-    equal(typeof go.Lang.getByPath(context, "three"), "undefined");
-    equal(go.Lang.getByPath(context, "three", 11), 11, "by default");
-
-    equal(go.Lang.getByPath(context, "two.four.five"), "five");
-    equal(go.Lang.getByPath(context, ["two", "four", "five"]), "five");
-
-    equal(typeof go.Lang.getByPath(context, "two.six.seven"), "undefined");
-    equal(typeof go.Lang.getByPath(context, "two.four.five.toString"), "undefined", "prototype");
-});
-
-tests.test("setByPath", function () {
-
-    var context = {
-        'one': 1,
-        'two': {
-            'three': 3,
-            'four': {
-                'five': "five"
-            },
-            'six': null
-        }
-    };
-
-    go.Lang.setByPath(context, "one", 2);
-    equal(context.one, 2);
-    go.Lang.setByPath(context, "two.three", 4);
-    equal(context.two.three, 4);
-    go.Lang.setByPath(context, ["two", "four"], 5);
-    equal(context.two.four, 5);
-    go.Lang.setByPath(context, "two.x.y.z", "xyz");
-    equal(typeof context.two.x, "object");
-    equal(typeof context.two.x.y, "object");
-    equal(context.two.x.y.z, "xyz");
-
-});
-
-tests.test("curry", function () {
-
-    var cur, cur2;
-
-    function f(a, b, c, d) {
-        return [a, b, c, d].join(", ");
-    }
-
-    cur = go.Lang.curry(f, 1, 2);
-    equal(cur(3, 4), "1, 2, 3, 4");
-
-    cur2 = go.Lang.curry(cur, 5);
-    equal(cur2(6), "1, 2, 5, 6");
-});
-
 tests.test("inArray", function () {
 
     var
@@ -538,65 +564,6 @@ tests.test("inArray", function () {
     ok(!go.Lang.inArray("3", haystack));
     ok(!go.Lang.inArray(5, haystack));
     ok(!go.Lang.inArray(obj2, haystack));
-});
-
-tests.test("tryDo", function () {
-
-    var one, two, undef, funcs;
-
-    function err() {
-        var x = 5;
-        return x(6);
-    }
-
-    function fone() {
-        if (!one) {
-            throw new Error();
-        }
-        return "one";
-    }
-
-    function ftwo() {
-        if (!two) {
-            throw new Error();
-        }
-        return "two";
-    }
-
-    funcs = [err, fone, ftwo];
-
-    one = true;
-    two = true;
-    equal(go.Lang.tryDo(funcs), "one");
-
-    one = false;
-    equal(go.Lang.tryDo(funcs), "two");
-
-    two = false;
-    equal(go.Lang.tryDo(funcs), undef);
-});
-
-tests.test("parseQuery", function () {
-    deepEqual(go.Lang.parseQuery(""), {});
-    deepEqual(go.Lang.parseQuery("x=1&y=2"), {'x': "1", 'y': "2"});
-    deepEqual(go.Lang.parseQuery("x=one%3Atwo&y=2"), {'x': "one:two", 'y': "2"});
-    deepEqual(go.Lang.parseQuery("12345&x=5"), {'': "12345", 'x': "5"});
-    deepEqual(go.Lang.parseQuery({'x': "5"}), {'x': "5"});
-});
-
-tests.test("buildQuery", function () {
-    var
-        vars = {
-            'one': 1,
-            'two': "two:three",
-            'A': {
-                'x': 5,
-                'y': [1, 2, 3]
-            }
-        },
-        expected = "one=1&two=two%3Athree&A[x]=5&A[y][0]=1&A[y][1]=2&A[y][2]=3";
-    equal(go.Lang.buildQuery(vars), expected);
-    equal(go.Lang.buildQuery(expected), expected);
 });
 
 tests.test("go.Lang.f", function () {

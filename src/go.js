@@ -11,7 +11,6 @@
  * @link    https://github.com/vasa-c/go-js
  */
 /*jslint nomen: true, es5: true, todo: true */
-/*global window */
 
 /**
  * @namespace go
@@ -128,10 +127,10 @@ var go = (function (global) {
             /**
              * @constructs
              * @public
-             * @param {Function(String)} includer
-             *        внешняя функция, инициирующая запрос на загрузку модуля (получает аргументом название)
-             * @param {Function(String, *)} creator
-             *        внешнаяя функция, создающая модуль (получает имя и данные)
+             * @param {Function} includer
+             *        внешняя функция, инициирующая запрос на загрузку модуля: Function(String name)
+             * @param {Function} creator
+             *        внешнаяя функция, создающая модуль: Function(String name, * data)
              */
             '__construct': function (includer, creator) {
                 this.includer = includer;
@@ -529,7 +528,7 @@ var go = (function (global) {
     }());
 
     return go;
-}(window));
+}(this));
 
 /*jslint unparam: true */
 /**
@@ -539,7 +538,16 @@ go("Lang", function (go, global, undefined) {
     "use strict";
     /*jslint unparam: false */
 
-    var Lang = {
+    var Lang,
+        nativeObject = global.Object,
+        nativeToString = nativeObject.prototype.toString,
+        nativeSlice = Array.prototype.slice,
+        nativeIsArray = Array.isArray,
+        nativeGetPrototypeOf = nativeObject.getPrototypeOf,
+        nativeKeys = Object.keys,
+        nativeMap = Array.prototype.map;
+
+    Lang = {
 
         /**
          * @lends go.Lang
@@ -575,7 +583,7 @@ go("Lang", function (go, global, undefined) {
                 result = func.bind.apply(func, args);
             } else if (args) {
                 result = function binded() {
-                    return func.apply(thisArg, args.concat(Array.prototype.slice.call(arguments, 0)));
+                    return func.apply(thisArg, args.concat(nativeSlice.call(arguments, 0)));
                 };
             } else {
                 result = function binded() {
@@ -583,6 +591,36 @@ go("Lang", function (go, global, undefined) {
                 };
             }
             return result;
+        },
+
+        /**
+         * Связывание метода по имени.
+         *
+         * Допускает отсутствие метода в момент связывания.
+         *
+         * @name go.Lang.bindMethod
+         * @public
+         * @param {Object} context
+         *        объект, содержащий метод
+         * @param {String} methodName
+         *        имя метода
+         * @param {Array} [args]
+         *        аргументы, вставляемые в начало вызова функции
+         * @return {Function}
+         *         связанная функция
+         */
+        'bindMethod': function bindMethod(context, methodName, args) {
+            var f;
+            if (args && args.length) {
+                f = function bindedMethod() {
+                    return context[methodName].apply(context, args.concat(nativeSlice.call(arguments)));
+                };
+            } else {
+                f = function bindedMethod() {
+                    return context[methodName].apply(context, arguments);
+                };
+            }
+            return f;
         },
 
         /**
@@ -631,7 +669,7 @@ go("Lang", function (go, global, undefined) {
                     '[object HTMLCollection]': "collection"
                 };
             }
-            name = Object.prototype.toString.call(value);
+            name = nativeToString.call(value);
             type = getType._str[name];
             if (type) {
                 return type;
@@ -689,11 +727,62 @@ go("Lang", function (go, global, undefined) {
         },
 
         /**
+         * Является ли объект простым словарём.
+         * То есть любым объектом, не имеющим более специфического типа.
+         *
+         * @name go.Lang.isDict
+         * @public
+         * @param {Object} value
+         *        проверяемое значение
+         * @return {Boolean}
+         *         является ли значение простым словарём
+         */
+        'isDict': function isDict(value) {
+            if (!value) {
+                return false;
+            }
+            if (value.constructor === nativeObject) {
+                if (nativeGetPrototypeOf && (nativeGetPrototypeOf(value) !== nativeObject.prototype)) {
+                    /* Случай с переопределённым прототипом и не восстановленным constructor */
+                    return false;
+                }
+                return true;
+            }
+            if (value instanceof nativeObject) {
+                /* value из нашего фрейма, значит constructor должен был быть Object */
+                return false;
+            }
+            /**
+             * Для всех нормальных браузеров дальше достаточно сравнить value.constructor.name === "Object"
+             *
+             * Для IE приходится измываться, так как там нет constructor.name.
+             * Более того, при попытке доступа к свойствам constructor, IE даже может выкидывать исключения для host-объектов
+             */
+            try {
+                if (!value.constructor) {
+                    return false;
+                }
+                if (value.constructor.name !== undefined) {
+                    if (value.constructor.name === "Object") {
+                        return true;
+                    }
+                } else if ((value.constructor + ":").indexOf("function Object()") !== -1) {
+                    /* Нет name - IE. Более того, в IE даже toString() может не быть */
+                    return true;
+                }
+            } catch (e) {
+                /* Исключение - host-объект в старом IE */
+                return false;
+            }
+            return false;
+        },
+
+        /**
          * Является ли значение массивом
          *
          * @name go.Lang.isArray
          * @public
-         * @param {mixed} value
+         * @param {*} value
          *        проверяемое значение
          * @param {Boolean} [strict=false]
          *        точная проверка - именно массивом
@@ -702,8 +791,8 @@ go("Lang", function (go, global, undefined) {
          *         является ли значение массивом
          */
         'isArray': function isArray(value, strict) {
-            if (Array.isArray) {
-                if (Array.isArray(value)) {
+            if (nativeIsArray) {
+                if (nativeIsArray(value)) {
                     return true;
                 }
                 if (strict) {
@@ -722,42 +811,91 @@ go("Lang", function (go, global, undefined) {
         },
 
         /**
-         * Является ли объект простым словарём.
-         * То есть любым объектом, не имеющим более специфического типа.
+         * Перевод значения к виду массива
          *
-         * @name go.Lang.isDict
+         * @name go.Lang.toArray
          * @public
-         * @param {Object} value
-         *        проверяемое значение
-         * @return {Boolean}
-         *         является ли значение простым словарём
+         * @param {*} value
+         * @return {Array}
          */
-        'isDict': function isDict(value) {
-            if (!value) {
-                return false;
-            }
-            if (value instanceof Object) {
-                /* instanceof Object - значит создан в текущем фрейме */
-                return (value.constructor === Object); // следовательно словарь должен быть создан напрямую от Object
-            }
-            /* iframe или host-объект в старых IE */
-            try {
-                /* IE может выкинуть исключение для host-объектов */
-                if (!value.constructor) {
-                    return false;
+        'toArray': function toArray(value) {
+            var len, i, result;
+            switch (Lang.getType(value)) {
+            case "array":
+                return value;
+            case "arguments":
+                return nativeSlice.call(value, 0);
+            case "collection":
+                result = [];
+                for (i = 0, len = value.length; i < len; i += 1) {
+                    result.push(value[i]);
                 }
-                if (typeof value.constructor.name === "string") {
-                    return (value.constructor.name === "Object");
+                return result;
+            case "undefined":
+            case "null":
+                return [];
+            case "object":
+                if (!Lang.isDict(value)) {
+                    return [value];
                 }
-                /* constructor.name в IE нет, разбираем текстовое представление */
-                if ((value.constructor + ":").indexOf("function Object()") !== -1) {
+                result = [];
+                for (i in value) {
+                    if (value.hasOwnProperty(i)) {
+                        result.push(value[i]);
+                    }
+                }
+                return result;
+            default:
+                return [value];
+            }
+        },
+
+        /**
+         * Присутствует ли значение в массиве
+         * (строгая проверка)
+         *
+         * @name go.Lang.inArray
+         * @public
+         * @param {mixed} needle
+         *        значение
+         * @param {Array} haystack
+         *        порядковый массив
+         * @return {Boolean}
+         *         находится ли значение в массиве
+         */
+        'inArray': function inArray(needle, haystack) {
+            var i, len;
+            if (Array.prototype.indexOf) {
+                return (Array.prototype.indexOf.call(haystack, needle) !== -1);
+            }
+            for (i = 0, len = haystack.length; i < len; i += 1) {
+                if (haystack[i] === needle) {
                     return true;
                 }
-            } catch (e) {
-                /* Host-объект в IE - не словарь */
-                return false;
             }
             return false;
+        },
+
+        /**
+         * Получить собственные ключи объекта
+         *
+         * @name go.Lang.getObjectKeys
+         * @public
+         * @param {Object} object
+         * @return {Array}
+         */
+        'getObjectKeys': function (object) {
+            var k, keys;
+            if (nativeKeys) {
+                return nativeKeys(object);
+            }
+            keys = [];
+            for (k in object) {
+                if (object.hasOwnProperty(k)) {
+                    keys.push(k);
+                }
+            }
+            return keys;
         },
 
         /**
@@ -767,10 +905,10 @@ go("Lang", function (go, global, undefined) {
          * @public
          * @param {(Object|Array)} iter
          *        итерируемый объект (или порядковый массив)
-         * @param {Function(value, key, iter)} fn
-         *        тело цикла
+         * @param {Function} fn
+         *        тело цикла (value, key, iter)
          * @param {Object} [thisArg=global]
-         *        контект, в котором следует выполнять тело цикла
+         *        контекст, в котором следует выполнять тело цикла
          * @param {Boolean} [deep=false]
          *        обходить ли прототипы
          * @return {(Object|Array)}
@@ -780,6 +918,9 @@ go("Lang", function (go, global, undefined) {
             var result, i, len;
             thisArg = thisArg || global;
             if (Lang.isArray(iter)) {
+                if (nativeMap) {
+                    return nativeMap.call(iter, fn, thisArg);
+                }
                 result = [];
                 for (i = 0, len = iter.length; i < len; i += 1) {
                     result.push(fn.call(thisArg, iter[i], i, iter));
@@ -876,212 +1017,6 @@ go("Lang", function (go, global, undefined) {
                 }
             }
             return destination;
-        },
-
-        /**
-         * Получить значение по пути внутри объекта
-         *
-         * @name go.Lang.getByPath
-         * @public
-         * @param {Object} context
-         *        объект, в котором производится поиск (не указан - глобальный)
-         * @param {(String|Array.<String>)} path
-         *        путь - массив компонентов или строка вида "one.two.three"
-         * @param [bydefault]
-         *        значение по умолчанию, если путь не найден
-         * @return {*}
-         */
-        'getByPath': function getByPath(context, path, bydefault) {
-            var len, i, p;
-            context = context || global;
-            if (typeof path !== "object") {
-                path = path.split(".");
-            }
-            for (i = 0, len = path.length; i < len; i += 1) {
-                p = path[i];
-                if (!(context && context.hasOwnProperty(p))) {
-                    return bydefault;
-                }
-                context = context[p];
-            }
-            return context;
-        },
-
-        /**
-         * Установить значение по пути внутри объекта
-         *
-         * @name go.Lang.getByPath
-         * @public
-         * @param {Object} context
-         *        целевой объект
-         * @param {(String|Array.<String>)} path
-         *        путь - массив компонентов или строка вида "one.two.three"
-         * @param {*} value
-         *        значение
-         */
-        'setByPath': function setByPath(context, path, value) {
-            var len, i, p;
-            context = context || global;
-            if (typeof path !== "object") {
-                path = path.split(".");
-            }
-            for (i = 0, len = path.length - 1; i < len; i += 1) {
-                p = path[i];
-                if (!context.hasOwnProperty(p)) {
-                    context[p] = {};
-                }
-                context = context[p];
-            }
-            context[path[path.length - 1]] = value;
-        },
-
-        /**
-         * Каррирование функции
-         *
-         * @name go.Lang.curry
-         * @public
-         * @param {Function} fn
-         *        исходная функция
-         * @param {* ...} [args]
-         *         запоминаемые аргументы
-         * @return {Function}
-         *         каррированная функция
-         */
-        'curry': function curry(fn) {
-            var slice = Array.prototype.slice,
-                cargs = slice.call(arguments, 1);
-            return function () {
-                var args = cargs.concat(slice.call(arguments));
-                return fn.apply(global, args);
-            };
-        },
-
-        /**
-         * Присутствует ли значение в массиве
-         * (строгая проверка)
-         *
-         * @name go.Lang.inArray
-         * @public
-         * @param {mixed} needle
-         *        значение
-         * @param {Array} haystack
-         *        порядковый массив
-         * @return {Boolean}
-         *         находится ли значение в массиве
-         */
-        'inArray': function inArray(needle, haystack) {
-            var i, len;
-            if (Array.prototype.indexOf) {
-                return (Array.prototype.indexOf.call(haystack, needle) !== -1);
-            }
-            for (i = 0, len = haystack.length; i < len; i += 1) {
-                if (haystack[i] === needle) {
-                    return true;
-                }
-            }
-            return false;
-        },
-
-        /**
-         * Выполнить первую корректную функцию
-         *
-         * @name go.Lang.tryDo
-         * @public
-         * @param {Array.<Function>} funcs
-         *        список функций
-         * @return {*}
-         *         результат первой корректно завершившейся
-         *         ни одна не сработала - undefined
-         */
-        'tryDo': function tryDo(funcs) {
-            var i, len, result;
-            for (i = 0, len = funcs.length; i < len; i += 1) {
-                try {
-                    return funcs[i]();
-                } catch (e) {
-                }
-            }
-            return result;
-        },
-
-        /**
-         * Разбор GET или POST запроса
-         *
-         * @name go.Lang.parseQuery
-         * @public
-         * @param {String} [query=window.location]
-         *        строка запроса
-         * @param {String} [sep="&"]
-         *        разделитель переменных
-         * @return {Object}
-         *         переменные из запроса
-         */
-        'parseQuery': function parseQuery(query, sep) {
-            var result = {}, i, len, v;
-            if (query === undefined) {
-                query = global.location.toString().split("#", 2)[0].split("?", 2)[1];
-            } else if (typeof query !== "string") {
-                return query;
-            }
-            if (!query) {
-                return result;
-            }
-            query = query.split(sep || "&");
-            for (i = 0, len = query.length; i < len; i += 1) {
-                v = query[i].split("=", 2);
-                if (v.length === 2) {
-                    result[decodeURIComponent(v[0])] = decodeURIComponent(v[1]);
-                } else {
-                    result[''] = decodeURIComponent(v[0]);
-                }
-            }
-            return result;
-        },
-
-        /**
-         * Сформировать строку запроса на основе набора переменных
-         *
-         * @name go.Lang.buildQuery
-         * @public
-         * @param {(Object|String)} vars
-         *        набор переменных (или сразу строка)
-         * @param {String} [sep="&"]
-         *        разделитель
-         * @return {String}
-         *         строка запроса
-         */
-        'buildQuery': function buildQuery(vars, sep) {
-            var query = [], buildValue, buildArray, buildDict;
-            if (typeof vars === "string") {
-                return vars;
-            }
-            buildValue = function (name, value) {
-                if (Lang.isDict(value)) {
-                    buildDict(value, name);
-                } else if (Lang.isArray(value)) {
-                    buildArray(value, name);
-                } else {
-                    query.push(name + "=" + encodeURIComponent(value));
-                }
-            };
-            buildArray = function (vars, prefix) {
-                var i, len, name;
-                for (i = 0, len = vars.length; i < len; i += 1) {
-                    name = prefix ? prefix + "[" + i + "]" : i;
-                    buildValue(name, vars[i]);
-                }
-            };
-            buildDict = function (vars, prefix) {
-                var k, name;
-                for (k in vars) {
-                    if (vars.hasOwnProperty(k)) {
-                        name = prefix ? prefix + "[" + k + "]" : k;
-                        buildValue(name, vars[k]);
-                    }
-                }
-            };
-            buildDict(vars, "");
-            return query.join(sep || "&");
         },
 
         /**

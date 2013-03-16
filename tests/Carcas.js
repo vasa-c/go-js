@@ -164,7 +164,7 @@ tests.test("Init and loading", function () {
 
     requests = [];
     carcas.init({
-        'baseDir'     : "/carcas",
+        'root'        : "/carcas",
         'registry'    : registry,
         'controllers' : ["page1", "search"],
         'libsLoader'  : otherLibsLoader
