@@ -142,11 +142,11 @@ go("Carcas", ["Class", "Ext"], function (go, global) {
         /**
          * Базовый каталог контроллеров и модулей
          *
-         * @name go.Carcas#baseDir
+         * @name go.Carcas#root
          * @protected
          * @type {String}
          */
-        'baseDir': null,
+        'root': null,
 
         /**
          * Загрузчик дополнительных библиотек
@@ -223,7 +223,7 @@ go("Carcas", ["Class", "Ext"], function (go, global) {
                 throw new go.Carcas.Exceptions.AlreadyInited();
             }
             this.inited = true;
-            this.baseDir  = params.baseDir;
+            this.root  = params.root;
             this.registry = (typeof params.registry === "object") ? params.registry : {};
             this.libsLoader = params.libsLoader;
             this.controllersList = {};
@@ -337,7 +337,7 @@ go("Carcas", ["Class", "Ext"], function (go, global) {
             default:
                 throw new Carcas.Exceptions.ErrorDependence("Error prefix in " + prefix + ":" + name);
             }
-            this.requestJSFile(this.baseDir + "/" + folder + "/" + name.replace(/\./g, "/") + ".js");
+            this.requestJSFile(this.root + "/" + folder + "/" + name.replace(/\./g, "/") + ".js");
         },
 
         /**
