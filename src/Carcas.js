@@ -198,15 +198,24 @@ go("Carcas", ["Class", "Ext"], function (go, global) {
         'loadedObjects': null,
 
         /**
-         * @constructs
-         */
-        '__construct': function () {
-        },
-
-        /**
          * @ignore
          */
         '__bind': ["includerForLoader", "creatorForLoader", "ondomload", "onload", "onunload"],
+
+        /**
+         * @constructs
+         */
+        '__construct': function () {
+            this.controllersList = {};
+            this.modulesList = {};
+            this.mo = this.modulesList;
+            this.loadedObjects = {
+                'c': {},
+                'mo': {}
+            };
+            this.loader = new go.__Loader(this.includerForLoader, this.creatorForLoader);
+        },
+
 
         /**
          * Инициализация и запуск каркаса
@@ -226,14 +235,6 @@ go("Carcas", ["Class", "Ext"], function (go, global) {
             this.root  = params.root;
             this.registry = (typeof params.registry === "object") ? params.registry : {};
             this.libsLoader = params.libsLoader;
-            this.controllersList = {};
-            this.modulesList = {};
-            this.mo = this.modulesList;
-            this.loadedObjects = {
-                'c': {},
-                'mo': {}
-            };
-            this.loader = new go.__Loader(this.includerForLoader, this.creatorForLoader);
             if (params.controllers) {
                 controllers = params.controllers;
                 if (typeof controllers === "string") {
@@ -242,6 +243,7 @@ go("Carcas", ["Class", "Ext"], function (go, global) {
                 controllers = go.Lang.each(controllers, function (c) {return "c:" + c; });
                 this.loader.include(controllers);
             }
+            this.loader.createPreloaded();
             this.setEventsListeners();
         },
 
@@ -256,23 +258,22 @@ go("Carcas", ["Class", "Ext"], function (go, global) {
          *        зависимости
          * @param {Function} CModule
          *        функция-конструктор модуля
-         * @return {Boolean}
-         *         был ли модуль создан сразу же (все зависимости есть)
          * @throws go.Carcas.Exceptions.NotInited
          * @throws go.Carcas.Exceptions.ModuleRedeclare
          */
         'module': function (name, deps, CModule) {
-            if (!this.inited) {
-                throw new go.Carcas.Exceptions.NotInited("Carcas is not inited");
-            }
-            if (this.loadedObjects.mo[name]) {
-                throw new Carcas.Exceptions.ModuleRedeclare('Module "' + name + '" redeclare');
-            }
             if (!CModule) {
                 CModule = deps;
                 deps = [];
             }
             deps = Carcas.Helpers.normalizeDeps(deps, "mo");
+            if (!this.inited) {
+                this.loader.preload("mo:" + name, deps, CModule);
+                return;
+            }
+            if (this.loadedObjects.mo[name]) {
+                throw new Carcas.Exceptions.ModuleRedeclare('Module "' + name + '" redeclare');
+            }
             this.loader.loaded("mo:" + name, deps, CModule);
         },
 
@@ -287,23 +288,22 @@ go("Carcas", ["Class", "Ext"], function (go, global) {
          *        зависимости
          * @param {Object} props
          *        поля класса контроллера (расширение go.Carcas.Controller)
-         * @return {Boolean}
-         *         был ли контроллер создан сразу же (все зависимости есть)
          * @throws go.Carcas.Exceptions.NotInited
          * @throws go.Carcas.Exceptions.ControllerRedeclare
          */
         'controller': function (name, deps, props) {
-            if (!this.inited) {
-                throw new go.Carcas.Exceptions.NotInited("Carcas is not inited");
-            }
-            if (this.loadedObjects.c[name]) {
-                throw new Carcas.Exceptions.ControllerRedeclare('Controller "' + name + '" redeclare');
-            }
             if (!props) {
                 props = deps;
                 deps = [];
             }
             deps = Carcas.Helpers.normalizeDeps(deps, "c");
+            if (!this.inited) {
+                this.loader.preload("c:" + name, deps, props);
+                return;
+            }
+            if (this.loadedObjects.c[name]) {
+                throw new Carcas.Exceptions.ControllerRedeclare('Controller "' + name + '" redeclare');
+            }
             this.loader.loaded("c:" + name, deps, props);
         },
 
