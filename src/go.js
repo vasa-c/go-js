@@ -136,6 +136,7 @@ var go = (function (global) {
                 this.includer = includer;
                 this.creator  = creator;
                 this.modules  = {};
+                this.preloaded = {};
             },
 
             /**
@@ -168,7 +169,13 @@ var go = (function (global) {
                     if (!module) {
                         module = {};
                         this.modules[name] = module;
-                        includer(name);
+                        if (this.preloaded[name]) {
+                            this.loaded.apply(this, this.preloaded[name]);
+                            module = this.modules[name];
+                            this.preloaded[name] = null;
+                        } else {
+                            includer(name);
+                        }
                     }
                     if ((!module.created) && counter) {
                         counter.inc();
@@ -218,6 +225,38 @@ var go = (function (global) {
             },
 
             /**
+             * Предварительная загрузка модуля
+             *
+             * @name go.__Loader#preload
+             * @public
+             * @param {String} name
+             * @param {Array.<String>} deps
+             * @param {*} data
+             */
+            'preload': function (name, deps, data) {
+                if (!this.preloaded.hasOwnProperty(name)) {
+                    this.preloaded[name] = [name, deps, data];
+                }
+            },
+
+            /**
+             * Создать все предварительно загруженные модули
+             *
+             * @name go.__Loader#createPreloaded
+             * @public
+             * @return void
+             */
+            'createPreloaded': function () {
+                var preloaded = this.preloaded,
+                    name;
+                for (name in preloaded) {
+                    if (preloaded[name]) {
+                        this.loaded.apply(this, preloaded[name]);
+                    }
+                }
+            },
+
+            /**
              * См. конструктор
              * @name go.__Loader#includer
              * @private
@@ -245,7 +284,19 @@ var go = (function (global) {
              * @private
              * @type {Object.<String, Object>}
              */
-            'modules': null
+            'modules': null,
+
+            /**
+             * Предзагруженные модули
+             *
+             * Имя модуля => [name, deps, data]
+             * После нормальной загрузки => null
+             *
+             * @name go.__Loader#preloaded
+             * @private
+             * @type {Object.<String, Object>}
+             */
+            'preloaded': null
         };
         return Loader;
     }());
