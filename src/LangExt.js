@@ -13,8 +13,9 @@ if (!window.go) {
 }
 
 go("LangExt", [], function (go, global, undefined) {
-
-    var Lang = go.Lang;
+    "use strict";
+    var Lang = go.Lang,
+        nativeToString = Object.prototype.toString;
 
     /**
      * Разбор GET или POST запроса
@@ -197,6 +198,200 @@ go("LangExt", [], function (go, global, undefined) {
         }
         return result;
     };
+
+    /**
+     * Является ли значение undefined
+     *
+     * @name go.Lang.isUndefined
+     * @param {*} value
+     * @return {Boolean}
+     */
+    Lang.isUndefined = function (value) {
+        return (value === undefined);
+    };
+
+    /**
+     * Является ли значение null
+     *
+     * @name go.Lang.isNull
+     * @param {*} value
+     * @return {Boolean}
+     */
+    Lang.isNull = function (value) {
+        return (value === null);
+    };
+
+    /**
+     * Является ли значение логическим
+     *
+     * @name go.Lang.isBoolean
+     * @param {*} value
+     * @return {Boolean}
+     */
+    Lang.isBoolean = function (value) {
+        return (typeof value === "boolean");
+    };
+
+    /**
+     * Является ли значение числом
+     *
+     * @name go.Lang.isNumber
+     * @param {*} value
+     * @return {Boolean}
+     */
+    Lang.isNumber = function (value) {
+        return (typeof value === "number");
+    };
+
+    /**
+     * Является ли значение строкой
+     *
+     * @name go.Lang.isString
+     * @param {*} value
+     * @return {Boolean}
+     */
+    Lang.isString = function (value) {
+        return (typeof value === "string");
+    };
+
+    /**
+     * Является ли значение функцией
+     *
+     * @name go.Lang.isFunction
+     * @param {*} value
+     * @return {Boolean}
+     */
+    if ((global.alert) && (typeof global.alert !== "function")) {
+        Lang.isFunction = function (value) { // for IE<9
+            if (typeof value === "function") {
+                return true;
+            }
+            return ((value + ":").indexOf("[native code]") !== -1);
+        };
+    } else {
+        Lang.isFunction = function (value) {
+            return (nativeToString.call(value) === "[object Function]");
+        };
+    }
+
+    /**
+     * Является ли значение объектом исключения
+     *
+     * @name go.Lang.isError
+     * @param {*} value
+     * @return {Boolean}
+     */
+    Lang.isError = function (value) {
+        if (nativeToString.call(value) === "[object Error]") {
+            return true;
+        }
+        return value instanceof global.Error;
+    };
+
+    /**
+     * Является ли значение датой
+     *
+     * @name go.Lang.isDate
+     * @param {*} value
+     * @return {Boolean}
+     */
+    Lang.isDate = function (value) {
+        return (nativeToString.call(value) === "[object Date]");
+    };
+
+    if (nativeToString.call(arguments) === "[object Arguments]") {
+        /**
+         * Является ли значение DOM-элементом
+         *
+         * @name go.Lang.isElement
+         * @param {*} value
+         * @return {Boolean}
+         */
+        Lang.isElement = function (value) {
+            return (nativeToString.call(value).indexOf("[object HTML") === 0) && (!Lang.isCollection(value));
+        };
+
+        /**
+         * Является ли значение текстовой нодой
+         *
+         * @name go.Lang.isTextnode
+         * @param {*} value
+         * @return {Boolean}
+         */
+        Lang.isTextnode = function (value) {
+            return (nativeToString.call(value) === "[object Text]");
+        };
+
+        /**
+         * Является ли значение HTML-коллекцией
+         *
+         * @name go.Lang.isCollection
+         * @param {*} value
+         * @return {Boolean}
+         */
+        Lang.isCollection = function (value) {
+            return Lang.inArray(nativeToString.call(value), [
+                "[object HTMLCollection]",
+                "[object NodeList]",
+                "[object HTMLAllCollection]"
+            ]);
+        };
+
+        /**
+         * Является ли значение объектом arguments
+         *
+         * @name go.Lang.is
+         * @param {*} value
+         * @return {Boolean}
+         */
+        Lang.isArguments = function (value) {
+            return (nativeToString.call(value) === "[object Arguments]");
+        };
+    } else {
+        Lang.isElement = function (value) {
+            return (value && (typeof value === "object") && (value.nodeType === 1));
+        };
+
+        Lang.isTextnode = function (value) {
+            return (value && (typeof value === "object") && (value.nodeType === 3));
+        };
+
+        Lang.isCollection = function (value) {
+            var k;
+            if ((!value) || (typeof value !== "object")) {
+                return false;
+            }
+            if (!value.item) {
+                return false;
+            }
+            /*jslint forin: true */
+            for (k in value) {
+                if (k === "item") {
+                    return false;
+                }
+            }
+            /*jslint forin: false */
+            return true;
+        };
+
+        Lang.isArguments = function (value) {
+            var k;
+            if ((!value) || (typeof value !== "object")) {
+                return false;
+            }
+            if ((typeof value.length !== "number") || (value.item) || (value.slice)) {
+                return false;
+            }
+            /*jslint forin: true */
+            for (k in value) {
+                if (k === "length") {
+                    return false;
+                }
+            }
+            /*jslint forin: false */
+            return true;
+        };
+    }
 
     return true;
 });

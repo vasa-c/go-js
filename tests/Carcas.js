@@ -231,6 +231,52 @@ tests.test("Init and loading", function () {
 
 });
 
+tests.test("preload", function () {
+
+    var TestCarcas, carcas;
+
+    TestCarcas = go.Class(go.Carcas, {
+        /**
+         * @override
+         */
+        'requestJSFile': function (filename) {
+
+        }
+    });
+
+    carcas = new TestCarcas();
+
+    carcas.module("one", ["three"], function () {return {};});
+    carcas.module("two", ["three"], function () {return {};});
+    carcas.module("three", [], function () {return {'n': 3};});
+    carcas.module("four", ["five"], function () {return {};}); // не запрашивается из init()
+    carcas.module("five", [], function () {return {'tfive': true};});
+
+    carcas.controller("page1", ["layouts.main", "mo:one"], {});
+    carcas.controller("layouts.main", ["layouts.xhtml", "mo:two"], {});
+    carcas.controller("layouts.xhtml", ["mo:one"], {'this_xhtml': true});
+
+    deepEqual(carcas.controllersList, {});
+    deepEqual(carcas.modulesList, {});
+
+    carcas.init({
+        'root': "/js/carcas",
+        'controllers': ["page1"]
+    });
+
+    ok(carcas.controllersList.page1);
+    ok(carcas.controllersList.layouts.xhtml);
+    ok(carcas.controllersList.layouts.xhtml.this_xhtml);
+
+    ok(carcas.mo.one);
+    ok(!carcas.mo.one.n);
+    ok(carcas.mo.three);
+    equal(carcas.mo.three.n, 3);
+    ok(carcas.mo.four);
+    ok(carcas.mo.five);
+    ok(carcas.mo.five.tfive);
+});
+
 tests.test("Create parent module (controller)", function () {
 
     var carcas, logs = [], expected;
@@ -415,15 +461,6 @@ tests.test("Exceptions", function () {
         },
         go.Carcas.Exceptions.AlreadyInited,
         "Already inited"
-    );
-
-    throws(
-        function () {
-            var carcas = new go.Carcas();
-            carcas.controller("test", {});
-        },
-        go.Carcas.Exceptions.NotInited,
-        "Not inited"
     );
 
     throws(

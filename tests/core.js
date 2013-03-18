@@ -106,3 +106,80 @@ tests.test("go.__Loader", function () {
     equal(modules.eight, 8);
     equal(listvar, 1);
 });
+
+tests.test("go.__Loader (preload)", function () {
+
+    /*
+     * one
+     * two (one)
+     * three (one)
+     * four (two)
+     * five (two)
+     * seven (six) - дополнительные
+     */
+
+    var loader,
+        includer,
+        creator,
+        modules = {};
+
+    includer = function (name) {
+        includer.L.push(name);
+    };
+
+    creator = function (name, data) {
+        creator.L.push(name);
+        modules[name] = data;
+    };
+
+    includer.L = [];
+    creator.L = [];
+
+    loader = new go.__Loader(includer, creator);
+
+    loader.preload("seven", ["six"], 7);
+    loader.preload("six", [], 6);
+    loader.preload("five", ["two"], 5);
+    loader.preload("four", ["two"], 4);
+    loader.preload("two", ["one"], 2);
+
+    deepEqual(includer.L, []);
+    deepEqual(creator.L, []);
+    deepEqual(modules, {});
+
+    loader.include(["three", "four", "five"]);
+    deepEqual(includer.L, ["three", "one"]);
+    deepEqual(creator.L, []);
+
+    includer.L = [];
+    loader.loaded("three", ["one"], 3);
+    deepEqual(includer.L, []);
+    deepEqual(creator.L, []);
+
+    includer.L = [];
+    loader.loaded("one", [], 1);
+    deepEqual(includer.L, []);
+    deepEqual(creator.L, ["one", "two", "four", "five", "three"]);
+    deepEqual(modules, {
+        'one': 1,
+        'two': 2,
+        'three': 3,
+        'four': 4,
+        'five': 5
+    });
+
+    includer.L = [];
+    creator.L = [];
+    loader.createPreloaded();
+    deepEqual(includer.L, []);
+    deepEqual(creator.L, ["six", "seven"]);
+    deepEqual(modules, {
+        'one': 1,
+        'two': 2,
+        'three': 3,
+        'four': 4,
+        'five': 5,
+        'six': 6,
+        'seven': 7
+    });
+});

@@ -332,6 +332,8 @@ tests.test("isDict", function () {
         /* Для IE < 9 не сработает */
         rproto = (function () {var C = function () {}; C.prototype={'x': 5}; return (new C());})();
         ok(!go.Lang.isDict(rproto), "replace proto");
+        rproto = "(function () {var C = function () {}; C.prototype={'x': 5}; return (new C());})()";
+        ok(!go.Lang.isDict(iframe.contentWindow.getResult(rproto)), "replace proto and iframe");
     }
 });
 
