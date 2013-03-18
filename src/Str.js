@@ -12,12 +12,13 @@ if (!window.go) {
     throw new Error("go.core is not found");
 }
 
+/*jslint unparam: true */
 /**
  * @namespace go.Str
  */
-go("Str", function () {
+go("Str", function (go, global, undefined) {
     "use strict";
-
+    /*jslint unparam: false */
     var Str = {},
         nativeProto = String.prototype,
         nativeTrim = nativeProto.trim,
@@ -120,6 +121,55 @@ go("Str", function () {
         }
     };
 
+    /**
+     * Повторить строку нужное количество раз
+     *
+     * @name go.Str.repeat
+     * @public
+     * @param {String} str
+     * @param {Number} count
+     * @return {String}
+     */
+    Str.repeat = function repeat(str, count) {
+        return (new global.Array(count + 1)).join(str);
+    };
+
+    /**
+     * Выровнять строку по фиксированному блоку
+     *
+     * @name go.Str.align
+     * @public
+     * @param {String} s
+     *        исходная строка
+     * @param {Number} size
+     *        размер блока
+     * @param {String} [pos]
+     *        выравнивание ("left", "right", "center") по умолчанию "left"
+     * @param {String} [fill]
+     *        заполнитель
+     * @return {String}
+     *         выровненная строка
+     */
+    Str.align = function align(s, size, pos, fill) {
+        var len = s.length;
+        if (len >= size) {
+            return s;
+        }
+        pos = pos || "left";
+        fill = fill || " ";
+        switch (pos) {
+        case "left":
+            return [s, Str.repeat(fill, size - len)].join("");
+        case "right":
+            return [Str.repeat(fill, size - len), s].join("");
+        case "center":
+            len = size - len;
+            pos = Math.round(len / 2);
+            return [Str.repeat(fill, pos), s, Str.repeat(fill, len - pos)].join("");
+        default:
+            return s;
+        }
+    };
 
     return Str;
 });

@@ -61,3 +61,19 @@ tests.test("isNumeric", function () {
     ok(!go.Str.isNumeric(undefined));
     ok(!go.Str.isNumeric({}));
 });
+
+tests.test("repeat", function () {
+    equal(go.Str.repeat("1", 10), "1111111111");
+    equal(go.Str.repeat("x-", 3), "x-x-x-");
+    equal(go.Str.repeat("x-", 0), "");
+});
+
+tests.test("align", function () {
+    equal(go.Str.align("String", 10), "String    ");
+    equal(go.Str.align("String", 3), "String");
+    equal(go.Str.align("String", 10, "left"), "String    ");
+    equal(go.Str.align("String", 10, "right"), "    String");
+    equal(go.Str.align("String", 10, "center"), "  String  ");
+    equal(go.Str.align("String", 11, "center").length, 11);
+    equal(go.Str.align("String", 10, "center", "-"), "--String--");
+});
