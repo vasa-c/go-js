@@ -202,5 +202,52 @@ go("Str", function (go, global, undefined) {
         return number + decPoint;
     };
 
+    /**
+     * Экранирование html-кода
+     *
+     * @name go.Str.html
+     * @public
+     * @param {String} plain
+     * @return {String}
+     */
+    Str.html = function html(plain) {
+        var spec = [
+                ["&", "&amp;"],
+                ["<", "&lt;"],
+                [">", "&gt;"],
+                ['"', "&quot;"],
+                ["'", "&#039;"]
+            ],
+            len = spec.length,
+            i,
+            reg;
+        for (i = 0; i < len; i += 1) {
+            reg = new RegExp(spec[i][0], "g");
+            plain = plain.replace(reg, spec[i][1]);
+        }
+        return plain;
+    };
+
+    /**
+     * Перевод html в простой текст
+     *
+     * @name go.Str.htmlDecode
+     * @public
+     * @param {String} html
+     * @return {String}
+     */
+    Str.htmlDecode = function htmlDecode(html) {
+        var d;
+        if (html.length === 0) {
+            return "";
+        }
+        if (!global.document) {
+            return html;
+        }
+        d = global.document.createElement("div");
+        d.innerHTML = html;
+        return d.firstChild.nodeValue || "";
+    };
+
     return Str;
 });

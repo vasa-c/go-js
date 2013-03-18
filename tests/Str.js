@@ -87,3 +87,15 @@ tests.test("numberFormat", function () {
     equal(go.Str.numberFormat(1000000, 2), "1,000,000.00");
     equal(go.Str.numberFormat(1000000, 2, ",", " "), "1 000 000,00");
 });
+
+tests.test("html/htmlDecode", function () {
+
+    var plain = 'This is <div class="div">tag\' & quot</div>',
+        html  = 'This is &lt;div class=&quot;div&quot;&gt;tag&#039; &amp; quot&lt;/div&gt;';
+
+    equal(go.Str.html(plain), html);
+    equal(go.Str.htmlDecode(html), plain);
+    equal(go.Str.htmlDecode(""), "");
+    equal(go.Str.htmlDecode("<hr />"), "");
+
+});
