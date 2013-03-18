@@ -11,7 +11,7 @@
 
 tests.module("Str");
 
-tests.test("trim, ltrim, rtrim", function () {
+tests.test("trim, trimLeft, rtrimRight", function () {
     var s1 = "one two three",
         s2 = "русский",
         s3 = "  \t  one two  \t\n",
