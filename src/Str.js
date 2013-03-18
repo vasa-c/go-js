@@ -180,6 +180,7 @@ go("Str", function (go, global, undefined) {
      * @param {Number} decimal [optional=0]
      * @param {String} decPoint [optional="."]
      * @param {String} thSep [optional=","]
+     * @return {String}
      */
     Str.numberFormat = function numberFormat(number, decimal, decPoint, thSep) {
         var i, len, parts, j;
@@ -191,7 +192,7 @@ go("Str", function (go, global, undefined) {
             parts = [];
             j = len - Math.floor(len / 3) * 3;
             if (j > 0) {
-                parts.push(number.slice(0, i));
+                parts.push(number.slice(0, j));
             }
             for (i = j; i < len; i += 3) {
                 parts.push(number.slice(i, i + 3));

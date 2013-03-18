@@ -81,9 +81,9 @@ tests.test("align", function () {
 tests.test("numberFormat", function () {
     equal(go.Str.numberFormat(10), "10");
     equal(go.Str.numberFormat(1000000), "1,000,000");
-    equal(go.Str.numberFormat(10000000), "10,000,000");
-    equal(go.Str.numberFormat(100000000), "100,000,000");
-    equal(go.Str.numberFormat(1000000000), "1,000,000,000");
+    equal(go.Str.numberFormat(12345678), "12,345,678");
+    equal(go.Str.numberFormat(123456789), "123,456,789");
+    equal(go.Str.numberFormat(1234567890), "1,234,567,890");
     equal(go.Str.numberFormat(1000000, 2), "1,000,000.00");
     equal(go.Str.numberFormat(1000000, 2, ",", " "), "1 000 000,00");
 });
