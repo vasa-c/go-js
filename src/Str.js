@@ -42,7 +42,6 @@ go("Str", function () {
         };
     }
 
-
     /**
      * Обрезка левых пробелов
      *
@@ -78,6 +77,48 @@ go("Str", function () {
             return s.replace(/\s+$/, "");
         };
     }
+
+    /**
+     * Является ли значение числом или строковым представлением числа
+     *
+     * @name go.Str.isNumeric
+     * @public
+     * @param {(String|Number)} value
+     *        исходное число или его строковое представление
+     * @param {Boolean} [float]
+     *        число может быть дробным (по умолчанию нет)
+     * @param {Boolean} [signed]
+     *        число может быть меньше нуля (по умолчанию нет)
+     * @return {Boolean}
+     *         является ли значение числом требуемого вида
+     */
+    Str.isNumeric = function isNumeric(value, float, signed) {
+        var n;
+        switch (typeof value) {
+        case "string":
+            if (!float) {
+                n = parseInt(value, 10);
+                if (n.toString() !== value) {
+                    return false;
+                }
+                return (signed || (n >= 0));
+            }
+            if (value >= 0) {
+                return true;
+            }
+            return (signed && (value < 0));
+        case "number":
+            if ((value === Number.POSITIVE_INFINITY) || (value === Number.NEGATIVE_INFINITY)) {
+                return false;
+            }
+            if ((!float) && (Math.round(value) !== value)) {
+                return false;
+            }
+            return (signed || (value >= 0));
+        default:
+            return false;
+        }
+    };
 
 
     return Str;
