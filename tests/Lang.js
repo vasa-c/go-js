@@ -153,7 +153,8 @@ tests.test("getType", function () {
         span,
         collection,
         ConstructorEObject,
-        instance;
+        instance,
+        w = window; // jslint не любит new Number() и подобное
 
     equal(go.Lang.getType(undef), "undefined", "undefined");
 
@@ -166,15 +167,15 @@ tests.test("getType", function () {
     equal(go.Lang.getType(Number["NaN"]), "number", "NaN");
     equal(go.Lang.getType(Number.NEGATIVE_INFINITY), "number", "-Infinity");
     equal(go.Lang.getType(Number.POSITIVE_INFINITY), "number", "+Infinity");
-    equal(go.Lang.getType(new Number(3)), "number", "object Number");
+    equal(go.Lang.getType(new w.Number(3)), "number", "object Number");
 
     equal(go.Lang.getType(true), "boolean", "true boolean");
     equal(go.Lang.getType(false), "boolean", "false boolean");
-    equal(go.Lang.getType(new Boolean(true)), "boolean", "object Boolean");
+    equal(go.Lang.getType(new w.Boolean(true)), "boolean", "object Boolean");
 
     equal(go.Lang.getType("string"), "string", "string");
     equal(go.Lang.getType(""), "string", "empty string");
-    equal(go.Lang.getType(new String("string")), "string", "object String");
+    equal(go.Lang.getType(new w.String("string")), "string", "object String");
 
     equal(go.Lang.getType(function () {return true; }), "function", "user function");
     equal(go.Lang.getType(Math.floor), "function", "built-in function");
@@ -186,7 +187,7 @@ tests.test("getType", function () {
     /*jslint evil: false */
 
     equal(go.Lang.getType([1, 2, 3]), "array", "literal array");
-    equal(go.Lang.getType(new Array(1, 2, 3)), "array", "new Array");
+    equal(go.Lang.getType(new w.Array(1, 2, 3)), "array", "new Array");
     equal(go.Lang.getType([]), "array", "empty Array");
 
     equal(go.Lang.getType(/\s/), "regexp", "literal RegExp");
@@ -216,7 +217,7 @@ tests.test("getType", function () {
     equal(go.Lang.getType(arguments), "arguments", "arguments object");
 
     equal(go.Lang.getType({'x': 5}), "object", "simple dict (literal)");
-    equal(go.Lang.getType(new Object()), "object", "simple dict (new Object)");
+    equal(go.Lang.getType(new w.Object()), "object", "simple dict (new Object)");
 
     ConstructorEObject = function (x) {
         this.x = x;
@@ -305,7 +306,7 @@ tests.test("toArray", function () {
     deepEqual(toArray(undefined), [], "null");
     deepEqual(toArray(undefined), [], "undefined");
 
-    value = (function () {return new (function () {})(); }());
+    value = (function () {var C = function () {}; return new C(); }());
     deepEqual(toArray(value), [value], "object (no dict)");
 });
 
@@ -330,7 +331,11 @@ tests.test("isDict", function () {
 
     if (Object.getPrototypeOf) {
         /* Для IE < 9 не сработает */
-        rproto = (function () {var C = function () {}; C.prototype={'x': 5}; return (new C());})();
+        rproto = (function () {
+            var C = function () {};
+            C.prototype = {'x': 5};
+            return (new C());
+        }());
         ok(!go.Lang.isDict(rproto), "replace proto");
         rproto = "(function () {var C = function () {}; C.prototype={'x': 5}; return (new C());})()";
         ok(!go.Lang.isDict(iframe.contentWindow.getResult(rproto)), "replace proto and iframe");
