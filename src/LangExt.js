@@ -206,7 +206,7 @@ go("LangExt", [], function (go, global, undefined) {
      * @param {*} value
      * @return {Boolean}
      */
-    Lang.isUndefined = function (value) {
+    Lang.isUndefined = function isUndefined(value) {
         return (value === undefined);
     };
 
@@ -217,7 +217,7 @@ go("LangExt", [], function (go, global, undefined) {
      * @param {*} value
      * @return {Boolean}
      */
-    Lang.isNull = function (value) {
+    Lang.isNull = function isNull(value) {
         return (value === null);
     };
 
@@ -228,7 +228,7 @@ go("LangExt", [], function (go, global, undefined) {
      * @param {*} value
      * @return {Boolean}
      */
-    Lang.isBoolean = function (value) {
+    Lang.isBoolean = function isBoolean(value) {
         return (typeof value === "boolean");
     };
 
@@ -239,7 +239,7 @@ go("LangExt", [], function (go, global, undefined) {
      * @param {*} value
      * @return {Boolean}
      */
-    Lang.isNumber = function (value) {
+    Lang.isNumber = function isNumber(value) {
         return (typeof value === "number");
     };
 
@@ -250,7 +250,7 @@ go("LangExt", [], function (go, global, undefined) {
      * @param {*} value
      * @return {Boolean}
      */
-    Lang.isString = function (value) {
+    Lang.isString = function isString(value) {
         return (typeof value === "string");
     };
 
@@ -269,7 +269,7 @@ go("LangExt", [], function (go, global, undefined) {
             return ((value + ":").indexOf("[native code]") !== -1);
         };
     } else {
-        Lang.isFunction = function (value) {
+        Lang.isFunction = function isFunction(value) {
             return (nativeToString.call(value) === "[object Function]");
         };
     }
@@ -281,7 +281,7 @@ go("LangExt", [], function (go, global, undefined) {
      * @param {*} value
      * @return {Boolean}
      */
-    Lang.isError = function (value) {
+    Lang.isError = function isError(value) {
         if (nativeToString.call(value) === "[object Error]") {
             return true;
         }
@@ -295,7 +295,7 @@ go("LangExt", [], function (go, global, undefined) {
      * @param {*} value
      * @return {Boolean}
      */
-    Lang.isDate = function (value) {
+    Lang.isDate = function isDate(value) {
         return (nativeToString.call(value) === "[object Date]");
     };
 
@@ -307,7 +307,7 @@ go("LangExt", [], function (go, global, undefined) {
          * @param {*} value
          * @return {Boolean}
          */
-        Lang.isElement = function (value) {
+        Lang.isElement = function isElement(value) {
             return (nativeToString.call(value).indexOf("[object HTML") === 0) && (!Lang.isCollection(value));
         };
 
@@ -318,7 +318,7 @@ go("LangExt", [], function (go, global, undefined) {
          * @param {*} value
          * @return {Boolean}
          */
-        Lang.isTextnode = function (value) {
+        Lang.isTextnode = function isTextnode(value) {
             return (nativeToString.call(value) === "[object Text]");
         };
 
@@ -329,7 +329,7 @@ go("LangExt", [], function (go, global, undefined) {
          * @param {*} value
          * @return {Boolean}
          */
-        Lang.isCollection = function (value) {
+        Lang.isCollection = function isCollection(value) {
             return Lang.inArray(nativeToString.call(value), [
                 "[object HTMLCollection]",
                 "[object NodeList]",
@@ -344,7 +344,7 @@ go("LangExt", [], function (go, global, undefined) {
          * @param {*} value
          * @return {Boolean}
          */
-        Lang.isArguments = function (value) {
+        Lang.isArguments = function isArguments(value) {
             return (nativeToString.call(value) === "[object Arguments]");
         };
     } else {
