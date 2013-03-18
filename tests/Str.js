@@ -77,3 +77,13 @@ tests.test("align", function () {
     equal(go.Str.align("String", 11, "center").length, 11);
     equal(go.Str.align("String", 10, "center", "-"), "--String--");
 });
+
+tests.test("numberFormat", function () {
+    equal(go.Str.numberFormat(10), "10");
+    equal(go.Str.numberFormat(1000000), "1,000,000");
+    equal(go.Str.numberFormat(10000000), "10,000,000");
+    equal(go.Str.numberFormat(100000000), "100,000,000");
+    equal(go.Str.numberFormat(1000000000), "1,000,000,000");
+    equal(go.Str.numberFormat(1000000, 2), "1,000,000.00");
+    equal(go.Str.numberFormat(1000000, 2, ",", " "), "1 000 000,00");
+});
