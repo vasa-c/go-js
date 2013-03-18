@@ -789,42 +789,48 @@ go("Lang", function (go, global, undefined) {
          *         является ли значение простым словарём
          */
         'isDict': function isDict(value) {
-            if (!value) {
+            if ((!value) || (typeof value !== "object")) {
+                /* Сразу отсеить по typeof. (!value) требуется, так как typeof null === "object" */
                 return false;
             }
-            if (value.constructor === nativeObject) {
-                if (nativeGetPrototypeOf && (nativeGetPrototypeOf(value) !== nativeObject.prototype)) {
+
+            if (value.constructor === Object) {
+                if (Object.getPrototypeOf && (Object.getPrototypeOf(value) !== Object.prototype)) {
                     /* Случай с переопределённым прототипом и не восстановленным constructor */
                     return false;
                 }
                 return true;
             }
-            if (value instanceof nativeObject) {
+
+            if (value instanceof Object) {
                 /* value из нашего фрейма, значит constructor должен был быть Object */
                 return false;
             }
-            /**
-             * Для всех нормальных браузеров дальше достаточно сравнить value.constructor.name === "Object"
-             *
-             * Для IE приходится измываться, так как там нет constructor.name.
-             * Более того, при попытке доступа к свойствам constructor, IE даже может выкидывать исключения для host-объектов
-             */
-            try {
-                if (!value.constructor) {
+            if (Object.getPrototypeOf) {
+                /* value не из нашего фрейма, можно выкрутиться с помощью getPrototypeOf, так как у прототипа объекта прототип - null */
+                value = Object.getPrototypeOf(value);
+                if (!value) {
                     return false;
                 }
-                if (value.constructor.name !== undefined) {
-                    if (value.constructor.name === "Object") {
-                        return true;
-                    }
-                } else if ((value.constructor + ":").indexOf("function Object()") !== -1) {
-                    /* Нет name - IE. Более того, в IE даже toString() может не быть */
-                    return true;
-                }
+                return (Object.getPrototypeOf(value) === null);
+            }
+
+            /**
+             * Все нормальные браузеры на этот момент уже определились.
+             * Остались только IE<9 и значения пришедшие из фреймов.
+             * Пытаемся определить по имени конструктора.
+             *
+             * В IE нет constructor.name, приходится заниматься разбором строкового представления.
+             * toString() тоже может не быть, да ещё и могут выбрасываться исключения.
+             *
+             * Определить объект с уничтоженным прототипом в IE<9 не получается.
+             */
+            try {
+                return ((value.constructor + ":").indexOf("function Object()") !== -1);
             } catch (e) {
-                /* Исключение - host-объект в старом IE */
                 return false;
             }
+
             return false;
         },
 
