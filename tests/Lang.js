@@ -575,9 +575,30 @@ tests.test("inArray", function () {
 
 tests.test("go.Lang.f", function () {
 
+    var fonce, obj, fcomp;
+
     equal(go.Lang.f.empty());
     equal(go.Lang.f.ffalse(), false);
+    equal(go.Lang.f.ftrue(), true);
+    equal(go.Lang.f.identity(123), 123);
 
+    fonce = function (x) {this.i += x; return this.i; };
+    obj = {
+        'i': 3
+    };
+    fonce = go.Lang.f.once(fonce, obj);
+    equal(fonce(5), 8);
+    equal(obj.i, 8);
+    equal(fonce(4), 8);
+    equal(obj.i, 8);
+
+    obj.i = 10;
+    fcomp = go.Lang.f.compose([
+        function (x, y) {return x + ":" + y + ":" + this.i; },
+        function (value) {return "two:" + value; },
+        function (value) {return value + ":three"; }
+    ], obj);
+    equal(fcomp(1, 2), "two:1:2:10:three");
 });
 
 tests.test("go.Lang.Exception", function () {

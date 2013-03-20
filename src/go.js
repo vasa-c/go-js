@@ -250,8 +250,10 @@ var go = (function (global) {
                 var preloaded = this.preloaded,
                     name;
                 for (name in preloaded) {
-                    if (preloaded[name]) {
-                        this.loaded.apply(this, preloaded[name]);
+                    if (preloaded.hasOwnProperty(name)) {
+                        if (preloaded[name]) {
+                            this.loaded.apply(this, preloaded[name]);
+                        }
                     }
                 }
             },
@@ -795,7 +797,7 @@ go("Lang", function (go, global, undefined) {
             }
 
             if (value.constructor === Object) {
-                if (Object.getPrototypeOf && (Object.getPrototypeOf(value) !== Object.prototype)) {
+                if (nativeGetPrototypeOf && (nativeGetPrototypeOf(value) !== Object.prototype)) {
                     /* Случай с переопределённым прототипом и не восстановленным constructor */
                     return false;
                 }
@@ -806,7 +808,7 @@ go("Lang", function (go, global, undefined) {
                 /* value из нашего фрейма, значит constructor должен был быть Object */
                 return false;
             }
-            if (Object.getPrototypeOf) {
+            if (nativeGetPrototypeOf) {
                 /* value не из нашего фрейма, можно выкрутиться с помощью getPrototypeOf, так как у прототипа объекта прототип - null */
                 value = Object.getPrototypeOf(value);
                 if (!value) {
@@ -1101,6 +1103,78 @@ go("Lang", function (go, global, undefined) {
              */
             'ffalse': function () {
                 return false;
+            },
+
+            /**
+             * Функция, просто возвращающая TRUE
+             *
+             * @name go.Lang.f.ftrue
+             * @public
+             * @return {Boolean}
+             */
+            'ftrue': function () {
+                return true;
+            },
+
+            /**
+             * Функция, возвращающая полученное значение
+             *
+             * @name go.Lang.f.identity
+             * @public
+             * @param {*} value
+             * @return {*}
+             */
+            'identity': function (value) {
+                return value;
+            },
+
+            /**
+             * Возвращает функцию, которая будет вызвана только один раз
+             *
+             * @name go.Lang.f.once
+             * @public
+             * @param {Function} f
+             *        исходная функция
+             * @param {Object} [context]
+             *        контекст, в котором следует вызывать f
+             * @return {Function}
+             */
+            'once': function (f, context) {
+                var called = false, result;
+                return function () {
+                    if (called) {
+                        return result;
+                    }
+                    result = f.apply(context, arguments);
+                    called = true;
+                    return result;
+                };
+            },
+
+            /**
+             * Композиция функций
+             *
+             * @example f = compose([f1, f2, f3]); f(value); // (f1(f2(f3(value)))
+             *
+             * @name go.Lang.f.compose
+             * @public
+             * @param {Array} funcs
+             * @param {Object} [context]
+             * @return {Function}
+             */
+            'compose': function (funcs, context) {
+                var len = funcs.length;
+                if (len === 0) {
+                    return Lang.f.identity;
+                }
+                return function () {
+                    var i, value;
+                    value = funcs[0].apply(context, arguments);
+                    for (i = 1; i < len; i += 1) {
+                        value = funcs[i].call(context, value);
+                    }
+                    return value;
+                };
             }
         },
 
