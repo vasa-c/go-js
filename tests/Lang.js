@@ -575,7 +575,7 @@ tests.test("inArray", function () {
 
 tests.test("go.Lang.f", function () {
 
-    var fonce, obj, fcomp;
+    var fonce, obj, fcomp, Singleton, instance;
 
     equal(go.Lang.f.empty());
     equal(go.Lang.f.ffalse(), false);
@@ -586,11 +586,23 @@ tests.test("go.Lang.f", function () {
     obj = {
         'i': 3
     };
-    fonce = go.Lang.f.once(fonce, obj);
-    equal(fonce(5), 8);
+    obj.fonce = go.Lang.f.once(fonce);
+    equal(obj.fonce(5), 8);
     equal(obj.i, 8);
-    equal(fonce(4), 8);
+    equal(obj.fonce(4), 8);
     equal(obj.i, 8);
+
+    Singleton = function () {
+        this.x = 1;
+        this.y = 2;
+        return this;
+    };
+
+    Singleton = go.Lang.f.once(Singleton);
+
+    instance = new Singleton();
+    equal(instance.y, 2);
+    equal(new Singleton(), instance);
 
     obj.i = 10;
     fcomp = go.Lang.f.compose([

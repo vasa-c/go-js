@@ -1135,17 +1135,15 @@ go("Lang", function (go, global, undefined) {
              * @public
              * @param {Function} f
              *        исходная функция
-             * @param {Object} [context]
-             *        контекст, в котором следует вызывать f
              * @return {Function}
              */
-            'once': function (f, context) {
+            'once': function (f) {
                 var called = false, result;
                 return function () {
                     if (called) {
                         return result;
                     }
-                    result = f.apply(context, arguments);
+                    result = f.apply((this || global), arguments);
                     called = true;
                     return result;
                 };
