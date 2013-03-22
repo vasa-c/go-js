@@ -681,21 +681,21 @@ tests.test("go.Lang.Exception", function () {
 
     try {
         throw new NotBaseError("Not base error");
-    } catch (e) {
-        ok(!(e instanceof go.Lang.Exception), "Inherit bypass go.Exception");
-        ok(e instanceof TypeError, "Inherit bypass go.Exception");
+    } catch (e2) {
+        ok(!(e2 instanceof go.Lang.Exception), "Inherit bypass go.Exception");
+        ok(e2 instanceof TypeError, "Inherit bypass go.Exception");
     }
 
     try {
         throw new DefMessageError();
-    } catch (e) {
-        equal(e.message, "default message", "Default message");
+    } catch (e3) {
+        equal(e3.message, "default message", "Default message");
     }
 
     try {
         throw new DefMessageError("not default message");
-    } catch (e) {
-        equal(e.message, "not default message", "Not default message");
+    } catch (e4) {
+        equal(e4.message, "not default message", "Not default message");
     }
 });
 

@@ -1098,11 +1098,11 @@ go("Lang", function (go, global, undefined) {
                 Fake;
             nativeCreate = nativeObject.create;
             if (!nativeCreate) {
-                 Fake = function () {};
+                Fake = function () {};
             }
             inherit = function (Constr, parent, extend) {
                 var proto;
-                Constr = Constr || (function EmptyConstructor() {});
+                Constr = Constr || function EmptyConstructor() {};
                 parent = parent || nativeObject;
                 if (nativeCreate) {
                     proto = nativeCreate(parent.prototype);
@@ -1218,85 +1218,76 @@ go("Lang", function (go, global, undefined) {
             }
         },
 
-        /**
-         * @class go.Lang.Exception
-         *        пользовательские "классы" исключений
-         * @alias go.Lang.Exception.Base
-         * @augments Error
-         */
-        'Exception': (function () {
-
-            var Base,
-                create,
-                isFileName = (Error.prototype.fileName !== undefined), // Firefox
-                Fake = function () {};
-
-            /**
-             * Создание пользовательского "класса" исключения
-             *
-             * @name go.Lang.Exception.create
-             * @param {String} name
-             *        название класса
-             * @param {Function} [parent]
-             *        родительский класс (конструктор), по умолчанию - go.Exception
-             * @param {String} [defmessage]
-             *        сообщение по умолчанию
-             * @return {Function}
-             *         конструктор пользовательского исключения
-             */
-            create = function (name, parent, defmessage) {
-                var Exception,
-                    proto,
-                    regexp;
-
-                parent = parent || Base;
-                defmessage = defmessage || "";
-
-                Exception = function Exception(message) {
-                    var e = new Error(),
-                        matches;
-                    this.stack = e.stack;
-                    this.name    = name;
-                    this.message = (message !== undefined) ? message : defmessage;
-                    if (isFileName) {
-                        if (!regexp) {
-                            regexp = new RegExp("^.*\n.*@(.*):(.*)\n");
-                        }
-                        matches = regexp.exec(e.stack + "\n");
-                        if (matches) {
-                            this.fileName = matches[1];
-                            this.lineNumber = parseInt(matches[2], 10);
-                        }
-                    }
-                };
-                if (Object.create) {
-                    proto = Object.create(parent.prototype);
-                } else {
-                    Fake.prototype = parent.prototype;
-                    proto = new Fake();
-                }
-                proto.constructor = Exception;
-                Exception.prototype = proto;
-
-                return Exception;
-            };
-
-            /**
-             * @class go.Lang.Exception.Base
-             *        базовый "класс" исключений внутри библиотеки
-             * @augments Error
-             */
-            Base = create("go.Exception", Error);
-            Base.Base = Base;
-            Base.create = create;
-
-            return Base;
-        }()),
-
         'Listeners': go.__Loader.Listeners,
 
         'eoc': null
     };
+
+    /**
+     * @class go.Lang.Exception
+     *        пользовательские "классы" исключений
+     * @alias go.Lang.Exception.Base
+     * @augments Error
+     */
+    Lang.Exception = (function () {
+
+        var Base,
+            create,
+            isFileName = (Error.prototype.fileName !== undefined), // Firefox
+            inherit = Lang.inherit;
+
+        /**
+         * Создание пользовательского "класса" исключения
+         *
+         * @name go.Lang.Exception.create
+         * @param {String} name
+         *        название класса
+         * @param {Function} [parent]
+         *        родительский класс (конструктор), по умолчанию - go.Exception
+         * @param {String} [defmessage]
+         *        сообщение по умолчанию
+         * @return {Function}
+         *         конструктор пользовательского исключения
+         */
+        create = function (name, parent, defmessage) {
+            var Exception,
+                proto,
+                regexp;
+
+            parent = parent || Base;
+            defmessage = defmessage || "";
+
+            Exception = function Exception(message) {
+                var e = new Error(),
+                    matches;
+                this.stack = e.stack;
+                this.name    = name;
+                this.message = (message !== undefined) ? message : defmessage;
+                if (isFileName) {
+                    if (!regexp) {
+                        regexp = new RegExp("^.*\n.*@(.*):(.*)\n");
+                    }
+                    matches = regexp.exec(e.stack + "\n");
+                    if (matches) {
+                        this.fileName = matches[1];
+                        this.lineNumber = parseInt(matches[2], 10);
+                    }
+                }
+            };
+            return inherit(Exception, parent);
+        };
+
+        /**
+         * @class go.Lang.Exception.Base
+         *        базовый "класс" исключений внутри библиотеки
+         * @augments Error
+         */
+        Base = create("go.Exception", Error);
+        Base.Base = Base;
+        Base.create = create;
+
+        return Base;
+    }());
 
     return Lang;
 });
