@@ -1085,7 +1085,7 @@ go("Lang", function (go, global, undefined) {
          * @public
          * @param {Function} [Constr]
          *        функция-конструктор (по умолчанию создаётся пустая)
-         * @param {Function} [parent]
+         * @param {Function} [Parent]
          *        конструктор-предок (по умолчанию Object)
          * @param {Object} [extend]
          *        список свойств для расширения прототипа
@@ -1100,14 +1100,14 @@ go("Lang", function (go, global, undefined) {
             if (!nativeCreate) {
                 Fake = function () {};
             }
-            inherit = function (Constr, parent, extend) {
+            inherit = function (Constr, Parent, extend) {
                 var proto;
                 Constr = Constr || function EmptyConstructor() {};
-                parent = parent || nativeObject;
+                Parent = Parent || nativeObject;
                 if (nativeCreate) {
-                    proto = nativeCreate(parent.prototype);
+                    proto = nativeCreate(Parent.prototype);
                 } else {
-                    Fake.prototype = parent.prototype;
+                    Fake.prototype = Parent.prototype;
                     proto = new Fake();
                 }
                 if (extend) {
@@ -1249,9 +1249,8 @@ go("Lang", function (go, global, undefined) {
          * @return {Function}
          *         конструктор пользовательского исключения
          */
-        create = function (name, parent, defmessage) {
+        create = function create(name, parent, defmessage) {
             var Exception,
-                proto,
                 regexp;
 
             parent = parent || Base;
