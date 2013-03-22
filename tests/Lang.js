@@ -573,6 +573,46 @@ tests.test("inArray", function () {
     ok(!go.Lang.inArray(obj2, haystack));
 });
 
+tests.test("inherit", function () {
+
+    var One, Two, Three, Constr, instanceTwo, instanceThree;
+
+    One = go.Lang.inherit();
+    Two = go.Lang.inherit(null, One, {
+        'x': 5,
+        'method': function () {
+            return "Method: " + this.x;
+        }
+    });
+
+    Constr = function Constr(x) {
+        this.x = x;
+    };
+    Three = go.Lang.inherit(Constr, Two, {
+        'method3': function () {
+            return 'Method3!';
+        }
+    });
+
+    instanceTwo = new Two();
+    instanceThree = new Three(10);
+
+    ok(instanceTwo instanceof One);
+    ok(instanceTwo instanceof Two);
+    ok(!(instanceTwo instanceof Three));
+    ok(instanceThree instanceof One);
+    ok(instanceThree instanceof Two);
+    ok(instanceThree instanceof Three);
+
+    equal(instanceTwo.method(), "Method: 5");
+    equal(instanceThree.method(), "Method: 10");
+    ok(!instanceTwo.method3);
+    equal(instanceThree.method3(), "Method3!");
+
+    equal(instanceTwo.constructor, Two);
+    equal(instanceThree.constructor, Three);
+});
+
 tests.test("go.Lang.f", function () {
 
     var fonce, obj, fcomp, Singleton, instance;

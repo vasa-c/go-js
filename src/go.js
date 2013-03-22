@@ -1079,6 +1079,48 @@ go("Lang", function (go, global, undefined) {
         },
 
         /**
+         * Простое наследование конструкторов
+         *
+         * @name go.Lang.inherit
+         * @public
+         * @param {Function} [Constr]
+         *        функция-конструктор (по умолчанию создаётся пустая)
+         * @param {Function} [parent]
+         *        конструктор-предок (по умолчанию Object)
+         * @param {Object} [extend]
+         *        список свойств для расширения прототипа
+         * @return {Function}
+         *         конструктор-наследник
+         */
+        'inherit': (function () {
+            var inherit,
+                nativeCreate,
+                Fake;
+            nativeCreate = nativeObject.create;
+            if (!nativeCreate) {
+                 Fake = function () {};
+            }
+            inherit = function (Constr, parent, extend) {
+                var proto;
+                Constr = Constr || (function EmptyConstructor() {});
+                parent = parent || nativeObject;
+                if (nativeCreate) {
+                    proto = nativeCreate(parent.prototype);
+                } else {
+                    Fake.prototype = parent.prototype;
+                    proto = new Fake();
+                }
+                if (extend) {
+                    proto = Lang.extend(proto, extend);
+                }
+                proto.constructor = Constr;
+                Constr.prototype = proto;
+                return Constr;
+            };
+            return inherit;
+        }()),
+
+        /**
          * Вспомогательные функции-заготовки
          *
          * @namespace go.Lang.f
