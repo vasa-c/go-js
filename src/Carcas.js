@@ -479,7 +479,7 @@ go("Carcas", ["Class", "Ext"], function (go, global) {
             for (i = 0, len = name.length - 1; i < len; i += 1) {
                 c = name[i];
                 if (!context[c]) {
-                     context[c] = {};
+                    context[c] = {};
                 }
                 context = context[c];
             }
@@ -734,61 +734,57 @@ go("Carcas", ["Class", "Ext"], function (go, global) {
      * @namespace go.Carcas.Exceptions
      *            исключения при работе с библиотекой
      */
-    Carcas.Exceptions = (function () {
-        var create = go.Lang.Exception.create,
-            Base = create("go.Carcas.Exceptions.Base", go.Lang.Exception);
-        return {
+    Carcas.Exceptions = new go.Lang.Exception.Block({
 
-            /**
-             * @class go.Carcas.Exceptions.Base
-             *        базовое исключение при работе с библиотекой
-             * @abstract
-             */
-            'Base': Base,
+        /**
+         * @class go.Carcas.Exceptions.Base
+         *        базовое исключение при работе с библиотекой
+         * @abstract
+         */
 
-            /**
-             * @class go.Carcas.Exceptions.AlreadyInited
-             *        попытка инициализовать уже инициализированный каркас
-             * @augments go.Carcas.Exceptions.Base
-             */
-            'AlreadyInited': create("go.Carcas.Exceptions.AlreadyInited", Base),
+        /**
+         * @class go.Carcas.Exceptions.AlreadyInited
+         *        попытка инициализовать уже инициализированный каркас
+         * @augments go.Carcas.Exceptions.Base
+         */
+        'AlreadyInited': [true, "already initialized"],
 
-            /**
-             * @class go.Carcas.Exceptions.NotInited
-             *        попытка доступа к ещё не инициализированному каркасу
-             * @augments go.Carcas.Exceptions.Base
-             */
-            'NotInited': create("go.Carcas.Exceptions.NotInited", Base),
+        /**
+         * @class go.Carcas.Exceptions.NotInited
+         *        попытка доступа к ещё не инициализированному каркасу
+         * @augments go.Carcas.Exceptions.Base
+         */
+        'NotInited': [true, "is not initialized"],
 
-            /**
-             * @class go.Carcas.Exceptions.ModuleRedeclare
-             *        попытка повторно определить модуль
-             * @augments go.Carcas.Exceptions.Base
-             */
-            'ModuleRedeclare': create("go.Carcas.Exceptions.ModuleRedeclare", Base),
+        /**
+         * @class go.Carcas.Exceptions.ModuleRedeclare
+         *        попытка повторно определить модуль
+         * @augments go.Carcas.Exceptions.Base
+         */
+        'ModuleRedeclare': [true, "module redeclare"],
 
-            /**
-             * @class go.Carcas.Exceptions.ControllerRedeclare
-             *        попытка повторно определить контроллер
-             * @augments go.Carcas.Exceptions.Base
-             */
-            'ControllerRedeclare': create("go.Carcas.Exceptions.ControllerRedeclare", Base),
+        /**
+         * @class go.Carcas.Exceptions.ControllerRedeclare
+         *        попытка повторно определить контроллер
+         * @augments go.Carcas.Exceptions.Base
+         */
+        'ControllerRedeclare': [true, "controller redeclare"],
 
-            /**
-             * @class go.Carcas.Exceptions.ErrorDependence
-             *        ошибочная зависимость
-             * @augments go.Carcas.Exceptions.Base
-             */
-            'ErrorDependence': create("go.Carcas.Exceptions.ErrorDependence", Base),
+        /**
+         * @class go.Carcas.Exceptions.ErrorDependence
+         *        ошибочная зависимость
+         * @augments go.Carcas.Exceptions.Base
+         */
+        'ErrorDependence': [true, "error dependence"],
 
-            /**
-             * @class go.Carcas.Exceptions.MainInstanceCreated
-             *        попытка заменить уже созданный основной объект (через setInstance)
-             * @augments go.Carcas.Exceptions.Base
-             */
-            'MainInstanceCreated': create("go.Carcas.Exceptions.MainInstanceCreated", Base)
-        };
-    }());
+        /**
+         * @class go.Carcas.Exceptions.MainInstanceCreated
+         *        попытка заменить уже созданный основной объект (через setInstance)
+         * @augments go.Carcas.Exceptions.Base
+         */
+        'MainInstanceCreated': [true, "main instance already created"]
+
+    }, "go.Carcas.Exceptions");
 
     /**
      * @namespace Carcas.Helpers

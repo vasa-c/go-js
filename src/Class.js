@@ -359,7 +359,7 @@ go("Class", function (go, global) {
             this.createClass();
             this.separateParents();
             if (!this.checkParentsNoFinal()) {
-                throw new Class.Exceptions.Final("Cannot extend final class");
+                throw new Class.Exceptions.Final();
             }
             this.createPrototype();
             this.createMutators();
@@ -387,7 +387,7 @@ go("Class", function (go, global) {
         'createClass': function () {
             var C = function () {
                 if (C.__abstract) {
-                    throw new Class.Exceptions.Abstract("Cannot instantiate abstract class");
+                    throw new Class.Exceptions.Abstract();
                 }
                 if ((!(this instanceof C)) || (this.hasOwnProperty("__destroyed"))) {
                     var instance = new C.__Fake();
@@ -1095,41 +1095,37 @@ go("Class", function (go, global) {
      * @namespace go.Class.Exceptions
      *            исключения при работе с библиотекой
      */
-    Class.Exceptions = (function () {
-        var create = go.Lang.Exception.create,
-            Base = create("go.Class.Exceptions.Base", go.Lang.Exception);
-        return {
+    Class.Exceptions = new go.Lang.Exception.Block({
 
-            /**
-             * @class go.Class.Exceptions.Base
-             *        базовое исключение при работе с go.Class
-             * @augments go.Lang.Exception.Base
-             * @abstract
-             */
-            'Base': Base,
+        /**
+         * @class go.Class.Exceptions.Base
+         *        базовое исключение при работе с go.Class
+         * @augments go.Lang.Exception.Base
+         * @abstract
+         */
 
-            /**
-             * @class go.Class.Exceptions.Abstract
-             *        попытка инстанцировать абстрактный класс
-             * @augments go.Class.Exceptions.Base
-             */
-            'Abstract': create("go.Class.Exceptions.Abstract", Base),
+        /**
+         * @class go.Class.Exceptions.Abstract
+         *        попытка инстанцировать абстрактный класс
+         * @augments go.Class.Exceptions.Base
+         */
+        'Abstract': [true, "Cannot instantiate abstract class"],
 
-            /**
-             * @class go.Class.Exceptions.Final
-             *        попытка расширить финальный класс
-             * @augments go.Class.Exceptions.Base
-             */
-            'Final': create("go.Class.Exceptions.Final", Base),
+        /**
+         * @class go.Class.Exceptions.Final
+         *        попытка расширить финальный класс
+         * @augments go.Class.Exceptions.Base
+         */
+        'Final': [true, "Cannot extend final class"],
 
-            /**
-             * @class go.Class.Exceptions.Method
-             *        попытка вызова не существующего метода
-             * @augments go.Class.Exceptions.Method
-             */
-            'Method': create("go.Class.Exceptions.Method", Base)
-        };
-    }());
+        /**
+         * @class go.Class.Exceptions.Method
+         *        попытка вызова не существующего метода
+         * @augments go.Class.Exceptions.Base
+         */
+        'Method': [true, "Method is not found"]
+
+    }, "go.Class.Exceptions");
 
     return Class;
 });

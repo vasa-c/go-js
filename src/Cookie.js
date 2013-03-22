@@ -18,7 +18,7 @@ if (!window.go) {
  * @name go.Cookie
  * @type {go.Cookie.CookieClass}
  */
-go("Cookie", ["Class", "Ext"], function (go, global, undefined) {
+go("Cookie", ["Class", "Ext"], function (go, global) {
     "use strict";
 
     var CookieClass, cookie, expiresS, document = global.document;
@@ -319,26 +319,22 @@ go("Cookie", ["Class", "Ext"], function (go, global, undefined) {
      * @namespace go.Cookie.CookieClass.Exceptions
      *            исключения при работе с библиотекой
      */
-    CookieClass.Exceptions = (function () {
-        var create = go.Lang.Exception.create,
-            Base = create("go.Cookie.CookieClass.Exceptions.Base", go.Lang.Exception);
-        return {
+    CookieClass.Exceptions = new go.Lang.Exception.Block({
 
-            /**
-             * @class go.Cookie.CookieClass.Exceptions.Base
-             *        базовое исключение при работе с библиотекой
-             * @abstract
-             */
-            'Base': Base,
+        /**
+         * @class go.Cookie.Exceptions.Base
+         *        базовое исключение при работе с библиотекой
+         * @abstract
+         */
 
-            /**
-             * @class go.Cookie.CookieClass.Exceptions.ErrorExpires
-             *        неверный формат expires
-             * @augments go.Cookie.CookieClass.Exceptions.Base
-             */
-            'ErrorExpires': create("go.Cookie.CookieClass.Exceptions.ErrorExpires", Base)
-        };
-    }());
+        /**
+         * @class go.Cookie.Exceptions.ErrorExpires
+         *        неверный формат expires
+         * @augments go.Cookie.CookieClass.Exceptions.Base
+         */
+        'ErrorExpires': [true, "error expires"]
+
+    }, "go.Cookie.Exceptions");
 
     cookie = new CookieClass();
     cookie.CookieClass = CookieClass;
