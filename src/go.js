@@ -1100,7 +1100,7 @@ go("Lang", function (go, global, undefined) {
             if (!nativeCreate) {
                 Fake = function () {};
             }
-            inherit = function (Constr, Parent, extend) {
+            return function inherit(Constr, Parent, extend) {
                 var proto;
                 Constr = Constr || function EmptyConstructor() {};
                 Parent = Parent || nativeObject;
@@ -1117,7 +1117,6 @@ go("Lang", function (go, global, undefined) {
                 Constr.prototype = proto;
                 return Constr;
             };
-            return inherit;
         }()),
 
         /**
