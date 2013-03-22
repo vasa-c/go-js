@@ -1184,43 +1184,59 @@ go("Lang", function (go, global, undefined) {
          */
         'Exception': (function () {
 
-            var Base, create;
+            var Base,
+                create,
+                isFileName = (Error.prototype.fileName !== undefined), // Firefox
+                Fake = function () {};
 
             /**
-             * Создание "класса" исключения
+             * Создание пользовательского "класса" исключения
              *
              * @name go.Lang.Exception.create
              * @param {String} name
              *        название класса
-             * @param {Function} [parent=Error]
-             *        родительский класс (конструктор), по умолчанию - Error
+             * @param {Function} [parent]
+             *        родительский класс (конструктор), по умолчанию - go.Exception
              * @param {String} [defmessage]
              *        сообщение по умолчанию
              * @return {Function}
+             *         конструктор пользовательского исключения
              */
             create = function (name, parent, defmessage) {
-                var Exc, Fake;
-                if ((!parent) && (typeof global.Error === "function")) {
-                    parent = global.Error;
-                }
+                var Exception,
+                    proto,
+                    regexp;
+
+                parent = parent || Base;
                 defmessage = defmessage || "";
-                Exc = function Exception(message) {
+
+                Exception = function Exception(message) {
+                    var e = new Error(),
+                        matches;
+                    this.stack = e.stack;
                     this.name    = name;
-                    this.message = message || defmessage;
-                    this.stack = (new Error()).stack;
-                    if (this.stack) {
-                        /*jslint regexp: true */
-                        this.stack = this.stack.replace(/^[^n]*\n/, ""); // @todo
-                        /*jslint regexp: false */
+                    this.message = (message !== undefined) ? message : defmessage;
+                    if (isFileName) {
+                        if (!regexp) {
+                            regexp = new RegExp("^.*\n.*@(.*):(.*)\n");
+                        }
+                        matches = regexp.exec(e.stack + "\n");
+                        if (matches) {
+                            this.fileName = matches[1];
+                            this.lineNumber = parseInt(matches[2], 10);
+                        }
                     }
                 };
-                if (parent) {
-                    Fake = function () {};
+                if (Object.create) {
+                    proto = Object.create(parent.prototype);
+                } else {
                     Fake.prototype = parent.prototype;
-                    Exc.prototype  = new Fake();
-                    Exc.prototype.constructor = Exc;
+                    proto = new Fake();
                 }
-                return Exc;
+                proto.constructor = Exception;
+                Exception.prototype = proto;
+
+                return Exception;
             };
 
             /**
@@ -1228,10 +1244,9 @@ go("Lang", function (go, global, undefined) {
              *        базовый "класс" исключений внутри библиотеки
              * @augments Error
              */
-            Base = create("go.Exception");
-
+            Base = create("go.Exception", Error);
+            Base.Base = Base;
             Base.create = create;
-            Base.Base   = Base;
 
             return Base;
         }()),

@@ -615,36 +615,47 @@ tests.test("go.Lang.f", function () {
 
 tests.test("go.Lang.Exception", function () {
 
-    var
-        OneError = go.Lang.Exception.create("One", go.Lang.Exception),
-        TwoError = go.Lang.Exception.create("Two", OneError),
-        ThreeError = go.Lang.Exception.create("Three", OneError),
-        MessageError = go.Lang.Exception.create("Message", null, "default");
+    var MyBaseError = go.Lang.Exception.create("MyBaseError"),
+        MyConcreteError = go.Lang.Exception.create("MyConcreteError", MyBaseError),
+        NotBaseError = go.Lang.Exception.create("NotBaseError", TypeError),
+        DefMessageError = go.Lang.Exception.create("DefMessageError", null, "default message"),
+        ne;
 
     try {
-        throw new TwoError("warning");
+        throw new MyConcreteError("Oh, error!");
     } catch (e) {
-        ok(e instanceof Error);
-        ok(e instanceof go.Lang.Exception);
-        ok(e instanceof go.Lang.Exception.Base);
-        ok(e instanceof OneError);
-        ok(e instanceof TwoError);
-        ok(!(e instanceof ThreeError));
-
-        equal(e.name, "Two");
-        equal(e.message, "warning");
+        equal(e.name, "MyConcreteError", "e.name");
+        equal(e.message, "Oh, error!", "e.message");
+        if (Error.prototype.fileName !== undefined) {
+            ne = new Error();
+            ok(e.fileName, "e.fileName is not empty");
+            equal(e.fileName, ne.fileName, "e.fileName is ok");
+        }
+        ok(e instanceof MyConcreteError, "e instance of self");
+        ok(e instanceof MyBaseError, "e instance of parent");
+        ok(e instanceof go.Lang.Exception, "e instance of go-exception");
+        ok(e instanceof go.Lang.Exception.Base, "Exception.Base is alias");
+        ok(e instanceof Error, "e instance of Error");
+        ok(!(e instanceof TypeError), "e is not instance of TypeError");
     }
 
     try {
-        throw new MessageError("msg");
-    } catch (e2) {
-        equal(e2.message, "msg");
+        throw new NotBaseError("Not base error");
+    } catch (e) {
+        ok(!(e instanceof go.Lang.Exception), "Inherit bypass go.Exception");
+        ok(e instanceof TypeError, "Inherit bypass go.Exception");
     }
 
     try {
-        throw new MessageError();
-    } catch (e3) {
-        equal(e3.message, "default");
+        throw new DefMessageError();
+    } catch (e) {
+        equal(e.message, "default message", "Default message");
+    }
+
+    try {
+        throw new DefMessageError("not default message");
+    } catch (e) {
+        equal(e.message, "not default message", "Not default message");
     }
 });
 
