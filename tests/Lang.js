@@ -699,6 +699,101 @@ tests.test("go.Lang.Exception", function () {
     }
 });
 
+tests.test("go.Lang.Exception.block()", function () {
+
+    var block, instance;
+
+    block = new go.Lang.Exception.Block();
+
+    block = new go.Lang.Exception.Block({
+        'Logic'     : true,
+        'Runtime'   : true,
+        'NotFound'  : "Logic",
+        'Unknown'   : ["Logic", "This is undefined"],
+        'Other'     : Error
+    }, "MyLib.Exceptions");
+
+    instance = new block.Unknown();
+    equal(instance.name, "MyLib.Exceptions.Unknown", "e.name");
+    equal(instance.message, "This is undefined", "e.message (default)");
+    ok(instance instanceof block.Logic, "instance by Name");
+    ok(instance instanceof block.Base, "instance by Base");
+    ok(instance instanceof go.Lang.Exception);
+
+    instance = new block.Other();
+    ok(!(instance instanceof block.Base), "Inherit bypass Base");
+    ok(instance instanceof Error, "Inherit bypass Base");
+
+    instance = new block.NotFound();
+    equal(instance.name, "MyLib.Exceptions.NotFound", "e.name (string params)");
+    ok(instance instanceof block.Logic, "instance by Name (string params)");
+
+    equal(block.get("Runtime"), block.Runtime, "get()");
+    ok(!block.get("Qwerty"), "get undefined");
+    try {
+        block.raise("NotFound", "msg");
+        throw new Error();
+    } catch (e) {
+        ok(e instanceof block.NotFound, "raise()");
+        equal(e.message, "msg", "raise() and message");
+    }
+
+    block = new go.Lang.Exception.Block({
+        'Logic'     : true,
+        'NotFound'  : "Logic"
+    }, "MyLib.Exceptions", "OBase");
+    ok(!block.Base, "Rename Base");
+    instance = new block.NotFound();
+    ok(instance instanceof block.OBase, "Rename Base");
+
+    block = new go.Lang.Exception.Block({
+        'Logic'     : true,
+        'NotFound'  : "Logic"
+    }, "MyLib.Exceptions", false);
+    ok(!block.Base, "Remove Base");
+});
+
+tests.test("go.Lang.Exception.block() lazy", function () {
+
+    var block, instance, E;
+
+    block = new go.Lang.Exception.Block({
+        'Logic'     : true,
+        'Runtime'   : true,
+        'NotFound'  : "Logic",
+        'Unknown'   : ["Logic", "This is undefined"],
+        'Other'     : Error
+    }, "MyLib.Exceptions", true, true);
+
+    ok(!block.Unknown);
+    ok(!block.Logic);
+
+    E = block.get("Unknown");
+    instance = new E();
+    equal(instance.name, "MyLib.Exceptions.Unknown", "e.name");
+    equal(instance.message, "This is undefined", "e.message (default)");
+    ok(instance instanceof block.get("Logic"), "instance by Name");
+    ok(instance instanceof block.get("Base"), "instance by Base");
+    ok(instance instanceof go.Lang.Exception);
+
+    equal(block.get("Logic"), block.get("Logic"));
+
+    try {
+        block.raise("NotFound");
+        throw new Error();
+    } catch (e) {
+        ok(e instanceof block.get("NotFound"));
+    }
+
+    ok(!block.Runtime);
+    ok(!block.Other);
+
+    block.createAll();
+    ok(block.Runtime);
+    ok(block.Other);
+});
+
+
 tests.test("go.Lang.Listeners.create", function () {
 
     var listener, f1, f2, f3, result, idf2;

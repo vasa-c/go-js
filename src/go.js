@@ -1233,6 +1233,7 @@ go("Lang", function (go, global, undefined) {
 
         var Base,
             create,
+            Block,
             isFileName = (Error.prototype.fileName !== undefined), // Firefox
             inherit = Lang.inherit;
 
@@ -1277,6 +1278,105 @@ go("Lang", function (go, global, undefined) {
         };
 
         /**
+         * @constructor
+         *
+         * @name go.Lang.Exception.Block
+         * @param {Object} exceptions
+         *        список исключений. "name" => [parent, defmessage]
+         * @param {String} [ns]
+         *        имя пространства имён
+         * @param {(Function|String|Boolean)} [base]
+         *        базовое исключение
+         * @param {Boolean} [lazy]
+         *        отложенное создание
+         * @return {Object}
+         *         пространство имён с исключениями
+         */
+        Block = function Block(exceptions, ns, base, lazy) {
+            this._exceptions = exceptions;
+            this._ns = ns ? ns + "." : "";
+            if (base === false) {
+                base = Base;
+            } else if (typeof base !== "function") {
+                if (typeof base !== "string") {
+                    base = "Base";
+                }
+                this[base] = create(this.ns + base, Base, ns + " base exception");
+                base = this[base];
+            }
+            this._base = base;
+            if (!lazy) {
+                this.createAll();
+            }
+        };
+
+        /**
+         * Получить объект исключения из блока
+         *
+         * @name go.Lang.Exception.Block#get
+         * @public
+         * @param {String} name
+         * @return {Function}
+         */
+        Block.prototype.get = function get(name) {
+            var parent, message, exception;
+            if (this.hasOwnProperty(name)) {
+                return this[name];
+            }
+            parent = this._exceptions[name];
+            if ((typeof parent === "object") && parent) {
+                message = parent[1];
+                parent = parent[0];
+            }
+            if (parent === undefined) {
+                return null;
+            }
+            switch (typeof parent) {
+            case "function":
+                break;
+            case "string":
+                parent = this.get(parent);
+                break;
+            default:
+                parent = this._base;
+            }
+            exception = create(this._ns + name, parent, message);
+            this[name] = exception;
+            return exception;
+        };
+
+        /**
+         * Выбросить исключение из блока
+         *
+         * @name go.Lang.Exception.Block#raise
+         * @public
+         * @param {String} name
+         * @param {String} [message]
+         * @throws {Error}
+         */
+        Block.prototype.raise = function raise(name, message) {
+            var E = this.get(name);
+            throw new E(message);
+        };
+
+        /**
+         * Создать все объекты исключений
+         *
+         * @name go.Lang.Exception.Block#createAll
+         * @public
+         * @return {void}
+         */
+        Block.prototype.createAll = function createAll() {
+            var exceptions = this._exceptions,
+                name;
+            for (name in exceptions) {
+                if (exceptions.hasOwnProperty(name)) {
+                    this.get(name);
+                }
+            }
+        };
+
+        /**
          * @class go.Lang.Exception.Base
          *        базовый "класс" исключений внутри библиотеки
          * @augments Error
@@ -1284,6 +1384,7 @@ go("Lang", function (go, global, undefined) {
         Base = create("go.Exception", Error);
         Base.Base = Base;
         Base.create = create;
+        Base.Block = Block;
 
         return Base;
     }());
