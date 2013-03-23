@@ -962,9 +962,9 @@ go("Lang", function (go, global, undefined) {
          *
          * @name go.Lang.each
          * @public
-         * @param {(Object|Array)} iter
+         * @param {(Object|Array)} items
          *        итерируемый объект (или порядковый массив)
-         * @param {Function} fn
+         * @param {Function} callback
          *        тело цикла (value, key, iter)
          * @param {Object} [thisArg=global]
          *        контекст, в котором следует выполнять тело цикла
@@ -973,23 +973,23 @@ go("Lang", function (go, global, undefined) {
          * @return {(Object|Array)}
          *         результаты выполнения функции для всех элементов
          */
-        'each': function each(iter, fn, thisArg, deep) {
+        'each': function each(items, callback, thisArg, deep) {
             var result, i, len;
             thisArg = thisArg || global;
-            if (Lang.isArray(iter)) {
+            if (Lang.isArray(items)) {
                 if (nativeMap) {
-                    return nativeMap.call(iter, fn, thisArg);
+                    return nativeMap.call(items, callback, thisArg);
                 }
                 result = [];
-                for (i = 0, len = iter.length; i < len; i += 1) {
-                    result.push(fn.call(thisArg, iter[i], i, iter));
+                for (i = 0, len = items.length; i < len; i += 1) {
+                    result.push(callback.call(thisArg, items[i], i, items));
                 }
             } else {
                 result = {};
                 /*jslint forin: true */
-                for (i in iter) {
-                    if (iter.hasOwnProperty(i) || deep) {
-                        result[i] = fn.call(thisArg, iter[i], i, iter);
+                for (i in items) {
+                    if (items.hasOwnProperty(i) || deep) {
+                        result[i] = callback.call(thisArg, items[i], i, items);
                     }
                 }
                 /*jslint forin: false */
