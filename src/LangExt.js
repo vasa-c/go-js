@@ -15,7 +15,8 @@ if (!window.go) {
 go("LangExt", [], function (go, global, undefined) {
     "use strict";
     var Lang = go.Lang,
-        nativeToString = Object.prototype.toString;
+        nativeToString = global.Object.prototype.toString,
+        nativeFilter = global.Array.prototype.filter;
 
     /**
      * Разбор GET или POST запроса
@@ -423,7 +424,7 @@ go("LangExt", [], function (go, global, undefined) {
      * @param {String} fieldName
      *        имя поля
      * @return {(Object|Array)}
-     *         список той же структуры, что и items со значениями соответствующими значению поля
+     *         список той же структуры, что и items со значениями, соответствующими значению поля
      */
     Lang.field = function field(items, fieldName) {
         return Lang.each(items, function (item) {
@@ -443,7 +444,7 @@ go("LangExt", [], function (go, global, undefined) {
      * @param {(String|Array)} fieldPath
      *        путь к полю внутри объекта
      * @return {(Object|Array)}
-     *         список той же структуры, что и items со значениями соответствующими значению поля
+     *         список той же структуры, что и items со значениями, соответствующими значению поля
      */
     Lang.fieldByPath = function fieldByPath(items, fieldPath) {
         var getByPath = Lang.getByPath;
@@ -453,6 +454,66 @@ go("LangExt", [], function (go, global, undefined) {
         return Lang.each(items, function (item) {
             return getByPath(item, fieldPath);
         });
+    };
+
+    /**
+     * Фильтрация структуры
+     *
+     * @name go.Lang.filter
+     * @public
+     * @param {(Object|Array)} items
+     *        список или словарь объектов
+     * @param {(Function|String)} criterion
+     *        критерий фильтра - функция-итератор или имя поля объекта из items
+     * @param {Object} context [optional]
+     *        контекст для вызова итератора
+     * @return {(Object|Array)}
+     *         отфильтрованная изначальная структура
+     */
+    Lang.filter = function filter(items, criterion, context) {
+        var i, len, result, item;
+        if (Lang.isArray(items)) {
+            if (typeof criterion !== "function") {
+                criterion = (function (field) {
+                    return function (item) {
+                        return item[field];
+                    };
+                }(criterion));
+            }
+            if (nativeFilter) {
+                result = nativeFilter.call(items, criterion, context);
+            } else {
+                result = [];
+                for (i = 0, len = items.length; i < len; i += 1) {
+                    item = items[i];
+                    if (criterion.call(context, item, i, items)) {
+                        result.push(item);
+                    }
+                }
+            }
+        } else {
+            result = {};
+            if (typeof criterion === "function") {
+                for (i in items) {
+                    if (items.hasOwnProperty(i)) {
+                        item = items[i];
+                        if (criterion.call(context, item, i, items)) {
+                            result[i] = item;
+                        }
+                    }
+                }
+            } else {
+                for (i in items) {
+                    if (items.hasOwnProperty(i)) {
+                        item = items[i];
+                        if (item[criterion]) {
+                            result[i] = item;
+                        }
+                    }
+                }
+            }
+        }
+        return result;
     };
 
     return true;

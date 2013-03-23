@@ -463,3 +463,44 @@ tests.test("fieldByPath", function () {
     deepEqual(go.Lang.fieldByPath(list, "one.two.three"), [undefined, 3]);
     deepEqual(go.Lang.fieldByPath(list, "one.three"), [3, undefined]);
 });
+
+tests.test("filter", function () {
+
+    var dict, list, context;
+
+    context = {
+        'crit': function (item) {
+            return (item.x > this.inf);
+        }
+    };
+
+    dict = {
+        'none':  {'x': 0},
+        'three': {'x': 3},
+        'five':  {'x': 5}
+    };
+    deepEqual(go.Lang.filter(dict, 'x'), {
+        'three': dict.three,
+        'five': dict.five
+    }, "dict filter by field");
+
+    context.inf = 3;
+    deepEqual(go.Lang.filter(dict, context.crit, context), {
+        'five': dict.five
+    }, "dict filter by iter");
+
+    context.inf = 1;
+    deepEqual(go.Lang.filter(dict, context.crit, context), {
+        'three': dict.three,
+        'five': dict.five
+    }, "dict and context test");
+
+    list = [dict.three, dict.none, dict.five];
+    deepEqual(go.Lang.filter(list, 'x'), [dict.three, dict.five], "list filter by field");
+
+    context.inf = 3;
+    deepEqual(go.Lang.filter(list, context.crit, context), [dict.five], "list filter by iter");
+
+    context.inf = -1;
+    deepEqual(go.Lang.filter(list, context.crit, context), [dict.three, dict.none, dict.five], "list and context test");
+});
