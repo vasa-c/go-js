@@ -249,5 +249,81 @@ go("Str", function (go, global, undefined) {
         return d.firstChild.nodeValue || "";
     };
 
+    /**
+     * Простая шаблонизация
+     *
+     * @name go.Str.tpl
+     * @public
+     * @param {(String|Object)} template
+     *        шаблон (строка или скомпилированный через go.Str.tpl.compile)
+     * @param {Object} vars
+     *        переменные шаблона
+     * @param {String} [openTag]
+     *        открывающий тег (по умолчанию "{{")
+     * @param {String} [closeTag]
+     *        закрывающий тег (по умолчанию "}}")
+     * @return {String}
+     *         результат
+     */
+    Str.tpl = function tpl(template, vars, openTag, closeTag) {
+        var result = [], len, i, item, getValue;
+        if (typeof template === "string") {
+            template = Str.tpl.compile(template, openTag, closeTag);
+        }
+        getValue = function getValue(vars, path) {
+            var len = path.length,
+                i;
+            for (i = 0; i < len; i += 1) {
+                vars = vars[path[i]];
+                if ((vars === undefined) || (vars === null)) {
+                    return false;
+                }
+            }
+            return vars.toString();
+        };
+        for (i = 0, len = template.length; i < len; i += 1) {
+            item = template[i];
+            if (typeof item === "string") {
+                result.push(item);
+            } else {
+                item = getValue(vars, item);
+                if (item) {
+                    result.push(item);
+                }
+            }
+        }
+        return result.join("");
+    };
+
+    /**
+     * Компиляция шаблона для go.Str.tpl()
+     *
+     * @name go.Str.tpl.compile
+     * @public
+     * @param {String} template
+     *        строка шаблона
+     * @param openTag
+     * @param closeTag
+     */
+    Str.tpl.compile = function compile(template, openTag, closeTag) {
+        var result = [],
+            len,
+            i,
+            part,
+            trim = Str.trim;
+        openTag = openTag || "{{";
+        closeTag = closeTag || "}}";
+        template = template.split(openTag);
+        result.push(template[0]);
+        for (i = 1, len = template.length; i < len; i += 1) {
+            part = template[i].split(closeTag, 2);
+            result.push(trim(part[0]).split("."));
+            if (part[1]) {
+                result.push(part[1]);
+            }
+        }
+        return result;
+    };
+
     return Str;
 });

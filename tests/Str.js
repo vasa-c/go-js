@@ -99,3 +99,33 @@ tests.test("html/htmlDecode", function () {
     equal(go.Str.htmlDecode("<hr />"), "");
 
 });
+
+tests.test("tpl", function () {
+
+    var template, vars, expected, compile;
+
+    vars = {
+        'num': 10,
+        'str': "String",
+        'none': null,
+        'dict': {
+            'x': {
+                'y': 0
+            },
+            'obj': {
+                'toString': function () {return "OBJ!"; }
+            }
+        }
+    };
+
+    template = "N: {{ num }}, str: {{ str }}, none: {{ none }}, dict.x.y: {{  dict.x.y  }}, ({{ dict.a.b.c }});obj: {{dict.obj}}; {{num}}";
+    expected = "N: 10, str: String, none: , dict.x.y: 0, ();obj: OBJ!; 10";
+    equal(go.Str.tpl(template, vars), expected, "template");
+
+    compile = go.Str.tpl.compile(template);
+    equal(go.Str.tpl(compile, vars), expected, "compile");
+
+    template = "N: {{ num }}, str: [str];";
+    expected = "N: {{ num }}, str: String;";
+    equal(go.Str.tpl(template, vars, "[", "]"), expected, "user tags");
+});
