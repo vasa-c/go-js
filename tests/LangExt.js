@@ -420,9 +420,9 @@ tests.test("field", function () {
     };
 
     dict = {
-        'one'   : new MyClass(1),
-        'three' : new MyClass(3),
-        'five'  : new MyClass(5),
+        'one'   : {'x': 1},
+        'three' : {'x': 3},
+        'five'  : {'x': 5},
         'und'   : {}
     };
     deepEqual(go.Lang.field(dict, "x"), {
@@ -434,4 +434,32 @@ tests.test("field", function () {
 
     list = [dict.one, dict.three, dict.und, dict.five];
     deepEqual(go.Lang.field(list, "x"), [1, 3, undefined, 5], "list");
+});
+
+tests.test("fieldByPath", function () {
+
+    var dict, list;
+
+    dict = {
+        'norm': {
+            'one': {
+                'two': {
+                    'three': 3
+                }
+            }
+        },
+        'none': {
+            'one': {
+                'three': 3
+            }
+        }
+    };
+    deepEqual(go.Lang.fieldByPath(dict, "one.two.three"), {
+        'norm': 3,
+        'none': undefined
+    }, "dict");
+
+    list = [dict.none, dict.norm];
+    deepEqual(go.Lang.fieldByPath(list, "one.two.three"), [undefined, 3]);
+    deepEqual(go.Lang.fieldByPath(list, "one.three"), [3, undefined]);
 });

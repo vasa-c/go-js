@@ -423,11 +423,35 @@ go("LangExt", [], function (go, global, undefined) {
      * @param {String} fieldName
      *        имя поля
      * @return {(Object|Array)}
-     *         список той же структуры, что и items с результатами вызова метода
+     *         список той же структуры, что и items со значениями соответствующими значению поля
      */
     Lang.field = function field(items, fieldName) {
         return Lang.each(items, function (item) {
             return item[fieldName];
+        });
+    };
+
+    /**
+     * Получение полей объектов по указанному пути
+     *
+     * @see go.Lang.field в отличии от field() в качестве поля можно указать путь (через точку)
+     *
+     * @name go.Lang.fieldByPath
+     * @public
+     * @param {(Object|Array)} items
+     *        список или словарь объектов
+     * @param {(String|Array)} fieldPath
+     *        путь к полю внутри объекта
+     * @return {(Object|Array)}
+     *         список той же структуры, что и items со значениями соответствующими значению поля
+     */
+    Lang.fieldByPath = function fieldByPath(items, fieldPath) {
+        var getByPath = Lang.getByPath;
+        if (typeof fieldPath === "string") {
+            fieldPath = fieldPath.split(".");
+        }
+        return Lang.each(items, function (item) {
+            return getByPath(item, fieldPath);
         });
     };
 
