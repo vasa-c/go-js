@@ -18,7 +18,7 @@ if (!window.go) {
  * @name go.Cookie
  * @type {go.Cookie.CookieClass}
  */
-go("Cookie", ["Class", "Ext"], function (go, global) {
+go("Cookie", ["Class", "Ext"], function (go, global, undefined) {
     "use strict";
 
     var CookieClass, cookie, expiresS, document = global.document;

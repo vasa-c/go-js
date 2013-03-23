@@ -516,5 +516,6 @@ go("LangExt", [], function (go, global, undefined) {
         return result;
     };
 
+    /* go.LangExt === true */
     return true;
 });
