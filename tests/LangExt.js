@@ -385,3 +385,29 @@ tests.test("is*-functions", function () {
     ok(!L.isCollection(value), "isCollection(" + name + ")");
     ok(!L.isArguments(value), "isArguments(" + name + ")");
 });
+
+tests.test("invoke", function () {
+
+    var MyClass, list, dict;
+
+    MyClass = function (x) {
+        this.x = x;
+    };
+    MyClass.prototype.plus = function plus(y) {
+        return this.x + (y || 0);
+    };
+
+    dict = {
+        'one'   : new MyClass(1),
+        'three' : new MyClass(3),
+        'five'  : new MyClass(5)
+    };
+    deepEqual(go.Lang.invoke(dict, "plus", [2]), {
+        'one'   : 3,
+        'three' : 5,
+        'five'  : 7
+    }, "invoke for dict (and args)");
+
+    list = [dict.one, dict.three, dict.five];
+    deepEqual(go.Lang.invoke(list, "plus"), [1, 3, 5], "invoke for list (no args)");
+});

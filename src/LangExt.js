@@ -393,5 +393,25 @@ go("LangExt", [], function (go, global, undefined) {
         };
     }
 
+    /**
+     * Вызов определённого метода для списка объектов
+     *
+     * @name go.Lang.invoke
+     * @public
+     * @param {(Object|Array)} items
+     *        список или словарь объектов
+     * @param {String} methodName
+     *        аргументы метода
+     * @param {Array} [args]
+     *        аргументы вызова метода
+     * @return {(Object|Array)}
+     *         список той же структуры, что и items с результатами вызова метода
+     */
+    Lang.invoke = function invoke(items, methodName, args) {
+        return Lang.each(items, function (item) {
+            return item[methodName].apply(item, args);
+        });
+    };
+
     return true;
 });
