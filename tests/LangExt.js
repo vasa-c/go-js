@@ -411,3 +411,27 @@ tests.test("invoke", function () {
     list = [dict.one, dict.three, dict.five];
     deepEqual(go.Lang.invoke(list, "plus"), [1, 3, 5], "invoke for list (no args)");
 });
+
+tests.test("field", function () {
+    var MyClass, list, dict;
+
+    MyClass = function (x) {
+        this.x = x;
+    };
+
+    dict = {
+        'one'   : new MyClass(1),
+        'three' : new MyClass(3),
+        'five'  : new MyClass(5),
+        'und'   : {}
+    };
+    deepEqual(go.Lang.field(dict, "x"), {
+        'one'   : 1,
+        'three' : 3,
+        'five'  : 5,
+        'und'   : undefined
+    }, "dict");
+
+    list = [dict.one, dict.three, dict.und, dict.five];
+    deepEqual(go.Lang.field(list, "x"), [1, 3, undefined, 5], "list");
+});

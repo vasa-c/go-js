@@ -413,5 +413,23 @@ go("LangExt", [], function (go, global, undefined) {
         });
     };
 
+    /**
+     * Получение определённого поля для списка объектов
+     *
+     * @name go.Lang.field
+     * @public
+     * @param {(Object|Array)} items
+     *        список или словарь объектов
+     * @param {String} fieldName
+     *        имя поля
+     * @return {(Object|Array)}
+     *         список той же структуры, что и items с результатами вызова метода
+     */
+    Lang.field = function field(items, fieldName) {
+        return Lang.each(items, function (item) {
+            return item[fieldName];
+        });
+    };
+
     return true;
 });
