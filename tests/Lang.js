@@ -153,7 +153,8 @@ tests.test("getType", function () {
         span,
         collection,
         ConstructorEObject,
-        instance;
+        instance,
+        w = window; // jslint не любит new Number() и подобное
 
     equal(go.Lang.getType(undef), "undefined", "undefined");
 
@@ -166,15 +167,15 @@ tests.test("getType", function () {
     equal(go.Lang.getType(Number["NaN"]), "number", "NaN");
     equal(go.Lang.getType(Number.NEGATIVE_INFINITY), "number", "-Infinity");
     equal(go.Lang.getType(Number.POSITIVE_INFINITY), "number", "+Infinity");
-    equal(go.Lang.getType(new Number(3)), "number", "object Number");
+    equal(go.Lang.getType(new w.Number(3)), "number", "object Number");
 
     equal(go.Lang.getType(true), "boolean", "true boolean");
     equal(go.Lang.getType(false), "boolean", "false boolean");
-    equal(go.Lang.getType(new Boolean(true)), "boolean", "object Boolean");
+    equal(go.Lang.getType(new w.Boolean(true)), "boolean", "object Boolean");
 
     equal(go.Lang.getType("string"), "string", "string");
     equal(go.Lang.getType(""), "string", "empty string");
-    equal(go.Lang.getType(new String("string")), "string", "object String");
+    equal(go.Lang.getType(new w.String("string")), "string", "object String");
 
     equal(go.Lang.getType(function () {return true; }), "function", "user function");
     equal(go.Lang.getType(Math.floor), "function", "built-in function");
@@ -186,7 +187,7 @@ tests.test("getType", function () {
     /*jslint evil: false */
 
     equal(go.Lang.getType([1, 2, 3]), "array", "literal array");
-    equal(go.Lang.getType(new Array(1, 2, 3)), "array", "new Array");
+    equal(go.Lang.getType(new w.Array(1, 2, 3)), "array", "new Array");
     equal(go.Lang.getType([]), "array", "empty Array");
 
     equal(go.Lang.getType(/\s/), "regexp", "literal RegExp");
@@ -216,7 +217,7 @@ tests.test("getType", function () {
     equal(go.Lang.getType(arguments), "arguments", "arguments object");
 
     equal(go.Lang.getType({'x': 5}), "object", "simple dict (literal)");
-    equal(go.Lang.getType(new Object()), "object", "simple dict (new Object)");
+    equal(go.Lang.getType(new w.Object()), "object", "simple dict (new Object)");
 
     ConstructorEObject = function (x) {
         this.x = x;
@@ -305,7 +306,7 @@ tests.test("toArray", function () {
     deepEqual(toArray(undefined), [], "null");
     deepEqual(toArray(undefined), [], "undefined");
 
-    value = (function () {return new (function () {})(); }());
+    value = (function () {var C = function () {}; return new C(); }());
     deepEqual(toArray(value), [value], "object (no dict)");
 });
 
@@ -330,7 +331,11 @@ tests.test("isDict", function () {
 
     if (Object.getPrototypeOf) {
         /* Для IE < 9 не сработает */
-        rproto = (function () {var C = function () {}; C.prototype={'x': 5}; return (new C());})();
+        rproto = (function () {
+            var C = function () {};
+            C.prototype = {'x': 5};
+            return (new C());
+        }());
         ok(!go.Lang.isDict(rproto), "replace proto");
         rproto = "(function () {var C = function () {}; C.prototype={'x': 5}; return (new C());})()";
         ok(!go.Lang.isDict(iframe.contentWindow.getResult(rproto)), "replace proto and iframe");
@@ -568,47 +573,226 @@ tests.test("inArray", function () {
     ok(!go.Lang.inArray(obj2, haystack));
 });
 
+tests.test("inherit", function () {
+
+    var One, Two, Three, Constr, instanceTwo, instanceThree;
+
+    One = go.Lang.inherit();
+    Two = go.Lang.inherit(null, One, {
+        'x': 5,
+        'method': function () {
+            return "Method: " + this.x;
+        }
+    });
+
+    Constr = function Constr(x) {
+        this.x = x;
+    };
+    Three = go.Lang.inherit(Constr, Two, {
+        'method3': function () {
+            return 'Method3!';
+        }
+    });
+
+    instanceTwo = new Two();
+    instanceThree = new Three(10);
+
+    ok(instanceTwo instanceof One);
+    ok(instanceTwo instanceof Two);
+    ok(!(instanceTwo instanceof Three));
+    ok(instanceThree instanceof One);
+    ok(instanceThree instanceof Two);
+    ok(instanceThree instanceof Three);
+
+    equal(instanceTwo.method(), "Method: 5");
+    equal(instanceThree.method(), "Method: 10");
+    ok(!instanceTwo.method3);
+    equal(instanceThree.method3(), "Method3!");
+
+    equal(instanceTwo.constructor, Two);
+    equal(instanceThree.constructor, Three);
+});
+
 tests.test("go.Lang.f", function () {
+
+    var fonce, obj, fcomp, Singleton, instance;
 
     equal(go.Lang.f.empty());
     equal(go.Lang.f.ffalse(), false);
+    equal(go.Lang.f.ftrue(), true);
+    equal(go.Lang.f.identity(123), 123);
 
+    fonce = function (x) {this.i += x; return this.i; };
+    obj = {
+        'i': 3
+    };
+    obj.fonce = go.Lang.f.once(fonce);
+    equal(obj.fonce(5), 8);
+    equal(obj.i, 8);
+    equal(obj.fonce(4), 8);
+    equal(obj.i, 8);
+
+    Singleton = function () {
+        this.x = 1;
+        this.y = 2;
+        return this;
+    };
+
+    Singleton = go.Lang.f.once(Singleton);
+
+    instance = new Singleton();
+    equal(instance.y, 2);
+    equal(new Singleton(), instance);
+
+    obj.i = 10;
+    fcomp = go.Lang.f.compose([
+        function (x, y) {return x + ":" + y + ":" + this.i; },
+        function (value) {return "two:" + value; },
+        function (value) {return value + ":three"; }
+    ], obj);
+    equal(fcomp(1, 2), "two:1:2:10:three");
 });
 
 tests.test("go.Lang.Exception", function () {
 
-    var
-        OneError = go.Lang.Exception.create("One", go.Lang.Exception),
-        TwoError = go.Lang.Exception.create("Two", OneError),
-        ThreeError = go.Lang.Exception.create("Three", OneError),
-        MessageError = go.Lang.Exception.create("Message", null, "default");
+    var MyBaseError = go.Lang.Exception.create("MyBaseError"),
+        MyConcreteError = go.Lang.Exception.create("MyConcreteError", MyBaseError),
+        NotBaseError = go.Lang.Exception.create("NotBaseError", TypeError),
+        DefMessageError = go.Lang.Exception.create("DefMessageError", null, "default message"),
+        ne;
 
     try {
-        throw new TwoError("warning");
+        throw new MyConcreteError("Oh, error!");
     } catch (e) {
-        ok(e instanceof Error);
-        ok(e instanceof go.Lang.Exception);
-        ok(e instanceof go.Lang.Exception.Base);
-        ok(e instanceof OneError);
-        ok(e instanceof TwoError);
-        ok(!(e instanceof ThreeError));
-
-        equal(e.name, "Two");
-        equal(e.message, "warning");
+        equal(e.name, "MyConcreteError", "e.name");
+        equal(e.message, "Oh, error!", "e.message");
+        if (Error.prototype.fileName !== undefined) {
+            ne = new Error();
+            ok(e.fileName, "e.fileName is not empty");
+            equal(e.fileName, ne.fileName, "e.fileName is ok");
+        }
+        ok(e instanceof MyConcreteError, "e instance of self");
+        ok(e instanceof MyBaseError, "e instance of parent");
+        ok(e instanceof go.Lang.Exception, "e instance of go-exception");
+        ok(e instanceof go.Lang.Exception.Base, "Exception.Base is alias");
+        ok(e instanceof Error, "e instance of Error");
+        ok(!(e instanceof TypeError), "e is not instance of TypeError");
     }
 
     try {
-        throw new MessageError("msg");
+        throw new NotBaseError("Not base error");
     } catch (e2) {
-        equal(e2.message, "msg");
+        ok(!(e2 instanceof go.Lang.Exception), "Inherit bypass go.Exception");
+        ok(e2 instanceof TypeError, "Inherit bypass go.Exception");
     }
 
     try {
-        throw new MessageError();
+        throw new DefMessageError();
     } catch (e3) {
-        equal(e3.message, "default");
+        equal(e3.message, "default message", "Default message");
+    }
+
+    try {
+        throw new DefMessageError("not default message");
+    } catch (e4) {
+        equal(e4.message, "not default message", "Not default message");
     }
 });
+
+tests.test("go.Lang.Exception.block()", function () {
+
+    var block, instance;
+
+    block = new go.Lang.Exception.Block();
+
+    block = new go.Lang.Exception.Block({
+        'Logic'     : true,
+        'Runtime'   : true,
+        'NotFound'  : "Logic",
+        'Unknown'   : ["Logic", "This is undefined"],
+        'Other'     : Error
+    }, "MyLib.Exceptions");
+
+    instance = new block.Unknown();
+    equal(instance.name, "MyLib.Exceptions.Unknown", "e.name");
+    equal(instance.message, "This is undefined", "e.message (default)");
+    ok(instance instanceof block.Logic, "instance by Name");
+    ok(instance instanceof block.Base, "instance by Base");
+    ok(instance instanceof go.Lang.Exception);
+
+    instance = new block.Other();
+    ok(!(instance instanceof block.Base), "Inherit bypass Base");
+    ok(instance instanceof Error, "Inherit bypass Base");
+
+    instance = new block.NotFound();
+    equal(instance.name, "MyLib.Exceptions.NotFound", "e.name (string params)");
+    ok(instance instanceof block.Logic, "instance by Name (string params)");
+
+    equal(block.get("Runtime"), block.Runtime, "get()");
+    ok(!block.get("Qwerty"), "get undefined");
+    try {
+        block.raise("NotFound", "msg");
+        throw new Error();
+    } catch (e) {
+        ok(e instanceof block.NotFound, "raise()");
+        equal(e.message, "msg", "raise() and message");
+    }
+
+    block = new go.Lang.Exception.Block({
+        'Logic'     : true,
+        'NotFound'  : "Logic"
+    }, "MyLib.Exceptions", "OBase");
+    ok(!block.Base, "Rename Base");
+    instance = new block.NotFound();
+    ok(instance instanceof block.OBase, "Rename Base");
+
+    block = new go.Lang.Exception.Block({
+        'Logic'     : true,
+        'NotFound'  : "Logic"
+    }, "MyLib.Exceptions", false);
+    ok(!block.Base, "Remove Base");
+});
+
+tests.test("go.Lang.Exception.block() lazy", function () {
+
+    var block, instance, E;
+
+    block = new go.Lang.Exception.Block({
+        'Logic'     : true,
+        'Runtime'   : true,
+        'NotFound'  : "Logic",
+        'Unknown'   : ["Logic", "This is undefined"],
+        'Other'     : Error
+    }, "MyLib.Exceptions", true, true);
+
+    ok(!block.Unknown);
+    ok(!block.Logic);
+
+    E = block.get("Unknown");
+    instance = new E();
+    equal(instance.name, "MyLib.Exceptions.Unknown", "e.name");
+    equal(instance.message, "This is undefined", "e.message (default)");
+    ok(instance instanceof block.get("Logic"), "instance by Name");
+    ok(instance instanceof block.get("Base"), "instance by Base");
+    ok(instance instanceof go.Lang.Exception);
+
+    equal(block.get("Logic"), block.get("Logic"));
+
+    try {
+        block.raise("NotFound");
+        throw new Error();
+    } catch (e) {
+        ok(e instanceof block.get("NotFound"));
+    }
+
+    ok(!block.Runtime);
+    ok(!block.Other);
+
+    block.createAll();
+    ok(block.Runtime);
+    ok(block.Other);
+});
+
 
 tests.test("go.Lang.Listeners.create", function () {
 

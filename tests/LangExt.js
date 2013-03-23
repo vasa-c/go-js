@@ -385,3 +385,122 @@ tests.test("is*-functions", function () {
     ok(!L.isCollection(value), "isCollection(" + name + ")");
     ok(!L.isArguments(value), "isArguments(" + name + ")");
 });
+
+tests.test("invoke", function () {
+
+    var MyClass, list, dict;
+
+    MyClass = function (x) {
+        this.x = x;
+    };
+    MyClass.prototype.plus = function plus(y) {
+        return this.x + (y || 0);
+    };
+
+    dict = {
+        'one'   : new MyClass(1),
+        'three' : new MyClass(3),
+        'five'  : new MyClass(5)
+    };
+    deepEqual(go.Lang.invoke(dict, "plus", [2]), {
+        'one'   : 3,
+        'three' : 5,
+        'five'  : 7
+    }, "invoke for dict (and args)");
+
+    list = [dict.one, dict.three, dict.five];
+    deepEqual(go.Lang.invoke(list, "plus"), [1, 3, 5], "invoke for list (no args)");
+});
+
+tests.test("field", function () {
+    var MyClass, list, dict;
+
+    MyClass = function (x) {
+        this.x = x;
+    };
+
+    dict = {
+        'one'   : {'x': 1},
+        'three' : {'x': 3},
+        'five'  : {'x': 5},
+        'und'   : {}
+    };
+    deepEqual(go.Lang.field(dict, "x"), {
+        'one'   : 1,
+        'three' : 3,
+        'five'  : 5,
+        'und'   : undefined
+    }, "dict");
+
+    list = [dict.one, dict.three, dict.und, dict.five];
+    deepEqual(go.Lang.field(list, "x"), [1, 3, undefined, 5], "list");
+});
+
+tests.test("fieldByPath", function () {
+
+    var dict, list;
+
+    dict = {
+        'norm': {
+            'one': {
+                'two': {
+                    'three': 3
+                }
+            }
+        },
+        'none': {
+            'one': {
+                'three': 3
+            }
+        }
+    };
+    deepEqual(go.Lang.fieldByPath(dict, "one.two.three"), {
+        'norm': 3,
+        'none': undefined
+    }, "dict");
+
+    list = [dict.none, dict.norm];
+    deepEqual(go.Lang.fieldByPath(list, "one.two.three"), [undefined, 3]);
+    deepEqual(go.Lang.fieldByPath(list, "one.three"), [3, undefined]);
+});
+
+tests.test("filter", function () {
+
+    var dict, list, context;
+
+    context = {
+        'crit': function (item) {
+            return (item.x > this.inf);
+        }
+    };
+
+    dict = {
+        'none':  {'x': 0},
+        'three': {'x': 3},
+        'five':  {'x': 5}
+    };
+    deepEqual(go.Lang.filter(dict, 'x'), {
+        'three': dict.three,
+        'five': dict.five
+    }, "dict filter by field");
+
+    context.inf = 3;
+    deepEqual(go.Lang.filter(dict, context.crit, context), {
+        'five': dict.five
+    }, "dict filter by iter");
+
+    context.inf = 1;
+    deepEqual(go.Lang.filter(dict, context.crit, context), {
+        'three': dict.three,
+        'five': dict.five
+    }, "dict and context test");
+
+    list = [dict.three, dict.none, dict.five];
+    deepEqual(go.Lang.filter(list, 'x'), [dict.three, dict.five], "list filter by field");
+
+    context.inf = 3;
+    deepEqual(go.Lang.filter(list, context.crit, context), [dict.five], "list filter by iter");
+
+    context.inf = -1;
+    deepEqual(go.Lang.filter(list, context.crit, context), [dict.three, dict.none, dict.five], "list and context test");
+});

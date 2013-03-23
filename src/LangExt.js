@@ -15,7 +15,8 @@ if (!window.go) {
 go("LangExt", [], function (go, global, undefined) {
     "use strict";
     var Lang = go.Lang,
-        nativeToString = Object.prototype.toString;
+        nativeToString = global.Object.prototype.toString,
+        nativeFilter = global.Array.prototype.filter;
 
     /**
      * Разбор GET или POST запроса
@@ -206,7 +207,7 @@ go("LangExt", [], function (go, global, undefined) {
      * @param {*} value
      * @return {Boolean}
      */
-    Lang.isUndefined = function (value) {
+    Lang.isUndefined = function isUndefined(value) {
         return (value === undefined);
     };
 
@@ -217,7 +218,7 @@ go("LangExt", [], function (go, global, undefined) {
      * @param {*} value
      * @return {Boolean}
      */
-    Lang.isNull = function (value) {
+    Lang.isNull = function isNull(value) {
         return (value === null);
     };
 
@@ -228,7 +229,7 @@ go("LangExt", [], function (go, global, undefined) {
      * @param {*} value
      * @return {Boolean}
      */
-    Lang.isBoolean = function (value) {
+    Lang.isBoolean = function isBoolean(value) {
         return (typeof value === "boolean");
     };
 
@@ -239,7 +240,7 @@ go("LangExt", [], function (go, global, undefined) {
      * @param {*} value
      * @return {Boolean}
      */
-    Lang.isNumber = function (value) {
+    Lang.isNumber = function isNumber(value) {
         return (typeof value === "number");
     };
 
@@ -250,7 +251,7 @@ go("LangExt", [], function (go, global, undefined) {
      * @param {*} value
      * @return {Boolean}
      */
-    Lang.isString = function (value) {
+    Lang.isString = function isString(value) {
         return (typeof value === "string");
     };
 
@@ -269,7 +270,7 @@ go("LangExt", [], function (go, global, undefined) {
             return ((value + ":").indexOf("[native code]") !== -1);
         };
     } else {
-        Lang.isFunction = function (value) {
+        Lang.isFunction = function isFunction(value) {
             return (nativeToString.call(value) === "[object Function]");
         };
     }
@@ -281,7 +282,7 @@ go("LangExt", [], function (go, global, undefined) {
      * @param {*} value
      * @return {Boolean}
      */
-    Lang.isError = function (value) {
+    Lang.isError = function isError(value) {
         if (nativeToString.call(value) === "[object Error]") {
             return true;
         }
@@ -295,7 +296,7 @@ go("LangExt", [], function (go, global, undefined) {
      * @param {*} value
      * @return {Boolean}
      */
-    Lang.isDate = function (value) {
+    Lang.isDate = function isDate(value) {
         return (nativeToString.call(value) === "[object Date]");
     };
 
@@ -307,7 +308,7 @@ go("LangExt", [], function (go, global, undefined) {
          * @param {*} value
          * @return {Boolean}
          */
-        Lang.isElement = function (value) {
+        Lang.isElement = function isElement(value) {
             return (nativeToString.call(value).indexOf("[object HTML") === 0) && (!Lang.isCollection(value));
         };
 
@@ -318,7 +319,7 @@ go("LangExt", [], function (go, global, undefined) {
          * @param {*} value
          * @return {Boolean}
          */
-        Lang.isTextnode = function (value) {
+        Lang.isTextnode = function isTextnode(value) {
             return (nativeToString.call(value) === "[object Text]");
         };
 
@@ -329,7 +330,7 @@ go("LangExt", [], function (go, global, undefined) {
          * @param {*} value
          * @return {Boolean}
          */
-        Lang.isCollection = function (value) {
+        Lang.isCollection = function isCollection(value) {
             return Lang.inArray(nativeToString.call(value), [
                 "[object HTMLCollection]",
                 "[object NodeList]",
@@ -344,7 +345,7 @@ go("LangExt", [], function (go, global, undefined) {
          * @param {*} value
          * @return {Boolean}
          */
-        Lang.isArguments = function (value) {
+        Lang.isArguments = function isArguments(value) {
             return (nativeToString.call(value) === "[object Arguments]");
         };
     } else {
@@ -393,5 +394,128 @@ go("LangExt", [], function (go, global, undefined) {
         };
     }
 
+    /**
+     * Вызов определённого метода для списка объектов
+     *
+     * @name go.Lang.invoke
+     * @public
+     * @param {(Object|Array)} items
+     *        список или словарь объектов
+     * @param {String} methodName
+     *        аргументы метода
+     * @param {Array} [args]
+     *        аргументы вызова метода
+     * @return {(Object|Array)}
+     *         список той же структуры, что и items с результатами вызова метода
+     */
+    Lang.invoke = function invoke(items, methodName, args) {
+        return Lang.each(items, function (item) {
+            return item[methodName].apply(item, args);
+        });
+    };
+
+    /**
+     * Получение определённого поля для списка объектов
+     *
+     * @name go.Lang.field
+     * @public
+     * @param {(Object|Array)} items
+     *        список или словарь объектов
+     * @param {String} fieldName
+     *        имя поля
+     * @return {(Object|Array)}
+     *         список той же структуры, что и items со значениями, соответствующими значению поля
+     */
+    Lang.field = function field(items, fieldName) {
+        return Lang.each(items, function (item) {
+            return item[fieldName];
+        });
+    };
+
+    /**
+     * Получение полей объектов по указанному пути
+     *
+     * @see go.Lang.field в отличии от field() в качестве поля можно указать путь (через точку)
+     *
+     * @name go.Lang.fieldByPath
+     * @public
+     * @param {(Object|Array)} items
+     *        список или словарь объектов
+     * @param {(String|Array)} fieldPath
+     *        путь к полю внутри объекта
+     * @return {(Object|Array)}
+     *         список той же структуры, что и items со значениями, соответствующими значению поля
+     */
+    Lang.fieldByPath = function fieldByPath(items, fieldPath) {
+        var getByPath = Lang.getByPath;
+        if (typeof fieldPath === "string") {
+            fieldPath = fieldPath.split(".");
+        }
+        return Lang.each(items, function (item) {
+            return getByPath(item, fieldPath);
+        });
+    };
+
+    /**
+     * Фильтрация структуры
+     *
+     * @name go.Lang.filter
+     * @public
+     * @param {(Object|Array)} items
+     *        список или словарь объектов
+     * @param {(Function|String)} criterion
+     *        критерий фильтра - функция-итератор или имя поля объекта из items
+     * @param {Object} context [optional]
+     *        контекст для вызова итератора
+     * @return {(Object|Array)}
+     *         отфильтрованная изначальная структура
+     */
+    Lang.filter = function filter(items, criterion, context) {
+        var i, len, result, item;
+        if (Lang.isArray(items)) {
+            if (typeof criterion !== "function") {
+                criterion = (function (field) {
+                    return function (item) {
+                        return item[field];
+                    };
+                }(criterion));
+            }
+            if (nativeFilter) {
+                result = nativeFilter.call(items, criterion, context);
+            } else {
+                result = [];
+                for (i = 0, len = items.length; i < len; i += 1) {
+                    item = items[i];
+                    if (criterion.call(context, item, i, items)) {
+                        result.push(item);
+                    }
+                }
+            }
+        } else {
+            result = {};
+            if (typeof criterion === "function") {
+                for (i in items) {
+                    if (items.hasOwnProperty(i)) {
+                        item = items[i];
+                        if (criterion.call(context, item, i, items)) {
+                            result[i] = item;
+                        }
+                    }
+                }
+            } else {
+                for (i in items) {
+                    if (items.hasOwnProperty(i)) {
+                        item = items[i];
+                        if (item[criterion]) {
+                            result[i] = item;
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    };
+
+    /* go.LangExt === true */
     return true;
 });

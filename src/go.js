@@ -250,8 +250,10 @@ var go = (function (global) {
                 var preloaded = this.preloaded,
                     name;
                 for (name in preloaded) {
-                    if (preloaded[name]) {
-                        this.loaded.apply(this, preloaded[name]);
+                    if (preloaded.hasOwnProperty(name)) {
+                        if (preloaded[name]) {
+                            this.loaded.apply(this, preloaded[name]);
+                        }
                     }
                 }
             },
@@ -795,7 +797,7 @@ go("Lang", function (go, global, undefined) {
             }
 
             if (value.constructor === Object) {
-                if (Object.getPrototypeOf && (Object.getPrototypeOf(value) !== Object.prototype)) {
+                if (nativeGetPrototypeOf && (nativeGetPrototypeOf(value) !== Object.prototype)) {
                     /* Случай с переопределённым прототипом и не восстановленным constructor */
                     return false;
                 }
@@ -806,7 +808,7 @@ go("Lang", function (go, global, undefined) {
                 /* value из нашего фрейма, значит constructor должен был быть Object */
                 return false;
             }
-            if (Object.getPrototypeOf) {
+            if (nativeGetPrototypeOf) {
                 /* value не из нашего фрейма, можно выкрутиться с помощью getPrototypeOf, так как у прототипа объекта прототип - null */
                 value = Object.getPrototypeOf(value);
                 if (!value) {
@@ -1077,6 +1079,47 @@ go("Lang", function (go, global, undefined) {
         },
 
         /**
+         * Простое наследование конструкторов
+         *
+         * @name go.Lang.inherit
+         * @public
+         * @param {Function} [Constr]
+         *        функция-конструктор (по умолчанию создаётся пустая)
+         * @param {Function} [Parent]
+         *        конструктор-предок (по умолчанию Object)
+         * @param {Object} [extend]
+         *        список свойств для расширения прототипа
+         * @return {Function}
+         *         конструктор-наследник
+         */
+        'inherit': (function () {
+            var inherit,
+                nativeCreate,
+                Fake;
+            nativeCreate = nativeObject.create;
+            if (!nativeCreate) {
+                Fake = function () {};
+            }
+            return function inherit(Constr, Parent, extend) {
+                var proto;
+                Constr = Constr || function EmptyConstructor() {};
+                Parent = Parent || nativeObject;
+                if (nativeCreate) {
+                    proto = nativeCreate(Parent.prototype);
+                } else {
+                    Fake.prototype = Parent.prototype;
+                    proto = new Fake();
+                }
+                if (extend) {
+                    proto = Lang.extend(proto, extend);
+                }
+                proto.constructor = Constr;
+                Constr.prototype = proto;
+                return Constr;
+            };
+        }()),
+
+        /**
          * Вспомогательные функции-заготовки
          *
          * @namespace go.Lang.f
@@ -1101,73 +1144,249 @@ go("Lang", function (go, global, undefined) {
              */
             'ffalse': function () {
                 return false;
-            }
-        },
-
-        /**
-         * @class go.Lang.Exception
-         *        пользовательские "классы" исключений
-         * @alias go.Lang.Exception.Base
-         * @augments Error
-         */
-        'Exception': (function () {
-
-            var Base, create;
+            },
 
             /**
-             * Создание "класса" исключения
+             * Функция, просто возвращающая TRUE
              *
-             * @name go.Lang.Exception.create
-             * @param {String} name
-             *        название класса
-             * @param {Function} [parent=Error]
-             *        родительский класс (конструктор), по умолчанию - Error
-             * @param {String} [defmessage]
-             *        сообщение по умолчанию
+             * @name go.Lang.f.ftrue
+             * @public
+             * @return {Boolean}
+             */
+            'ftrue': function () {
+                return true;
+            },
+
+            /**
+             * Функция, возвращающая полученное значение
+             *
+             * @name go.Lang.f.identity
+             * @public
+             * @param {*} value
+             * @return {*}
+             */
+            'identity': function (value) {
+                return value;
+            },
+
+            /**
+             * Возвращает функцию, которая будет вызвана только один раз
+             *
+             * @name go.Lang.f.once
+             * @public
+             * @param {Function} f
+             *        исходная функция
              * @return {Function}
              */
-            create = function (name, parent, defmessage) {
-                var Exc, Fake;
-                if ((!parent) && (typeof global.Error === "function")) {
-                    parent = global.Error;
-                }
-                defmessage = defmessage || "";
-                Exc = function Exception(message) {
-                    this.name    = name;
-                    this.message = message || defmessage;
-                    this.stack = (new Error()).stack;
-                    if (this.stack) {
-                        /*jslint regexp: true */
-                        this.stack = this.stack.replace(/^[^n]*\n/, ""); // @todo
-                        /*jslint regexp: false */
+            'once': function (f) {
+                var called = false, result;
+                return function () {
+                    if (called) {
+                        return result;
                     }
+                    result = f.apply((this || global), arguments);
+                    called = true;
+                    return result;
                 };
-                if (parent) {
-                    Fake = function () {};
-                    Fake.prototype = parent.prototype;
-                    Exc.prototype  = new Fake();
-                    Exc.prototype.constructor = Exc;
-                }
-                return Exc;
-            };
+            },
 
             /**
-             * @class go.Lang.Exception.Base
-             *        базовый "класс" исключений внутри библиотеки
-             * @augments Error
+             * Композиция функций
+             *
+             * @example f = compose([f1, f2, f3]); f(value); // (f1(f2(f3(value)))
+             *
+             * @name go.Lang.f.compose
+             * @public
+             * @param {Array} funcs
+             * @param {Object} [context]
+             * @return {Function}
              */
-            Base = create("go.Exception");
-
-            Base.create = create;
-            Base.Base   = Base;
-
-            return Base;
-        }()),
+            'compose': function (funcs, context) {
+                var len = funcs.length;
+                if (len === 0) {
+                    return Lang.f.identity;
+                }
+                return function () {
+                    var i, value;
+                    value = funcs[0].apply(context, arguments);
+                    for (i = 1; i < len; i += 1) {
+                        value = funcs[i].call(context, value);
+                    }
+                    return value;
+                };
+            }
+        },
 
         'Listeners': go.__Loader.Listeners,
 
         'eoc': null
     };
+
+    /**
+     * @class go.Lang.Exception
+     *        пользовательские "классы" исключений
+     * @alias go.Lang.Exception.Base
+     * @augments Error
+     */
+    Lang.Exception = (function () {
+
+        var Base,
+            create,
+            Block,
+            isFileName = (Error.prototype.fileName !== undefined), // Firefox
+            inherit = Lang.inherit;
+
+        /**
+         * Создание пользовательского "класса" исключения
+         *
+         * @name go.Lang.Exception.create
+         * @param {String} name
+         *        название класса
+         * @param {Function} [parent]
+         *        родительский класс (конструктор), по умолчанию - go.Exception
+         * @param {String} [defmessage]
+         *        сообщение по умолчанию
+         * @return {Function}
+         *         конструктор пользовательского исключения
+         */
+        create = function create(name, parent, defmessage) {
+            var Exception,
+                regexp;
+
+            parent = parent || Base;
+            defmessage = defmessage || "";
+
+            Exception = function Exception(message) {
+                var e = new Error(),
+                    matches;
+                this.stack = e.stack;
+                this.name    = name;
+                this.message = (message !== undefined) ? message : defmessage;
+                if (isFileName) {
+                    if (!regexp) {
+                        regexp = new RegExp("^.*\n.*@(.*):(.*)\n");
+                    }
+                    matches = regexp.exec(e.stack + "\n");
+                    if (matches) {
+                        this.fileName = matches[1];
+                        this.lineNumber = parseInt(matches[2], 10);
+                    }
+                }
+            };
+            return inherit(Exception, parent);
+        };
+
+        /**
+         * @constructor
+         *
+         * @name go.Lang.Exception.Block
+         * @param {Object} exceptions
+         *        список исключений. "name" => [parent, defmessage]
+         * @param {String} [ns]
+         *        имя пространства имён
+         * @param {(Function|String|Boolean)} [base]
+         *        базовое исключение
+         * @param {Boolean} [lazy]
+         *        отложенное создание
+         * @return {Object}
+         *         пространство имён с исключениями
+         */
+        Block = function Block(exceptions, ns, base, lazy) {
+            this._exceptions = exceptions;
+            this._ns = ns ? ns + "." : "";
+            if (base === false) {
+                base = Base;
+            } else if (typeof base !== "function") {
+                if (typeof base !== "string") {
+                    base = "Base";
+                }
+                this[base] = create(this.ns + base, Base, ns + " base exception");
+                base = this[base];
+            }
+            this._base = base;
+            if (!lazy) {
+                this.createAll();
+            }
+        };
+
+        /**
+         * Получить объект исключения из блока
+         *
+         * @name go.Lang.Exception.Block#get
+         * @public
+         * @param {String} name
+         * @return {Function}
+         */
+        Block.prototype.get = function get(name) {
+            var parent, message, exception;
+            if (this.hasOwnProperty(name)) {
+                return this[name];
+            }
+            parent = this._exceptions[name];
+            if ((typeof parent === "object") && parent) {
+                message = parent[1];
+                parent = parent[0];
+            }
+            if (parent === undefined) {
+                return null;
+            }
+            switch (typeof parent) {
+            case "function":
+                break;
+            case "string":
+                parent = this.get(parent);
+                break;
+            default:
+                parent = this._base;
+            }
+            exception = create(this._ns + name, parent, message);
+            this[name] = exception;
+            return exception;
+        };
+
+        /**
+         * Выбросить исключение из блока
+         *
+         * @name go.Lang.Exception.Block#raise
+         * @public
+         * @param {String} name
+         * @param {String} [message]
+         * @throws {Error}
+         */
+        Block.prototype.raise = function raise(name, message) {
+            var E = this.get(name);
+            throw new E(message);
+        };
+
+        /**
+         * Создать все объекты исключений
+         *
+         * @name go.Lang.Exception.Block#createAll
+         * @public
+         * @return {void}
+         */
+        Block.prototype.createAll = function createAll() {
+            var exceptions = this._exceptions,
+                name;
+            for (name in exceptions) {
+                if (exceptions.hasOwnProperty(name)) {
+                    this.get(name);
+                }
+            }
+        };
+
+        /**
+         * @class go.Lang.Exception.Base
+         *        базовый "класс" исключений внутри библиотеки
+         * @augments Error
+         */
+        Base = create("go.Exception", Error);
+        Base.Base = Base;
+        Base.create = create;
+        Base.Block = Block;
+
+        return Base;
+    }());
 
     return Lang;
 });

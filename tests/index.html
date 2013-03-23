@@ -15,7 +15,9 @@
         "use strict";
         var tests;
         (function () {
-            var modules = [null, "Lang", "LangExt", "Class", "Ext", "Carcas", "Cookie"], cmodules, loaded = 0;
+            var modules = [null, "Lang", "LangExt", "Class", "Ext", "Carcas", "Cookie", "Str"],
+                cmodules,
+                loaded = 0;
             cmodules = (function (go, modules) {
                 var result,
                     smods,
