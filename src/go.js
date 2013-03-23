@@ -870,7 +870,7 @@ go("Lang", function (go, global, undefined) {
         },
 
         /**
-         * Перевод значения к виду массива
+         * Приведение значения к виду массива
          *
          * @name go.Lang.toArray
          * @public
