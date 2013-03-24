@@ -1001,12 +1001,7 @@ go.module("Lang", function (go, global, undefined) {
                     result.push(source[i]);
                 }
             } else {
-                result = {};
-                for (i in source) {
-                    if (source.hasOwnProperty(i)) {
-                        result[i] = source[i];
-                    }
-                }
+                result = Lang.extend({}, source, false);
             }
             return result;
         },
