@@ -59,7 +59,7 @@ var go = (function (global) {
      */
     function go(name, deps, CModule) {
         if (name) {
-            go.appendModule(name, deps, CModule);
+            go.module(name, deps, CModule);
         }
         return go;
     }
@@ -92,7 +92,7 @@ var go = (function (global) {
      * Добавление модуля в пространство имён
      * (вызывается при определении модуля в соответствующем файле)
      *
-     * @name go.appendModule
+     * @name go.module
      * @public
      * @param {String} name
      *        имя модуля
@@ -101,7 +101,7 @@ var go = (function (global) {
      * @param {Function} CModule
      *        функция-конструктор модуля
      */
-    go.appendModule = function (name, deps, CModule) {
+    go.module = function (name, deps, CModule) {
         if (!CModule) {
             CModule = deps;
             deps = [];
