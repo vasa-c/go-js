@@ -564,6 +564,52 @@ go.module("LangExt", [], function (go, global, undefined) {
         return items;
     };
 
+    /**
+     * Группировка по критериям
+     *
+     * @name go.Lang.groupBy
+     * @public
+     * @param {(Array|Object)} items
+     *        исходный список или словарь объектов
+     * @param {(Function|String)} criterion
+     *        критерий группировки (имя поля или callback(item))
+     * @param {Object} [context]
+     *        контекст вызова criterion
+     * @return {Object}
+     *         сгруппированная структура
+     */
+    Lang.groupBy = function groupBy(items, criterion, context) {
+        var f = (typeof criterion === "function"),
+            result = {},
+            item,
+            value,
+            len,
+            i;
+        if (Lang.isArray(items)) {
+            for (i = 0, len = items.length; i < len; i += 1) {
+                item = items[i];
+                value = f ? criterion.call(context, item, i, items) : item[criterion];
+                if (result[value]) {
+                    result[value].push(item);
+                } else {
+                    result[value] = [item];
+                }
+            }
+        } else {
+            for (i in items) {
+                if (items.hasOwnProperty(i)) {
+                    item = items[i];
+                    value = f ? criterion.call(context, item, i, items) : item[criterion];
+                    if (!result[value]) {
+                        result[value] = {};
+                    }
+                    result[value][i] = item;
+                }
+            }
+        }
+        return result;
+    };
+
     /* go.LangExt === true */
     return true;
 });

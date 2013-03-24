@@ -505,7 +505,7 @@ tests.test("filter", function () {
     deepEqual(go.Lang.filter(list, context.crit, context), [dict.three, dict.none, dict.five], "list and context test");
 });
 
-tests.test("", function () {
+tests.test("sortBy", function () {
 
     var obj1 = {'x': 1, 'y': 5},
         obj2 = {'x': 2, 'y': 2},
@@ -535,4 +535,80 @@ tests.test("", function () {
         return Math.abs(this.x - item.x) + Math.abs(this.y - item.y);
     }, {'x': 2, 'y': 2}, true);
     deepEqual(result, [obj1, obj3, obj2], "context and reverse");
+});
+
+tests.test("groupBy", function () {
+
+    var obj12 = {'x': 1, 'y': 2},
+        obj21 = {'x': 2, 'y': 1},
+        obj23 = {'x': 2, 'y': 3},
+        obj32 = {'x': 3, 'y': 2},
+        items,
+        result,
+        expected;
+
+    items = {
+        '12': obj12,
+        '21': obj21,
+        '23': obj23,
+        '32': obj32
+    };
+    result = go.Lang.groupBy(items, "x");
+    expected = {
+        '1': {
+            '12': obj12
+        },
+        '2': {
+            '21': obj21,
+            '23': obj23
+        },
+        '3': {
+            '32': obj32
+        }
+    };
+    deepEqual(result, expected, "dict group by field");
+
+    result = go.Lang.groupBy(items, "y");
+    expected = {
+        '1': {
+            '21': obj21
+        },
+        '2': {
+            '12': obj12,
+            '32': obj32
+        },
+        '3': {
+            '23': obj23
+        }
+    };
+    deepEqual(result, expected, "dict group by field (other)");
+
+    result = go.Lang.groupBy(items, function (item) {return this.d + item.x - item.y; }, {'d': 5});
+    expected = {
+        '4': {
+            '12': obj12,
+            '23': obj23
+        },
+        '6': {
+            '21': obj21,
+            '32': obj32
+        }
+    };
+    deepEqual(result, expected, "dict group by callback");
+
+    items = [obj12, obj21, obj23, obj32];
+    result = go.Lang.groupBy(items, "x");
+    expected = {
+        '1': [obj12],
+        '2': [obj21, obj23],
+        '3': [obj32]
+    };
+    deepEqual(result, expected, "list group by field");
+
+    result = go.Lang.groupBy(items, function (item) {return this.d + item.x - item.y; }, {'d': 4});
+    expected = {
+        '3': [obj12, obj23],
+        '5': [obj21, obj32]
+    };
+    deepEqual(result, expected, "list group by callback");
 });
