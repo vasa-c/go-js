@@ -27,7 +27,7 @@ var go = (function (global) {
          *
          * @type {String}
          */
-        GO_DIR,
+        ROOT_DIR,
 
         /**
          * @type {Document}
@@ -59,7 +59,7 @@ var go = (function (global) {
      * @param {Function} [listener]
      *        обработчик загрузки всех указанных модулей
      */
-    go.include = function (names, listener) {
+    go.include = function include(names, listener) {
         loader.include(names, listener);
     };
 
@@ -76,12 +76,23 @@ var go = (function (global) {
      * @param {Function} CModule
      *        функция-конструктор модуля
      */
-    go.module = function (name, deps, CModule) {
+    go.module = function module(name, deps, CModule) {
         if (!CModule) {
             CModule = deps;
             deps = [];
         }
         loader.loaded(name, deps, CModule);
+    };
+
+    /**
+     * Получить каталог в котором находится go.js
+     *
+     * @name go.getRootDir
+     * @public
+     * @return {String}
+     */
+    go.getRootDir = function getRootDir() {
+        return ROOT_DIR;
     };
 
     /**
@@ -489,7 +500,7 @@ var go = (function (global) {
 
     loader = (function () {
         function includer(name) {
-            go.__Loader.includeJSFile(GO_DIR + name + ".js" + anticache);
+            go.__Loader.includeJSFile(ROOT_DIR + name + ".js" + anticache);
         }
         function creator(name, data) {
             go[name] = data(go, global);
@@ -545,7 +556,7 @@ var go = (function (global) {
             throw new Error("go.js is not found in DOM");
         }
 
-        GO_DIR = matches[1];
+        ROOT_DIR = matches[1];
 
         anticache = matches[2] || "";
 
