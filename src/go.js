@@ -18,7 +18,9 @@
 var go = (function (global) {
     "use strict";
 
-    var VERSION = "2.0-beta",
+    var go = {
+            'VERSION': "2.0-beta"
+        },
 
         /**
          * Http-адрес каталога в котором находится go.js и модули
@@ -45,33 +47,6 @@ var go = (function (global) {
          * @type {String}
          */
         anticache;
-
-    /**
-     * Вызов go(), как функции - загрузка модуля
-     *
-     * @param {String} name
-     *        имя модуля
-     * @param {(Array.<String>|String)} [deps]
-     *        список зависимостей
-     * @param {Function} CModule
-     *        функция-конструктор модуля
-     * @return {Function}
-     */
-    function go(name, deps, CModule) {
-        if (name) {
-            go.module(name, deps, CModule);
-        }
-        return go;
-    }
-
-    /**
-     * Текущая версия библиотеки
-     *
-     * @constant
-     * @name go.VERSION
-     * @type {String}
-     */
-    go.VERSION = VERSION;
 
     /**
      * Инициирование загрузки нужных модулей
@@ -587,7 +562,7 @@ var go = (function (global) {
 /**
  * @namespace go.Lang
  */
-go("Lang", function (go, global, undefined) {
+go.module("Lang", function (go, global, undefined) {
     "use strict";
     /*jslint unparam: false */
 

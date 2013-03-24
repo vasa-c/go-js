@@ -12,7 +12,7 @@ if (!window.go) {
     throw new Error("go.core is not found");
 }
 
-go("LangExt", [], function (go, global, undefined) {
+go.module("LangExt", [], function (go, global, undefined) {
     "use strict";
     var Lang = go.Lang,
         nativeToString = global.Object.prototype.toString,

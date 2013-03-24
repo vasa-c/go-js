@@ -17,7 +17,7 @@ if (!window.go) {
 /**
  * @namespace go.Ext
  */
-go("Ext", ["Class"], function (go, global, undefined) {
+go.module("Ext", ["Class"], function (go, global, undefined) {
     "use strict";
     /*jslint unparam: false */
     var Ext = {};
