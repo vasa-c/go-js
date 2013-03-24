@@ -504,3 +504,35 @@ tests.test("filter", function () {
     context.inf = -1;
     deepEqual(go.Lang.filter(list, context.crit, context), [dict.three, dict.none, dict.five], "list and context test");
 });
+
+tests.test("", function () {
+
+    var obj1 = {'x': 1, 'y': 5},
+        obj2 = {'x': 2, 'y': 2},
+        obj3 = {'x': 3, 'y': 2},
+        list,
+        result;
+
+    list = [obj2, obj3, obj1];
+    result = go.Lang.sortBy(list, "x");
+    deepEqual(result, [obj1, obj2, obj3], "sort by field");
+
+    result = go.Lang.sortBy(list, "x", null, true);
+    deepEqual(result, [obj3, obj2, obj1], "reverse sort by field");
+
+    result = go.Lang.sortBy(list, function (item) {return item.x * item.y; });
+    deepEqual(result, [obj2, obj1, obj3], "sort by func");
+
+    result = go.Lang.sortBy(list, function (item) {return item.x * item.y; }, null, true);
+    deepEqual(result, [obj3, obj1, obj2], "reverse sort by func");
+
+    result = go.Lang.sortBy(list, function (item) {
+        return Math.abs(this.x - item.x) + Math.abs(this.y - item.y); // точка, ближайшая к context
+    }, {'x': 2, 'y': 2});
+    deepEqual(result, [obj2, obj3, obj1], "context");
+
+    result = go.Lang.sortBy(list, function (item) {
+        return Math.abs(this.x - item.x) + Math.abs(this.y - item.y);
+    }, {'x': 2, 'y': 2}, true);
+    deepEqual(result, [obj1, obj3, obj2], "context and reverse");
+});

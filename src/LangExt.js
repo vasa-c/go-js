@@ -516,6 +516,54 @@ go.module("LangExt", [], function (go, global, undefined) {
         return result;
     };
 
+    /**
+     * Сортировка объектов по определённому критерию
+     *
+     * @name go.Lang.sortBy
+     * @public
+     * @param {Array} items
+     *        исходный массив
+     * @param {(Function|String)} criterion
+     *        критерий сортировки (имя поля или callback(item))
+     * @param {Object} [context]
+     *        контекст вызова criterion
+     * @param {Boolean} [reverse]
+     *        в обратном порядке
+     * @return {Array}
+     *         результирующий массив
+     */
+    Lang.sortBy = function sortBy(items, criterion, context, reverse) {
+        var arr = [],
+            len = items.length,
+            f,
+            item,
+            value,
+            i;
+        reverse = reverse ? -1 : 1;
+        f = (typeof criterion === "function");
+        for (i = 0; i < len; i += 1) {
+            item = items[i];
+            value = f ? criterion.call(context, item, i, items) : item[criterion];
+            arr.push([value, item]);
+        }
+        arr.sort(function (a, b) {
+            a = a[0];
+            b = b[0];
+            if (a > b) {
+                return reverse;
+            }
+            if (b > a) {
+                return -reverse;
+            }
+            return 0;
+        });
+        items = [];
+        for (i = 0; i < len; i += 1) {
+            items.push(arr[i][1]);
+        }
+        return items;
+    };
+
     /* go.LangExt === true */
     return true;
 });
