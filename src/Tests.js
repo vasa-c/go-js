@@ -13,7 +13,7 @@ if (!window.go) {
     throw new Error("go.core is not found");
 }
 
-go("Tests", function (go, global) {
+go.module("Tests", function (go, global) {
     "use strict";
 
     /**

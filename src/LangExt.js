@@ -12,7 +12,7 @@ if (!window.go) {
     throw new Error("go.core is not found");
 }
 
-go("LangExt", [], function (go, global, undefined) {
+go.module("LangExt", [], function (go, global, undefined) {
     "use strict";
     var Lang = go.Lang,
         nativeToString = global.Object.prototype.toString,
@@ -410,7 +410,7 @@ go("LangExt", [], function (go, global, undefined) {
      */
     Lang.invoke = function invoke(items, methodName, args) {
         return Lang.each(items, function (item) {
-            return item[methodName].apply(item, args);
+            return item[methodName].apply(item, args || []);
         });
     };
 
@@ -510,6 +510,100 @@ go("LangExt", [], function (go, global, undefined) {
                             result[i] = item;
                         }
                     }
+                }
+            }
+        }
+        return result;
+    };
+
+    /**
+     * Сортировка объектов по определённому критерию
+     *
+     * @name go.Lang.sortBy
+     * @public
+     * @param {Array} items
+     *        исходный массив
+     * @param {(Function|String)} criterion
+     *        критерий сортировки (имя поля или callback(item))
+     * @param {Object} [context]
+     *        контекст вызова criterion
+     * @param {Boolean} [reverse]
+     *        в обратном порядке
+     * @return {Array}
+     *         результирующий массив
+     */
+    Lang.sortBy = function sortBy(items, criterion, context, reverse) {
+        var arr = [],
+            len = items.length,
+            f,
+            item,
+            value,
+            i;
+        reverse = reverse ? -1 : 1;
+        f = (typeof criterion === "function");
+        for (i = 0; i < len; i += 1) {
+            item = items[i];
+            value = f ? criterion.call(context, item, i, items) : item[criterion];
+            arr.push([value, item]);
+        }
+        arr.sort(function (a, b) {
+            a = a[0];
+            b = b[0];
+            if (a > b) {
+                return reverse;
+            }
+            if (b > a) {
+                return -reverse;
+            }
+            return 0;
+        });
+        items = [];
+        for (i = 0; i < len; i += 1) {
+            items.push(arr[i][1]);
+        }
+        return items;
+    };
+
+    /**
+     * Группировка по критериям
+     *
+     * @name go.Lang.groupBy
+     * @public
+     * @param {(Array|Object)} items
+     *        исходный список или словарь объектов
+     * @param {(Function|String)} criterion
+     *        критерий группировки (имя поля или callback(item))
+     * @param {Object} [context]
+     *        контекст вызова criterion
+     * @return {Object}
+     *         сгруппированная структура
+     */
+    Lang.groupBy = function groupBy(items, criterion, context) {
+        var f = (typeof criterion === "function"),
+            result = {},
+            item,
+            value,
+            len,
+            i;
+        if (Lang.isArray(items)) {
+            for (i = 0, len = items.length; i < len; i += 1) {
+                item = items[i];
+                value = f ? criterion.call(context, item, i, items) : item[criterion];
+                if (result[value]) {
+                    result[value].push(item);
+                } else {
+                    result[value] = [item];
+                }
+            }
+        } else {
+            for (i in items) {
+                if (items.hasOwnProperty(i)) {
+                    item = items[i];
+                    value = f ? criterion.call(context, item, i, items) : item[criterion];
+                    if (!result[value]) {
+                        result[value] = {};
+                    }
+                    result[value][i] = item;
                 }
             }
         }

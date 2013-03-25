@@ -16,7 +16,7 @@ if (!window.go) {
 /**
  * @namespace go.Str
  */
-go("Str", function (go, global, undefined) {
+go.module("Str", function (go, global, undefined) {
     "use strict";
     /*jslint unparam: false */
     var Str = {},

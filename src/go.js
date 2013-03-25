@@ -18,14 +18,16 @@
 var go = (function (global) {
     "use strict";
 
-    var VERSION = "2.0-beta",
+    var go = {
+            'VERSION': "2.0-beta"
+        },
 
         /**
          * Http-адрес каталога в котором находится go.js и модули
          *
          * @type {String}
          */
-        GO_DIR,
+        ROOT_DIR,
 
         /**
          * @type {Document}
@@ -47,33 +49,6 @@ var go = (function (global) {
         anticache;
 
     /**
-     * Вызов go(), как функции - загрузка модуля
-     *
-     * @param {String} name
-     *        имя модуля
-     * @param {(Array.<String>|String)} [deps]
-     *        список зависимостей
-     * @param {Function} CModule
-     *        функция-конструктор модуля
-     * @return {Function}
-     */
-    function go(name, deps, CModule) {
-        if (name) {
-            go.appendModule(name, deps, CModule);
-        }
-        return go;
-    }
-
-    /**
-     * Текущая версия библиотеки
-     *
-     * @constant
-     * @name go.VERSION
-     * @type {String}
-     */
-    go.VERSION = VERSION;
-
-    /**
      * Инициирование загрузки нужных модулей
      * (только на этапе загрузки страницы)
      *
@@ -84,7 +59,7 @@ var go = (function (global) {
      * @param {Function} [listener]
      *        обработчик загрузки всех указанных модулей
      */
-    go.include = function (names, listener) {
+    go.include = function include(names, listener) {
         loader.include(names, listener);
     };
 
@@ -92,7 +67,7 @@ var go = (function (global) {
      * Добавление модуля в пространство имён
      * (вызывается при определении модуля в соответствующем файле)
      *
-     * @name go.appendModule
+     * @name go.module
      * @public
      * @param {String} name
      *        имя модуля
@@ -101,12 +76,23 @@ var go = (function (global) {
      * @param {Function} CModule
      *        функция-конструктор модуля
      */
-    go.appendModule = function (name, deps, CModule) {
+    go.module = function module(name, deps, CModule) {
         if (!CModule) {
             CModule = deps;
             deps = [];
         }
         loader.loaded(name, deps, CModule);
+    };
+
+    /**
+     * Получить каталог в котором находится go.js
+     *
+     * @name go.getRootDir
+     * @public
+     * @return {String}
+     */
+    go.getRootDir = function getRootDir() {
+        return ROOT_DIR;
     };
 
     /**
@@ -514,7 +500,7 @@ var go = (function (global) {
 
     loader = (function () {
         function includer(name) {
-            go.__Loader.includeJSFile(GO_DIR + name + ".js" + anticache);
+            go.__Loader.includeJSFile(ROOT_DIR + name + ".js" + anticache);
         }
         function creator(name, data) {
             go[name] = data(go, global);
@@ -570,7 +556,7 @@ var go = (function (global) {
             throw new Error("go.js is not found in DOM");
         }
 
-        GO_DIR = matches[1];
+        ROOT_DIR = matches[1];
 
         anticache = matches[2] || "";
 
@@ -587,7 +573,7 @@ var go = (function (global) {
 /**
  * @namespace go.Lang
  */
-go("Lang", function (go, global, undefined) {
+go.module("Lang", function (go, global, undefined) {
     "use strict";
     /*jslint unparam: false */
 
@@ -870,7 +856,7 @@ go("Lang", function (go, global, undefined) {
         },
 
         /**
-         * Перевод значения к виду массива
+         * Приведение значения к виду массива
          *
          * @name go.Lang.toArray
          * @public
@@ -962,9 +948,9 @@ go("Lang", function (go, global, undefined) {
          *
          * @name go.Lang.each
          * @public
-         * @param {(Object|Array)} iter
+         * @param {(Object|Array)} items
          *        итерируемый объект (или порядковый массив)
-         * @param {Function} fn
+         * @param {Function} callback
          *        тело цикла (value, key, iter)
          * @param {Object} [thisArg=global]
          *        контекст, в котором следует выполнять тело цикла
@@ -973,23 +959,23 @@ go("Lang", function (go, global, undefined) {
          * @return {(Object|Array)}
          *         результаты выполнения функции для всех элементов
          */
-        'each': function each(iter, fn, thisArg, deep) {
+        'each': function each(items, callback, thisArg, deep) {
             var result, i, len;
             thisArg = thisArg || global;
-            if (Lang.isArray(iter)) {
+            if (Lang.isArray(items)) {
                 if (nativeMap) {
-                    return nativeMap.call(iter, fn, thisArg);
+                    return nativeMap.call(items, callback, thisArg);
                 }
                 result = [];
-                for (i = 0, len = iter.length; i < len; i += 1) {
-                    result.push(fn.call(thisArg, iter[i], i, iter));
+                for (i = 0, len = items.length; i < len; i += 1) {
+                    result.push(callback.call(thisArg, items[i], i, items));
                 }
             } else {
                 result = {};
                 /*jslint forin: true */
-                for (i in iter) {
-                    if (iter.hasOwnProperty(i) || deep) {
-                        result[i] = fn.call(thisArg, iter[i], i, iter);
+                for (i in items) {
+                    if (items.hasOwnProperty(i) || deep) {
+                        result[i] = callback.call(thisArg, items[i], i, items);
                     }
                 }
                 /*jslint forin: false */
@@ -1015,12 +1001,7 @@ go("Lang", function (go, global, undefined) {
                     result.push(source[i]);
                 }
             } else {
-                result = {};
-                for (i in source) {
-                    if (source.hasOwnProperty(i)) {
-                        result[i] = source[i];
-                    }
-                }
+                result = Lang.extend({}, source, false);
             }
             return result;
         },

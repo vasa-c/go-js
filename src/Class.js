@@ -12,7 +12,7 @@ if (!window.go) {
     throw new Error("go.core is not found");
 }
 
-go("Class", function (go, global) {
+go.module("Class", function (go, global) {
     "use strict";
 
     var Class,
