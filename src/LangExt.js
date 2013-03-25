@@ -410,7 +410,7 @@ go.module("LangExt", [], function (go, global, undefined) {
      */
     Lang.invoke = function invoke(items, methodName, args) {
         return Lang.each(items, function (item) {
-            return item[methodName].apply(item, args);
+            return item[methodName].apply(item, args || []);
         });
     };
 
