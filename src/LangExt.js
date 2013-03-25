@@ -16,7 +16,7 @@ go.module("LangExt", [], function (go, global, undefined) {
     "use strict";
     var Lang = go.Lang,
         nativeToString = global.Object.prototype.toString,
-        nativeFilter = global.Array.prototype.filter;
+        nativeArrayPrototype = global.Array.prototype;
 
     /**
      * Разбор GET или POST запроса
@@ -480,8 +480,8 @@ go.module("LangExt", [], function (go, global, undefined) {
                     };
                 }(criterion));
             }
-            if (nativeFilter) {
-                result = nativeFilter.call(items, criterion, context);
+            if (nativeArrayPrototype.filter) {
+                result = nativeArrayPrototype.filter.call(items, criterion, context);
             } else {
                 result = [];
                 for (i = 0, len = items.length; i < len; i += 1) {
@@ -639,6 +639,62 @@ go.module("LangExt", [], function (go, global, undefined) {
             }
         }
         return result;
+    };
+
+    /**
+     * Проверка всех элементов списка на соответствие заданным критериям
+     *
+     * @param {(Object|Array)} items
+     *        список элементов
+     * @param {(Function|String)} [criterion]
+     *        критерий (функция или имя поля)
+     * @param {Object} [context]
+     *        контекст для вызова критерия
+     * @return {Boolean}
+     *         все ли элементы соответствуют критерию
+     */
+    Lang.every = function every(items, criterion, context) {
+        var len,
+            i,
+            noc = (criterion === undefined),
+            f = (typeof criterion === "function"),
+            value;
+        if (Lang.isArray(items)) {
+            if (nativeArrayPrototype.every) {
+                if (!f) {
+                    if (criterion) {
+                        criterion = function (item) {return item[criterion]; };
+                    } else {
+                        criterion = function (item) {return item; };
+                    }
+                }
+                return nativeArrayPrototype.every.call(items, criterion, context);
+            }
+            for (i = 0, len = items.length; i < len; i += 1) {
+                if (f) {
+                    value = criterion.call(context, items[i], i, items);
+                } else {
+                    value = noc ? items[i] : items[i][criterion];
+                }
+                if (!value) {
+                    return false;
+                }
+            }
+        } else {
+            for (i in items) {
+                if (items.hasOwnProperty(i)) {
+                    if (f) {
+                        value = criterion.call(context, items[i], i, items);
+                    } else {
+                        value = noc ? items[i] : items[i][criterion];
+                    }
+                    if (!value) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     };
 
     /* go.LangExt === true */

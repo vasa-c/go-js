@@ -650,3 +650,25 @@ tests.test("flip", function () {
         'three': 1
     }, "flip dict and default value");
 });
+
+tests.test("every", function () {
+
+    var list = [11, 3, 15, 4, 7, 11],
+        dict = {
+            'a': {'x': 5},
+            'b': {'x': 11},
+            'c': {'x': 0},
+            'd': {'x': 3}
+        };
+
+    ok(go.Lang.every(list), "no criterion - scalar");
+    ok(go.Lang.every(dict), "no criterion - objects");
+    ok(go.Lang.every(list, function (item) {return item > 0;}), "list and callback (true)");
+    ok(!go.Lang.every(list, function (item) {return item > 10;}), "list and callback (false)");
+
+    ok(!go.Lang.every(dict, "x"), "dict and field");
+    ok(!go.Lang.every(dict, function (item) {return item.x !== this.d;}, {'d': 3}), "dict and callback and context (false)");
+    ok(go.Lang.every(dict, function (item) {return item.x !== this.d;}, {'d': 33}), "dict and callback and context (true)");
+
+
+});
