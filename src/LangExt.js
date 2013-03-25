@@ -610,6 +610,37 @@ go.module("LangExt", [], function (go, global, undefined) {
         return result;
     };
 
+    /**
+     * Обменять местами ключи и значения
+     *
+     * @name flip
+     * @public
+     * @param {(Object|Array)} items
+     *        исходный список или словарь
+     * @param {*} [value]
+     *        значение (по умолчанию в качестве значения используется ключ)
+     * @return {Object}
+     *         перевёрнутый словарь
+     */
+    Lang.flip = function flip(items, value) {
+        var result = {},
+            len,
+            def = (value !== undefined),
+            i;
+        if (Lang.isArray(items)) {
+            for (i = 0, len = items.length; i < len; i += 1) {
+                result[items[i]] = def ? value : i;
+            }
+        } else {
+            for (i in items) {
+                if (items.hasOwnProperty(i)) {
+                    result[items[i]] = def ? value : i;
+                }
+            }
+        }
+        return result;
+    };
+
     /* go.LangExt === true */
     return true;
 });

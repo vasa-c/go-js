@@ -612,3 +612,41 @@ tests.test("groupBy", function () {
     };
     deepEqual(result, expected, "list group by callback");
 });
+
+tests.test("flip", function () {
+
+    var list = [1, 2, 3, 4, 5, 2, 3],
+        dict = {
+            '1': "one",
+            '2': "two",
+            '3': "three"
+        };
+
+    deepEqual(go.Lang.flip(list), {
+        '1': 0,
+        '2': 5,
+        '3': 6,
+        '4': 3,
+        '5': 4
+    }, "flip list");
+
+    deepEqual(go.Lang.flip(list, true), {
+        '1': true,
+        '2': true,
+        '3': true,
+        '4': true,
+        '5': true
+    }, "flip list and default value");
+
+    deepEqual(go.Lang.flip(dict), {
+        'one': "1",
+        'two': "2",
+        'three': "3"
+    }, "flip dict");
+
+    deepEqual(go.Lang.flip(dict, 1), {
+        'one': 1,
+        'two': 1,
+        'three': 1
+    }, "flip dict and default value");
+});
