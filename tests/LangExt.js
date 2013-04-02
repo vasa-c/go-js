@@ -728,3 +728,61 @@ tests.test("reduce", function () {
         go.Lang.reduce([], function () {});
     }, TypeError, "TypeError for empty array");
 });
+
+tests.test("reduceRight", function () {
+
+    var list,
+        dict,
+        callback,
+        context,
+        expected;
+
+    list = [2, 4, 6, 8];
+    callback = function (previous, current, index, array) {
+        array[index] = current + 1;
+        return String(previous) + ";" + current + "," + index;
+    };
+    expected = "8;6,2;4,1;2,0";
+    equal(go.Lang.reduceRight(list, callback), expected, "array");
+    deepEqual(list, [3, 5, 7, 8], "array arg");
+    expected = "7;8,3;7,2;5,1;3,0";
+    equal(go.Lang.reduceRight(list, callback, 7), expected, "initial value");
+
+    list = [2, 4, 6, 8];
+    context = {
+        'A': [0, 1, 2, 3]
+    };
+    callback = function (previous, current, index) {
+        return previous - current * this.A[index];
+    };
+    expected = -8; // 8 - 6 * 2 - 4 * 1 - 2 * 0
+    equal(go.Lang.reduceRight(list, [callback, context]), expected, "context");
+
+    dict = {
+        'x': 1,
+        'y': 2,
+        'z': 3
+    };
+    callback = function (previous, current) {
+        return previous + current;
+    };
+    expected = 6;
+    equal(go.Lang.reduceRight(dict, callback), expected, "dict");
+    context = {
+        'x': 2,
+        'y': 3,
+        'z': 4
+    };
+    callback = function (previous, current, key, items) {
+        if (items !== dict) {
+            return 0;
+        }
+        return previous + current * this[key];
+    };
+    expected = 21; // 1 + 1 * 2 + 2 * 3 + 3 * 4
+    equal(go.Lang.reduce(dict, [callback, context], 1), expected, "dict and initial value + context");
+
+    raises(function () {
+        go.Lang.reduceRight([], function () {});
+    }, TypeError, "TypeError for empty array");
+});
