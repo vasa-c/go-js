@@ -86,18 +86,18 @@ go.module("Str", function (go, global, undefined) {
      * @public
      * @param {(String|Number)} value
      *        исходное число или его строковое представление
-     * @param {Boolean} [float]
+     * @param {Boolean} [isfloat]
      *        число может быть дробным (по умолчанию нет)
      * @param {Boolean} [signed]
      *        число может быть меньше нуля (по умолчанию нет)
      * @return {Boolean}
      *         является ли значение числом требуемого вида
      */
-    Str.isNumeric = function isNumeric(value, float, signed) {
+    Str.isNumeric = function isNumeric(value, isfloat, signed) {
         var n;
         switch (typeof value) {
         case "string":
-            if (!float) {
+            if (!isfloat) {
                 n = parseInt(value, 10);
                 if (n.toString() !== value) {
                     return false;
@@ -112,7 +112,7 @@ go.module("Str", function (go, global, undefined) {
             if ((value === Number.POSITIVE_INFINITY) || (value === Number.NEGATIVE_INFINITY)) {
                 return false;
             }
-            if ((!float) && (Math.round(value) !== value)) {
+            if ((!isfloat) && (Math.round(value) !== value)) {
                 return false;
             }
             return (signed || (value >= 0));
