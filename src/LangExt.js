@@ -697,6 +697,77 @@ go.module("LangExt", [], function (go, global, undefined) {
         return true;
     };
 
+    /**
+     * Объединение значений (левоассоциативное)
+     *
+     * @name go.Lang.reduce
+     * @public
+     * @param {(Array|Object)} items
+     *        набор значений
+     * @param {(Function|Array)} callback
+     *        колбэк или [callback, context]
+     * @param initialValue [optional]
+     *        начальное значение
+     * @return {*}
+     *         объединённое значение
+     */
+    Lang.reduce = function reduce(items, callback, initialValue) {
+        var clb = callback, // jslint: Do not mutate parameter 'callback' when using 'arguments'.
+            context,
+            init = (arguments.length > 2),
+            value,
+            len,
+            i,
+            start;
+        if (typeof clb === "object") {
+            context = clb[1];
+            clb = clb[0];
+        }
+        if (Lang.isArray(items)) {
+            if (nativeArrayPrototype.reduce) {
+                if (context) {
+                    clb = Lang.bind(clb, context);
+                }
+                if (init) {
+                    return nativeArrayPrototype.reduce.call(items, clb, initialValue);
+                }
+                return nativeArrayPrototype.reduce.call(items, clb);
+            }
+            len = items.length;
+            if (init) {
+                value = initialValue;
+                start = 0;
+            } else {
+                if (len === 0) {
+                    throw new TypeError("Reduce of empty array with no initial value");
+                }
+                value = items[0];
+                start = 1;
+            }
+            for (i = start; i < len; i += 1) {
+                value = clb.call(context, value, items[i], i, items);
+            }
+        } else {
+            if (init) {
+                value = initialValue;
+                start = true;
+            } else {
+                start = false;
+            }
+            for (i in items) {
+                if (items.hasOwnProperty(i)) {
+                    if (start) {
+                        value = clb.call(context, value, items[i], i, items);
+                    } else {
+                        value = items[i];
+                        start = true;
+                    }
+                }
+            }
+        }
+        return value;
+    };
+
     /* go.LangExt === true */
     return true;
 });
