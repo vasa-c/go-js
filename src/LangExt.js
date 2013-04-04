@@ -658,7 +658,7 @@ go.module("LangExt", [], function (go, global, undefined) {
     Lang.every = function every(items, criterion, context) {
         var len,
             i,
-            noc = (criterion === undefined),
+            noc = (!criterion),
             f = (typeof criterion === "function"),
             value;
         if (Lang.isArray(items)) {
@@ -717,7 +717,7 @@ go.module("LangExt", [], function (go, global, undefined) {
     Lang.some = function some(items, criterion, context) {
         var len,
             i,
-            noc = (criterion === undefined),
+            noc = (!criterion),
             f = (typeof criterion === "function"),
             value;
         if (Lang.isArray(items)) {
@@ -757,6 +757,92 @@ go.module("LangExt", [], function (go, global, undefined) {
             }
         }
         return false;
+    };
+
+    /**
+     * Поиск элемента, соответствующего критерию
+     *
+     * @name go.Lang.find
+     * @public
+     * @param {(Object|Array)} items
+     *        набор элементов
+     * @param {(Function|String)} [criterion]
+     *        критерий (функция или имя поля)
+     * @param {Object} [context]
+     *        контекст для вызова criterion
+     * @param {Boolean} [returnkey]
+     *        возвращать вместо значения ключ или индекс
+     * @param {*} [bydefault]
+     *        значение по умолчанию (если элемент не найден)
+     * @return {*}
+     *         значение найденого элемента, его ключ (returnkey) или bydefault
+     */
+    Lang.find = function find(items, criterion, context, returnkey, bydefault) {
+        var len,
+            i,
+            noc = (!criterion),
+            f = (typeof criterion === "function"),
+            value,
+            ritem,
+            rkey;
+        if (Lang.isArray(items)) {
+            if (nativeArrayPrototype.some) {
+                if (!f) {
+                    if (noc) {
+                        criterion = function (item, key) {
+                            ritem = item;
+                            rkey = key;
+                            return item;
+                        };
+                    } else {
+                        f = criterion;
+                        criterion = function (item, key) {
+                            ritem = item;
+                            rkey = key;
+                            return item[f];
+                        };
+                    }
+                } else {
+                    f = criterion;
+                    criterion = function (item, key, items) {
+                        if (f.call(this, item, key, items)) {
+                            ritem = item;
+                            rkey = key;
+                            return true;
+                        }
+                        return false;
+                    };
+                }
+                if (nativeArrayPrototype.some.call(items, criterion, context)) {
+                    return returnkey ? rkey : ritem;
+                }
+                return bydefault;
+            }
+            for (i = 0, len = items.length; i < len; i += 1) {
+                if (f) {
+                    value = criterion.call(context, items[i], i, items);
+                } else {
+                    value = noc ? items[i] : items[i][criterion];
+                }
+                if (value) {
+                    return returnkey ? i : items[i];
+                }
+            }
+        } else {
+            for (i in items) {
+                if (items.hasOwnProperty(i)) {
+                    if (f) {
+                        value = criterion.call(context, items[i], i, items);
+                    } else {
+                        value = noc ? items[i] : items[i][criterion];
+                    }
+                    if (value) {
+                        return returnkey ? i : items[i];
+                    }
+                }
+            }
+        }
+        return bydefault;
     };
 
     /**

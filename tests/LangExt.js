@@ -678,7 +678,6 @@ tests.test("every", function () {
 });
 
 tests.test("some", function () {
-
     var list,
         dict,
         callback,
@@ -763,8 +762,68 @@ tests.test("some", function () {
     ok(!go.Lang.some(context, callback), "dict, items in callback");
 });
 
-tests.test("reduce", function () {
+tests.test("find", function () {
+    var list,
+        dict,
+        callback,
+        context;
 
+    list = [0, false, null, 7, undefined];
+    equal(go.Lang.find(list), 7, "list, scalar");
+    equal(go.Lang.find(list, null, null, true), 3, "list, scalar, key");
+    list[3] = false;
+    equal(go.Lang.find(list), undefined, "list, not found");
+    equal(go.Lang.find(list, null, null, false, "def"), "def", "list, not found, by default");
+
+    dict = {
+        'a': 0,
+        'b': 1,
+        'c': false
+    };
+    equal(go.Lang.find(dict), 1, "dict, scalar");
+    equal(go.Lang.find(dict, null, null, true, "def"), "b", "dict, scalar, key");
+    dict.b = 0;
+    equal(go.Lang.find(dict, null, null, true, "def"), "def", "dict, scalar, key, by default");
+
+    list = [{'x': 0}, {'x': 0}, {'x': 0}];
+    equal(go.Lang.find(list, "x"), undefined, "list, field, empty");
+    list[1].x = 2;
+    equal(go.Lang.find(list, "x", null, true), 1, "list, field, not empty");
+
+    dict = {
+        'a': {'x': 0},
+        'b': {'x': 0},
+        'c': {'x': 0}
+    };
+    equal(go.Lang.find(dict, "x"), undefined, "dict, field, empty");
+    dict.b.x = 1;
+    equal(go.Lang.find(dict, "x", null, true), "b", "dict, field, not empty");
+
+    context = {
+        'd': 5
+    };
+    callback = function (item, key, items) {
+        return item > context.d;
+    };
+
+    list = [1, 2, 3, 4, 5];
+    equal(go.Lang.find(list, callback, context), undefined, "list, callback + context, empty");
+    list = [1, 2, 7, 4, 5];
+    equal(go.Lang.find(list, callback, context), 7, "list, callback + context, not empty");
+    equal(go.Lang.find(list, callback, context, true), 2, "list, callback + context, not empty, key");
+
+    dict = {
+        'a': 1,
+        'b': 2,
+        'c': 3
+    };
+    equal(go.Lang.find(dict, callback, context), undefined, "dict, callback + context, empty");
+    dict.b = 7;
+    equal(go.Lang.find(dict, callback, context), 7, "dict, callback + context, not empty");
+    equal(go.Lang.find(dict, callback, context, true), "b", "dict, callback + context, not empty, key");
+});
+
+tests.test("reduce", function () {
     var list,
         dict,
         callback,
