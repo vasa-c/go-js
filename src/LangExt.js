@@ -644,6 +644,8 @@ go.module("LangExt", [], function (go, global, undefined) {
     /**
      * Проверка всех элементов списка на соответствие заданным критериям
      *
+     * @name go.Lang.every
+     * @public
      * @param {(Object|Array)} items
      *        список элементов
      * @param {(Function|String)} [criterion]
@@ -695,6 +697,65 @@ go.module("LangExt", [], function (go, global, undefined) {
             }
         }
         return true;
+    };
+
+    /**
+     * Проверка, есть ли хоть один элемент, соответствующий критерию
+     *
+     * @name go.Lang.some
+     * @public
+     * @param {(Object|Array)} items
+     *        список элементов
+     * @param {(Function|String)} [criterion]
+     *        критерий (функция или имя поля)
+     * @param {Object} [context]
+     *        контекст для вызова критерия
+     * @return {Boolean}
+     *         есть ли хоть один элемент, соответствующий критерию
+     */
+    Lang.some = function some(items, criterion, context) {
+        var len,
+            i,
+            noc = (criterion === undefined),
+            f = (typeof criterion === "function"),
+            value;
+        if (Lang.isArray(items)) {
+            if (nativeArrayPrototype.some) {
+                if (!f) {
+                    if (noc) {
+                        criterion = function (item) {return item; };
+                    } else {
+                        f = criterion;
+                        criterion = function (item) {return item[f]; };
+                    }
+                }
+                return nativeArrayPrototype.some.call(items, criterion, context);
+            }
+            for (i = 0, len = items.length; i < len; i += 1) {
+                if (f) {
+                    value = criterion.call(context, items[i], i, items);
+                } else {
+                    value = noc ? items[i] : items[i][criterion];
+                }
+                if (value) {
+                    return true;
+                }
+            }
+        } else {
+            for (i in items) {
+                if (items.hasOwnProperty(i)) {
+                    if (f) {
+                        value = criterion.call(context, items[i], i, items);
+                    } else {
+                        value = noc ? items[i] : items[i][criterion];
+                    }
+                    if (value) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     };
 
     /**

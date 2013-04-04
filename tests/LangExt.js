@@ -671,6 +671,92 @@ tests.test("every", function () {
     ok(go.Lang.every(dict, function (item) {return item.x !== this.d; }, {'d': 33}), "dict and callback and context (true)");
 });
 
+tests.test("some", function () {
+
+    var list,
+        dict,
+        callback,
+        context;
+
+    list = [0, false, null, undefined];
+    ok(!go.Lang.some(list), "list, scalar, emtpy");
+
+    list = [0, false, null, 1, undefined];
+    ok(go.Lang.some(list), "list, scalar, not emtpy");
+
+    list = [{}, {}];
+    ok(go.Lang.some(list), "object is not empty");
+
+    dict = {
+        'a': 0,
+        'b': 0,
+        'c': 0
+    };
+    ok(!go.Lang.some(dict), "dict, scalar, empty");
+
+    dict.b = 1;
+    ok(go.Lang.some(dict), "dict, scalar, not empty");
+
+    list = [{'x': 0}, {'x': false}, {'x': null}];
+    ok(!go.Lang.some(list, "x"), "list, field, empty");
+
+    list.push({'x': 1});
+    ok(go.Lang.some(list, "x"), "list, field, not empty");
+
+    dict = {
+        'a': {'x': 0},
+        'b': {'x': false},
+        'c': {'x': null}
+    };
+    ok(!go.Lang.some(dict, "x"), "dict, field, empty");
+
+    dict.b.x = true;
+    ok(go.Lang.some(dict, "x"), "dict, field, not empty");
+
+    context = {
+        'd': 5
+    };
+    callback = function (item, key, items) {
+        return (item > this.d);
+    };
+
+    list = [1, 2, 3, 4];
+    ok(!go.Lang.some(list, callback, context), "list, callback + context, empty");
+
+    list[2] = 10;
+    ok(go.Lang.some(list, callback, context), "list, callback + context, not empty");
+
+    dict = {'a': 1, 'b': 2, 'c': 3};
+    ok(!go.Lang.some(dict, callback, context), "dict, callback + context, empty");
+
+    dict.d = 10;
+    ok(go.Lang.some(dict, callback, context), "dict, callback + context, not empty");
+
+    callback = function (item, key, items) {
+        context[key] = item;
+    };
+
+    list = [1, 2, 3];
+    context = {};
+    go.Lang.some(list, callback);
+    deepEqual(context, {'0': 1, '1': 2, '2': 3}, "list, key in callback");
+
+    dict = {'a': 1, 'b': 2, 'c': 3};
+    context = {};
+    go.Lang.some(dict, callback);
+    deepEqual(context, dict, "dict, key in callback");
+
+    callback = function (item, key, items) {
+        return (items !== context);
+    };
+
+    context = [1, 2, 3];
+    ok(!go.Lang.some(context, callback), "list, items in callback");
+
+    context = {'a': 1, 'b': 2, 'c': 3};
+    ok(!go.Lang.some(context, callback), "dict, items in callback");
+});
+
 tests.test("reduce", function () {
 
     var list,
