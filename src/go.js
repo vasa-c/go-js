@@ -836,13 +836,8 @@ go.module("Lang", function (go, global, undefined) {
          *         является ли значение массивом
          */
         'isArray': function isArray(value, strict) {
-            if (nativeIsArray) {
-                if (nativeIsArray(value)) {
-                    return true;
-                }
-                if (strict) {
-                    return false;
-                }
+            if (strict) {
+                return Lang.isStrictArray(value);
             }
             switch (Lang.getType(value)) {
             case "array":
