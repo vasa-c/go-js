@@ -720,43 +720,18 @@ go.module("LangExt", [], function (go, global, undefined) {
             noc = (!criterion),
             f = (typeof criterion === "function"),
             value;
-        if (Lang.isArray(items)) {
-            if (nativeArrayPrototype.some) {
-                if (!f) {
-                    if (noc) {
-                        criterion = function (item) {return item; };
-                    } else {
-                        f = criterion;
-                        criterion = function (item) {return item[f]; };
-                    }
-                }
-                return nativeArrayPrototype.some.call(items, criterion, context);
-            }
-            for (i = 0, len = items.length; i < len; i += 1) {
-                if (f) {
-                    value = criterion.call(context, items[i], i, items);
+        if (Lang.isArray(items) && nativeArrayPrototype.some) {
+            if (!f) {
+                if (noc) {
+                    criterion = function (item) {return item; };
                 } else {
-                    value = noc ? items[i] : items[i][criterion];
-                }
-                if (value) {
-                    return true;
+                    f = criterion;
+                    criterion = function (item) {return item[f]; };
                 }
             }
-        } else {
-            for (i in items) {
-                if (items.hasOwnProperty(i)) {
-                    if (f) {
-                        value = criterion.call(context, items[i], i, items);
-                    } else {
-                        value = noc ? items[i] : items[i][criterion];
-                    }
-                    if (value) {
-                        return true;
-                    }
-                }
-            }
+            return nativeArrayPrototype.some.call(items, criterion, context);
         }
-        return false;
+        return (Lang.find(items, criterion, context, true) !== undefined);
     };
 
     /**
