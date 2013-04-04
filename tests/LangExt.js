@@ -612,3 +612,332 @@ tests.test("groupBy", function () {
     };
     deepEqual(result, expected, "list group by callback");
 });
+
+tests.test("flip", function () {
+
+    var list = [1, 2, 3, 4, 5, 2, 3],
+        dict = {
+            '1': "one",
+            '2': "two",
+            '3': "three"
+        };
+
+    deepEqual(go.Lang.flip(list), {
+        '1': 0,
+        '2': 5,
+        '3': 6,
+        '4': 3,
+        '5': 4
+    }, "flip list");
+
+    deepEqual(go.Lang.flip(list, true), {
+        '1': true,
+        '2': true,
+        '3': true,
+        '4': true,
+        '5': true
+    }, "flip list and default value");
+
+    deepEqual(go.Lang.flip(dict), {
+        'one': "1",
+        'two': "2",
+        'three': "3"
+    }, "flip dict");
+
+    deepEqual(go.Lang.flip(dict, 1), {
+        'one': 1,
+        'two': 1,
+        'three': 1
+    }, "flip dict and default value");
+});
+
+tests.test("every", function () {
+
+    var list = [11, 3, 15, 4, 7, 11],
+        dict = {
+            'a': {'x': 5},
+            'b': {'x': 11},
+            'c': {'x': 0},
+            'd': {'x': 3}
+        };
+
+    ok(go.Lang.every(list), "no criterion - scalar");
+    ok(go.Lang.every(dict), "no criterion - objects");
+    ok(go.Lang.every(list, function (item) {return item > 0; }), "list and callback (true)");
+    ok(!go.Lang.every(list, function (item) {return item > 10; }), "list and callback (false)");
+
+    list = [{'x': 1}, {'x': 2}, {'x': 3}];
+    ok(go.Lang.every(list, "x"), "list and field (true)");
+
+    list[1].x = 0;
+    ok(!go.Lang.every(list, "x"), "list and field (false)");
+
+    ok(!go.Lang.every(dict, "x"), "dict and field");
+    ok(!go.Lang.every(dict, function (item) {return item.x !== this.d; }, {'d': 3}), "dict and callback and context (false)");
+    ok(go.Lang.every(dict, function (item) {return item.x !== this.d; }, {'d': 33}), "dict and callback and context (true)");
+});
+
+tests.test("some", function () {
+    var list,
+        dict,
+        callback,
+        context;
+
+    list = [0, false, null, undefined];
+    ok(!go.Lang.some(list), "list, scalar, emtpy");
+
+    list = [0, false, null, 1, undefined];
+    ok(go.Lang.some(list), "list, scalar, not emtpy");
+
+    list = [{}, {}];
+    ok(go.Lang.some(list), "object is not empty");
+
+    dict = {
+        'a': 0,
+        'b': 0,
+        'c': 0
+    };
+    ok(!go.Lang.some(dict), "dict, scalar, empty");
+
+    dict.b = 1;
+    ok(go.Lang.some(dict), "dict, scalar, not empty");
+
+    list = [{'x': 0}, {'x': false}, {'x': null}];
+    ok(!go.Lang.some(list, "x"), "list, field, empty");
+
+    list.push({'x': 1});
+    ok(go.Lang.some(list, "x"), "list, field, not empty");
+
+    dict = {
+        'a': {'x': 0},
+        'b': {'x': false},
+        'c': {'x': null}
+    };
+    ok(!go.Lang.some(dict, "x"), "dict, field, empty");
+
+    dict.b.x = true;
+    ok(go.Lang.some(dict, "x"), "dict, field, not empty");
+
+    context = {
+        'd': 5
+    };
+    callback = function (item) {
+        return (item > this.d);
+    };
+
+    list = [1, 2, 3, 4];
+    ok(!go.Lang.some(list, callback, context), "list, callback + context, empty");
+
+    list[2] = 10;
+    ok(go.Lang.some(list, callback, context), "list, callback + context, not empty");
+
+    dict = {'a': 1, 'b': 2, 'c': 3};
+    ok(!go.Lang.some(dict, callback, context), "dict, callback + context, empty");
+
+    dict.d = 10;
+    ok(go.Lang.some(dict, callback, context), "dict, callback + context, not empty");
+    /*jslint unparam: true */
+    callback = function (item, key, items) {
+        context[key] = item;
+    };
+    /*jslint unparam: false */
+
+    list = [1, 2, 3];
+    context = {};
+    go.Lang.some(list, callback);
+    deepEqual(context, {'0': 1, '1': 2, '2': 3}, "list, key in callback");
+
+    dict = {'a': 1, 'b': 2, 'c': 3};
+    context = {};
+    go.Lang.some(dict, callback);
+    deepEqual(context, dict, "dict, key in callback");
+    /*jslint unparam: true */
+    callback = function (item, key, items) {
+        return (items !== context);
+    };
+    /*jslint unparam: false */
+
+    context = [1, 2, 3];
+    ok(!go.Lang.some(context, callback), "list, items in callback");
+
+    context = {'a': 1, 'b': 2, 'c': 3};
+    ok(!go.Lang.some(context, callback), "dict, items in callback");
+});
+
+tests.test("find", function () {
+    var list,
+        dict,
+        callback,
+        context;
+
+    list = [0, false, null, 7, undefined];
+    equal(go.Lang.find(list), 7, "list, scalar");
+    equal(go.Lang.find(list, null, null, true), 3, "list, scalar, key");
+    list[3] = false;
+    equal(go.Lang.find(list), undefined, "list, not found");
+    equal(go.Lang.find(list, null, null, false, "def"), "def", "list, not found, by default");
+
+    dict = {
+        'a': 0,
+        'b': 1,
+        'c': false
+    };
+    equal(go.Lang.find(dict), 1, "dict, scalar");
+    equal(go.Lang.find(dict, null, null, true, "def"), "b", "dict, scalar, key");
+    dict.b = 0;
+    equal(go.Lang.find(dict, null, null, true, "def"), "def", "dict, scalar, key, by default");
+
+    list = [{'x': 0}, {'x': 0}, {'x': 0}];
+    equal(go.Lang.find(list, "x"), undefined, "list, field, empty");
+    list[1].x = 2;
+    equal(go.Lang.find(list, "x", null, true), 1, "list, field, not empty");
+
+    dict = {
+        'a': {'x': 0},
+        'b': {'x': 0},
+        'c': {'x': 0}
+    };
+    equal(go.Lang.find(dict, "x"), undefined, "dict, field, empty");
+    dict.b.x = 1;
+    equal(go.Lang.find(dict, "x", null, true), "b", "dict, field, not empty");
+
+    context = {
+        'd': 5
+    };
+    /*jslint unparam: true */
+    callback = function (item, key, items) {
+        return item > context.d;
+    };
+    /*jslint unparam: false */
+
+    list = [1, 2, 3, 4, 5];
+    equal(go.Lang.find(list, callback, context), undefined, "list, callback + context, empty");
+    list = [1, 2, 7, 4, 5];
+    equal(go.Lang.find(list, callback, context), 7, "list, callback + context, not empty");
+    equal(go.Lang.find(list, callback, context, true), 2, "list, callback + context, not empty, key");
+
+    dict = {
+        'a': 1,
+        'b': 2,
+        'c': 3
+    };
+    equal(go.Lang.find(dict, callback, context), undefined, "dict, callback + context, empty");
+    dict.b = 7;
+    equal(go.Lang.find(dict, callback, context), 7, "dict, callback + context, not empty");
+    equal(go.Lang.find(dict, callback, context, true), "b", "dict, callback + context, not empty, key");
+});
+
+tests.test("reduce", function () {
+    var list,
+        dict,
+        callback,
+        context,
+        expected;
+
+    list = [2, 4, 6, 8];
+    callback = function (previous, current, index, array) {
+        array[index] = current + 1;
+        return String(previous) + ";" + current + "," + index;
+    };
+    expected = "2;4,1;6,2;8,3";
+    equal(go.Lang.reduce(list, callback), expected, "array");
+    deepEqual(list, [2, 5, 7, 9], "array arg");
+    expected = "7;2,0;5,1;7,2;9,3";
+    equal(go.Lang.reduce(list, callback, 7), expected, "initial value");
+
+    list = [2, 4, 6, 8];
+    context = {
+        'A': [0, 1, 2, 3]
+    };
+    callback = function (previous, current, index) {
+        return previous + current * this.A[index];
+    };
+    expected = 42; // 2 + 4 * 1 + 6 * 2 + 8 * 3
+    equal(go.Lang.reduce(list, [callback, context]), expected, "context");
+
+    dict = {
+        'x': 1,
+        'y': 2,
+        'z': 3
+    };
+    callback = function (previous, current) {
+        return previous + current;
+    };
+    expected = 6;
+    equal(go.Lang.reduce(dict, callback), expected, "dict");
+    context = {
+        'x': 2,
+        'y': 3,
+        'z': 4
+    };
+    callback = function (previous, current, key, items) {
+        if (items !== dict) {
+            return 0;
+        }
+        return previous + current * this[key];
+    };
+    expected = 21; // 1 + 1 * 2 + 2 * 3 + 3 * 4
+    equal(go.Lang.reduce(dict, [callback, context], 1), expected, "dict and initial value + context");
+
+    raises(function () {
+        go.Lang.reduce([], function () {});
+    }, TypeError, "TypeError for empty array");
+});
+
+tests.test("reduceRight", function () {
+
+    var list,
+        dict,
+        callback,
+        context,
+        expected;
+
+    list = [2, 4, 6, 8];
+    callback = function (previous, current, index, array) {
+        array[index] = current + 1;
+        return String(previous) + ";" + current + "," + index;
+    };
+    expected = "8;6,2;4,1;2,0";
+    equal(go.Lang.reduceRight(list, callback), expected, "array");
+    deepEqual(list, [3, 5, 7, 8], "array arg");
+    expected = "7;8,3;7,2;5,1;3,0";
+    equal(go.Lang.reduceRight(list, callback, 7), expected, "initial value");
+
+    list = [2, 4, 6, 8];
+    context = {
+        'A': [0, 1, 2, 3]
+    };
+    callback = function (previous, current, index) {
+        return previous - current * this.A[index];
+    };
+    expected = -8; // 8 - 6 * 2 - 4 * 1 - 2 * 0
+    equal(go.Lang.reduceRight(list, [callback, context]), expected, "context");
+
+    dict = {
+        'x': 1,
+        'y': 2,
+        'z': 3
+    };
+    callback = function (previous, current) {
+        return previous + current;
+    };
+    expected = 6;
+    equal(go.Lang.reduceRight(dict, callback), expected, "dict");
+    context = {
+        'x': 2,
+        'y': 3,
+        'z': 4
+    };
+    callback = function (previous, current, key, items) {
+        if (items !== dict) {
+            return 0;
+        }
+        return previous + current * this[key];
+    };
+    expected = 21; // 1 + 1 * 2 + 2 * 3 + 3 * 4
+    equal(go.Lang.reduce(dict, [callback, context], 1), expected, "dict and initial value + context");
+
+    raises(function () {
+        go.Lang.reduceRight([], function () {});
+    }, TypeError, "TypeError for empty array");
+});

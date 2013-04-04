@@ -273,6 +273,14 @@ tests.test("isArray", function () {
     ok(!go.Lang.isArray(iframe.contentWindow.getResult('document.getElementsByTagName("div")'), true), "collection and iframe");
 });
 
+tests.test("isStrictArray", function () {
+    ok(go.Lang.isStrictArray([1, 2, 3]));
+    ok(!go.Lang.isStrictArray(arguments));
+    ok(!go.Lang.isStrictArray({'x': 1}));
+    ok(!go.Lang.isStrictArray(undefined));
+    ok(!go.Lang.isStrictArray(null));
+});
+
 tests.test("toArray", function () {
 
     var toArray, value, expected;

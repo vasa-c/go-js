@@ -16,7 +16,8 @@ go.module("LangExt", [], function (go, global, undefined) {
     "use strict";
     var Lang = go.Lang,
         nativeToString = global.Object.prototype.toString,
-        nativeFilter = global.Array.prototype.filter;
+        nativeArrayPrototype = global.Array.prototype,
+        isStrictArray = Lang.isStrictArray;
 
     /**
      * Разбор GET или POST запроса
@@ -74,7 +75,7 @@ go.module("LangExt", [], function (go, global, undefined) {
         buildValue = function (name, value) {
             if (Lang.isDict(value)) {
                 buildDict(value, name);
-            } else if (Lang.isArray(value)) {
+            } else if (isStrictArray(value)) {
                 buildArray(value, name);
             } else {
                 query.push(name + "=" + encodeURIComponent(value));
@@ -472,7 +473,7 @@ go.module("LangExt", [], function (go, global, undefined) {
      */
     Lang.filter = function filter(items, criterion, context) {
         var i, len, result, item;
-        if (Lang.isArray(items)) {
+        if (isStrictArray(items)) {
             if (typeof criterion !== "function") {
                 criterion = (function (field) {
                     return function (item) {
@@ -480,8 +481,8 @@ go.module("LangExt", [], function (go, global, undefined) {
                     };
                 }(criterion));
             }
-            if (nativeFilter) {
-                result = nativeFilter.call(items, criterion, context);
+            if (nativeArrayPrototype.filter) {
+                result = nativeArrayPrototype.filter.call(items, criterion, context);
             } else {
                 result = [];
                 for (i = 0, len = items.length; i < len; i += 1) {
@@ -585,7 +586,7 @@ go.module("LangExt", [], function (go, global, undefined) {
             value,
             len,
             i;
-        if (Lang.isArray(items)) {
+        if (isStrictArray(items)) {
             for (i = 0, len = items.length; i < len; i += 1) {
                 item = items[i];
                 value = f ? criterion.call(context, item, i, items) : item[criterion];
@@ -608,6 +609,354 @@ go.module("LangExt", [], function (go, global, undefined) {
             }
         }
         return result;
+    };
+
+    /**
+     * Обменять местами ключи и значения
+     *
+     * @name flip
+     * @public
+     * @param {(Object|Array)} items
+     *        исходный список или словарь
+     * @param {*} [value]
+     *        значение (по умолчанию в качестве значения используется ключ)
+     * @return {Object}
+     *         перевёрнутый словарь
+     */
+    Lang.flip = function flip(items, value) {
+        var result = {},
+            len,
+            def = (value !== undefined),
+            i;
+        if (isStrictArray(items)) {
+            for (i = 0, len = items.length; i < len; i += 1) {
+                result[items[i]] = def ? value : i;
+            }
+        } else {
+            for (i in items) {
+                if (items.hasOwnProperty(i)) {
+                    result[items[i]] = def ? value : i;
+                }
+            }
+        }
+        return result;
+    };
+
+    /**
+     * Проверка всех элементов списка на соответствие заданным критериям
+     *
+     * @name go.Lang.every
+     * @public
+     * @param {(Object|Array)} items
+     *        список элементов
+     * @param {(Function|String)} [criterion]
+     *        критерий (функция или имя поля)
+     * @param {Object} [context]
+     *        контекст для вызова критерия
+     * @return {Boolean}
+     *         все ли элементы соответствуют критерию
+     */
+    Lang.every = function every(items, criterion, context) {
+        var len,
+            i,
+            noc = (!criterion),
+            f = (typeof criterion === "function"),
+            value;
+        if (isStrictArray(items)) {
+            if (nativeArrayPrototype.every) {
+                if (!f) {
+                    if (noc) {
+                        criterion = function (item) {return item; };
+                    } else {
+                        f = criterion;
+                        criterion = function (item) {return item[f]; };
+                    }
+                }
+                return nativeArrayPrototype.every.call(items, criterion, context);
+            }
+            for (i = 0, len = items.length; i < len; i += 1) {
+                if (f) {
+                    value = criterion.call(context, items[i], i, items);
+                } else {
+                    value = noc ? items[i] : items[i][criterion];
+                }
+                if (!value) {
+                    return false;
+                }
+            }
+        } else {
+            for (i in items) {
+                if (items.hasOwnProperty(i)) {
+                    if (f) {
+                        value = criterion.call(context, items[i], i, items);
+                    } else {
+                        value = noc ? items[i] : items[i][criterion];
+                    }
+                    if (!value) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    };
+
+    /**
+     * Проверка, есть ли хоть один элемент, соответствующий критерию
+     *
+     * @name go.Lang.some
+     * @public
+     * @param {(Object|Array)} items
+     *        список элементов
+     * @param {(Function|String)} [criterion]
+     *        критерий (функция или имя поля)
+     * @param {Object} [context]
+     *        контекст для вызова критерия
+     * @return {Boolean}
+     *         есть ли хоть один элемент, соответствующий критерию
+     */
+    Lang.some = function some(items, criterion, context) {
+        var field;
+        if (isStrictArray(items) && nativeArrayPrototype.some) {
+            if (typeof criterion !== "function") {
+                if (criterion) {
+                    field = criterion;
+                    criterion = function (item) {return item[field]; };
+                } else {
+                    criterion = function (item) {return item; };
+                }
+            }
+            return nativeArrayPrototype.some.call(items, criterion, context);
+        }
+        return (Lang.find(items, criterion, context, true) !== undefined);
+    };
+
+    /**
+     * Поиск элемента, соответствующего критерию
+     *
+     * @name go.Lang.find
+     * @public
+     * @param {(Object|Array)} items
+     *        набор элементов
+     * @param {(Function|String)} [criterion]
+     *        критерий (функция или имя поля)
+     * @param {Object} [context]
+     *        контекст для вызова criterion
+     * @param {Boolean} [returnkey]
+     *        возвращать вместо значения ключ или индекс
+     * @param {*} [bydefault]
+     *        значение по умолчанию (если элемент не найден)
+     * @return {*}
+     *         значение найденого элемента, его ключ (returnkey) или bydefault
+     */
+    Lang.find = function find(items, criterion, context, returnkey, bydefault) {
+        var len,
+            i,
+            noc = (!criterion),
+            f = (typeof criterion === "function"),
+            value,
+            ritem,
+            rkey;
+        if (isStrictArray(items)) {
+            if (nativeArrayPrototype.some) {
+                if (!f) {
+                    if (noc) {
+                        criterion = function (item, key) {
+                            ritem = item;
+                            rkey = key;
+                            return item;
+                        };
+                    } else {
+                        f = criterion;
+                        criterion = function (item, key) {
+                            ritem = item;
+                            rkey = key;
+                            return item[f];
+                        };
+                    }
+                } else {
+                    f = criterion;
+                    criterion = function (item, key, items) {
+                        if (f.call(this, item, key, items)) {
+                            ritem = item;
+                            rkey = key;
+                            return true;
+                        }
+                        return false;
+                    };
+                }
+                if (nativeArrayPrototype.some.call(items, criterion, context)) {
+                    return returnkey ? rkey : ritem;
+                }
+                return bydefault;
+            }
+            for (i = 0, len = items.length; i < len; i += 1) {
+                if (f) {
+                    value = criterion.call(context, items[i], i, items);
+                } else {
+                    value = noc ? items[i] : items[i][criterion];
+                }
+                if (value) {
+                    return returnkey ? i : items[i];
+                }
+            }
+        } else {
+            for (i in items) {
+                if (items.hasOwnProperty(i)) {
+                    if (f) {
+                        value = criterion.call(context, items[i], i, items);
+                    } else {
+                        value = noc ? items[i] : items[i][criterion];
+                    }
+                    if (value) {
+                        return returnkey ? i : items[i];
+                    }
+                }
+            }
+        }
+        return bydefault;
+    };
+
+    /**
+     * Объединение значений (левоассоциативное)
+     *
+     * @name go.Lang.reduce
+     * @public
+     * @param {(Array|Object)} items
+     *        набор значений
+     * @param {(Function|Array)} callback
+     *        колбэк или [callback, context]
+     * @param initialValue [optional]
+     *        начальное значение
+     * @return {*}
+     *         объединённое значение
+     */
+    Lang.reduce = function reduce(items, callback, initialValue) {
+        var clb = callback, // jslint: Do not mutate parameter 'callback' when using 'arguments'.
+            context,
+            init = (arguments.length > 2),
+            value,
+            len,
+            i,
+            start;
+        if (typeof clb === "object") {
+            context = clb[1];
+            clb = clb[0];
+        }
+        if (isStrictArray(items)) {
+            if (nativeArrayPrototype.reduce) {
+                if (context) {
+                    clb = Lang.bind(clb, context);
+                }
+                if (init) {
+                    return nativeArrayPrototype.reduce.call(items, clb, initialValue);
+                }
+                return nativeArrayPrototype.reduce.call(items, clb);
+            }
+            len = items.length;
+            if (init) {
+                value = initialValue;
+                start = 0;
+            } else {
+                if (len === 0) {
+                    throw new TypeError("Reduce of empty array with no initial value");
+                }
+                value = items[0];
+                start = 1;
+            }
+            for (i = start; i < len; i += 1) {
+                value = clb.call(context, value, items[i], i, items);
+            }
+        } else {
+            if (init) {
+                value = initialValue;
+                start = true;
+            } else {
+                start = false;
+            }
+            for (i in items) {
+                if (items.hasOwnProperty(i)) {
+                    if (start) {
+                        value = clb.call(context, value, items[i], i, items);
+                    } else {
+                        value = items[i];
+                        start = true;
+                    }
+                }
+            }
+        }
+        return value;
+    };
+
+    /**
+     * Объединение значений (правоассоциативное)
+     *
+     * @name go.Lang.reduceRight
+     * @public
+     * @param {(Array|Object)} items
+     *        набор значений
+     * @param {(Function|Array)} callback
+     *        колбэк или [callback, context]
+     * @param initialValue [optional]
+     *        начальное значение
+     * @return {*}
+     *         объединённое значение
+     */
+    Lang.reduceRight = function reduceRight(items, callback, initialValue) {
+        var clb = callback, // jslint: Do not mutate parameter 'callback' when using 'arguments'.
+            context,
+            init = (arguments.length > 2),
+            value,
+            len,
+            i,
+            start;
+        if (typeof clb === "object") {
+            context = clb[1];
+            clb = clb[0];
+        }
+        if (isStrictArray(items)) {
+            if (nativeArrayPrototype.reduce) {
+                if (context) {
+                    clb = Lang.bind(clb, context);
+                }
+                if (init) {
+                    return nativeArrayPrototype.reduceRight.call(items, clb, initialValue);
+                }
+                return nativeArrayPrototype.reduceRight.call(items, clb);
+            }
+            len = items.length;
+            if (init) {
+                value = initialValue;
+                start = len - 1;
+            } else {
+                if (len === 0) {
+                    throw new TypeError("Reduce of empty array with no initial value");
+                }
+                value = items[len - 1];
+                start = len - 2;
+            }
+            for (i = start; i >= 0; i -= 1) {
+                value = clb.call(context, value, items[i], i, items);
+            }
+        } else {
+            if (init) {
+                value = initialValue;
+                start = true;
+            } else {
+                start = false;
+            }
+            for (i in items) {
+                if (items.hasOwnProperty(i)) {
+                    if (start) {
+                        value = clb.call(context, value, items[i], i, items);
+                    } else {
+                        value = items[i];
+                        start = true;
+                    }
+                }
+            }
+        }
+        return value;
     };
 
     /* go.LangExt === true */

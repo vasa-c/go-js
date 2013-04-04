@@ -836,13 +836,8 @@ go.module("Lang", function (go, global, undefined) {
          *         является ли значение массивом
          */
         'isArray': function isArray(value, strict) {
-            if (nativeIsArray) {
-                if (nativeIsArray(value)) {
-                    return true;
-                }
-                if (strict) {
-                    return false;
-                }
+            if (strict) {
+                return Lang.isStrictArray(value);
             }
             switch (Lang.getType(value)) {
             case "array":
@@ -854,6 +849,23 @@ go.module("Lang", function (go, global, undefined) {
                 return false;
             }
         },
+
+        /**
+         * Является ли значение строго массивом (Array)
+         *
+         * @name go.Lang.isStrictArray
+         * @public
+         * @param {*} value
+         * @return {Boolean}
+         */
+        'isStrictArray': (function (value) {
+            if (nativeIsArray) {
+                return nativeIsArray;
+            }
+            return function isStrictArray(value) {
+                return (nativeToString.call(value) === "[object Array]");
+            };
+        }()),
 
         /**
          * Приведение значения к виду массива
