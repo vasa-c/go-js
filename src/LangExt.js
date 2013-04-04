@@ -664,10 +664,11 @@ go.module("LangExt", [], function (go, global, undefined) {
         if (Lang.isArray(items)) {
             if (nativeArrayPrototype.every) {
                 if (!f) {
-                    if (criterion) {
-                        criterion = function (item) {return item[criterion]; };
-                    } else {
+                    if (noc) {
                         criterion = function (item) {return item; };
+                    } else {
+                        f = criterion;
+                        criterion = function (item) {return item[f]; };
                     }
                 }
                 return nativeArrayPrototype.every.call(items, criterion, context);

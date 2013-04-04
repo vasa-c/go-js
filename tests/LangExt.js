@@ -666,6 +666,12 @@ tests.test("every", function () {
     ok(go.Lang.every(list, function (item) {return item > 0; }), "list and callback (true)");
     ok(!go.Lang.every(list, function (item) {return item > 10; }), "list and callback (false)");
 
+    list = [{'x': 1}, {'x': 2}, {'x': 3}];
+    ok(go.Lang.every(list, "x"), "list and field (true)");
+
+    list[1].x = 0;
+    ok(!go.Lang.every(list, "x"), "list and field (false)");
+
     ok(!go.Lang.every(dict, "x"), "dict and field");
     ok(!go.Lang.every(dict, function (item) {return item.x !== this.d; }, {'d': 3}), "dict and callback and context (false)");
     ok(go.Lang.every(dict, function (item) {return item.x !== this.d; }, {'d': 33}), "dict and callback and context (true)");
