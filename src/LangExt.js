@@ -715,18 +715,14 @@ go.module("LangExt", [], function (go, global, undefined) {
      *         есть ли хоть один элемент, соответствующий критерию
      */
     Lang.some = function some(items, criterion, context) {
-        var len,
-            i,
-            noc = (!criterion),
-            f = (typeof criterion === "function"),
-            value;
+        var field;
         if (Lang.isArray(items) && nativeArrayPrototype.some) {
-            if (!f) {
-                if (noc) {
-                    criterion = function (item) {return item; };
+            if (typeof criterion !== "function") {
+                if (criterion) {
+                    field = criterion;
+                    criterion = function (item) {return item[field]; };
                 } else {
-                    f = criterion;
-                    criterion = function (item) {return item[f]; };
+                    criterion = function (item) {return item; };
                 }
             }
             return nativeArrayPrototype.some.call(items, criterion, context);

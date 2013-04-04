@@ -721,7 +721,7 @@ tests.test("some", function () {
     context = {
         'd': 5
     };
-    callback = function (item, key, items) {
+    callback = function (item) {
         return (item > this.d);
     };
 
@@ -736,10 +736,11 @@ tests.test("some", function () {
 
     dict.d = 10;
     ok(go.Lang.some(dict, callback, context), "dict, callback + context, not empty");
-
+    /*jslint unparam: true */
     callback = function (item, key, items) {
         context[key] = item;
     };
+    /*jslint unparam: false */
 
     list = [1, 2, 3];
     context = {};
@@ -750,10 +751,11 @@ tests.test("some", function () {
     context = {};
     go.Lang.some(dict, callback);
     deepEqual(context, dict, "dict, key in callback");
-
+    /*jslint unparam: true */
     callback = function (item, key, items) {
         return (items !== context);
     };
+    /*jslint unparam: false */
 
     context = [1, 2, 3];
     ok(!go.Lang.some(context, callback), "list, items in callback");
@@ -802,9 +804,11 @@ tests.test("find", function () {
     context = {
         'd': 5
     };
+    /*jslint unparam: true */
     callback = function (item, key, items) {
         return item > context.d;
     };
+    /*jslint unparam: false */
 
     list = [1, 2, 3, 4, 5];
     equal(go.Lang.find(list, callback, context), undefined, "list, callback + context, empty");
