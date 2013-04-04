@@ -861,11 +861,10 @@ go.module("Lang", function (go, global, undefined) {
         'isStrictArray': (function (value) {
             if (nativeIsArray) {
                 return nativeIsArray;
-            } else {
-                return function isStrictArray(value) {
-                    return (nativeToString.call(value) === "[object Array]");
-                };
             }
+            return function isStrictArray(value) {
+                return (nativeToString.call(value) === "[object Array]");
+            };
         }()),
 
         /**

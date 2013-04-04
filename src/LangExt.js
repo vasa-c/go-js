@@ -16,7 +16,8 @@ go.module("LangExt", [], function (go, global, undefined) {
     "use strict";
     var Lang = go.Lang,
         nativeToString = global.Object.prototype.toString,
-        nativeArrayPrototype = global.Array.prototype;
+        nativeArrayPrototype = global.Array.prototype,
+        isStrictArray = Lang.isStrictArray;
 
     /**
      * Разбор GET или POST запроса
@@ -74,7 +75,7 @@ go.module("LangExt", [], function (go, global, undefined) {
         buildValue = function (name, value) {
             if (Lang.isDict(value)) {
                 buildDict(value, name);
-            } else if (Lang.isArray(value)) {
+            } else if (isStrictArray(value)) {
                 buildArray(value, name);
             } else {
                 query.push(name + "=" + encodeURIComponent(value));
@@ -472,7 +473,7 @@ go.module("LangExt", [], function (go, global, undefined) {
      */
     Lang.filter = function filter(items, criterion, context) {
         var i, len, result, item;
-        if (Lang.isArray(items)) {
+        if (isStrictArray(items)) {
             if (typeof criterion !== "function") {
                 criterion = (function (field) {
                     return function (item) {
@@ -585,7 +586,7 @@ go.module("LangExt", [], function (go, global, undefined) {
             value,
             len,
             i;
-        if (Lang.isArray(items)) {
+        if (isStrictArray(items)) {
             for (i = 0, len = items.length; i < len; i += 1) {
                 item = items[i];
                 value = f ? criterion.call(context, item, i, items) : item[criterion];
@@ -627,7 +628,7 @@ go.module("LangExt", [], function (go, global, undefined) {
             len,
             def = (value !== undefined),
             i;
-        if (Lang.isArray(items)) {
+        if (isStrictArray(items)) {
             for (i = 0, len = items.length; i < len; i += 1) {
                 result[items[i]] = def ? value : i;
             }
@@ -661,7 +662,7 @@ go.module("LangExt", [], function (go, global, undefined) {
             noc = (!criterion),
             f = (typeof criterion === "function"),
             value;
-        if (Lang.isArray(items)) {
+        if (isStrictArray(items)) {
             if (nativeArrayPrototype.every) {
                 if (!f) {
                     if (noc) {
@@ -716,7 +717,7 @@ go.module("LangExt", [], function (go, global, undefined) {
      */
     Lang.some = function some(items, criterion, context) {
         var field;
-        if (Lang.isArray(items) && nativeArrayPrototype.some) {
+        if (isStrictArray(items) && nativeArrayPrototype.some) {
             if (typeof criterion !== "function") {
                 if (criterion) {
                     field = criterion;
@@ -756,7 +757,7 @@ go.module("LangExt", [], function (go, global, undefined) {
             value,
             ritem,
             rkey;
-        if (Lang.isArray(items)) {
+        if (isStrictArray(items)) {
             if (nativeArrayPrototype.some) {
                 if (!f) {
                     if (noc) {
@@ -842,7 +843,7 @@ go.module("LangExt", [], function (go, global, undefined) {
             context = clb[1];
             clb = clb[0];
         }
-        if (Lang.isArray(items)) {
+        if (isStrictArray(items)) {
             if (nativeArrayPrototype.reduce) {
                 if (context) {
                     clb = Lang.bind(clb, context);
@@ -913,8 +914,7 @@ go.module("LangExt", [], function (go, global, undefined) {
             context = clb[1];
             clb = clb[0];
         }
-
-        if (Lang.isArray(items)) {
+        if (isStrictArray(items)) {
             if (nativeArrayPrototype.reduce) {
                 if (context) {
                     clb = Lang.bind(clb, context);
