@@ -1,5 +1,5 @@
 /**
- * go.Str: строковые функции
+ * go.Str: string functions
  *
  * @package    go.js
  * @subpackage Str
@@ -16,7 +16,7 @@ if (!window.go) {
 /**
  * @namespace go.Str
  */
-go.module("Str", function (go, global, undefined) {
+go.module("Str", null, function (go, global, undefined) {
     "use strict";
     /*jslint unparam: false */
     var Str = {},
@@ -26,7 +26,7 @@ go.module("Str", function (go, global, undefined) {
         nativeTrimRight = nativeProto.trimRight;
 
     /**
-     * Обрезка крайних пробелов
+     * Removing whitespace from both end of string
      *
      * @name go.Str.trim
      * @public
@@ -44,7 +44,7 @@ go.module("Str", function (go, global, undefined) {
     }
 
     /**
-     * Обрезка левых пробелов
+     * Removing whitespace from the left end of the string
      *
      * @name go.Str.trimLeft
      * @public
@@ -62,9 +62,9 @@ go.module("Str", function (go, global, undefined) {
     }
 
     /**
-     * Обрезка правых пробелов
+     * Removing whitespace from the right end of the string.
      *
-     * @name go.Str.trim
+     * @name go.Str.trimRight
      * @public
      * @param {String} s
      * @return {String}
@@ -80,18 +80,18 @@ go.module("Str", function (go, global, undefined) {
     }
 
     /**
-     * Является ли значение числом или строковым представлением числа
+     * Checking if a value is numeric (numeric string or number directly)
      *
      * @name go.Str.isNumeric
      * @public
      * @param {(String|Number)} value
-     *        исходное число или его строковое представление
+     *        original number or its string representation
      * @param {Boolean} [isfloat]
-     *        число может быть дробным (по умолчанию нет)
+     *        number may be float (only integer by default)
      * @param {Boolean} [signed]
-     *        число может быть меньше нуля (по умолчанию нет)
+     *        number may be negative (does not by default)
      * @return {Boolean}
-     *         является ли значение числом требуемого вида
+     *         value is numeric
      */
     Str.isNumeric = function isNumeric(value, isfloat, signed) {
         var n;
@@ -122,33 +122,36 @@ go.module("Str", function (go, global, undefined) {
     };
 
     /**
-     * Повторить строку нужное количество раз
+     * Repeat a string
      *
      * @name go.Str.repeat
      * @public
      * @param {String} str
+     *        the string to be repeated
      * @param {Number} count
+     *        the number of repetitions
      * @return {String}
+     *         repeated string
      */
     Str.repeat = function repeat(str, count) {
         return (new global.Array(count + 1)).join(str);
     };
 
     /**
-     * Выровнять строку по фиксированному блоку
+     * Align the string at a fixed width block
      *
      * @name go.Str.align
      * @public
      * @param {String} s
-     *        исходная строка
+     *        original string
      * @param {Number} size
-     *        размер блока
+     *        width of block
      * @param {String} [pos]
-     *        выравнивание ("left", "right", "center") по умолчанию "left"
+     *        type of alignment: "left", "right", or "center" (left by default)
      * @param {String} [fill]
-     *        заполнитель
+     *        filler
      * @return {String}
-     *         выровненная строка
+     *         aligned string
      */
     Str.align = function align(s, size, pos, fill) {
         var len = s.length;
@@ -172,15 +175,20 @@ go.module("Str", function (go, global, undefined) {
     };
 
     /**
-     * Получение строкового представления числа
+     * Getting string representation of number
      *
      * @name go.Str.numberFormat
      * @public
      * @param {Number} number
+     *        original number
      * @param {Number} decimal [optional=0]
+     *        number of decimal points
      * @param {String} decPoint [optional="."]
+     *        separator for the decimal point
      * @param {String} thSep [optional=","]
+     *        separator for thouslands
      * @return {String}
+     *         string representation
      */
     Str.numberFormat = function numberFormat(number, decimal, decPoint, thSep) {
         var i, len, parts, j;
@@ -203,7 +211,7 @@ go.module("Str", function (go, global, undefined) {
     };
 
     /**
-     * Экранирование html-кода
+     * Escape html special characters
      *
      * @name go.Str.html
      * @public
@@ -229,7 +237,7 @@ go.module("Str", function (go, global, undefined) {
     };
 
     /**
-     * Перевод html в простой текст
+     * Convert html to plain text
      *
      * @name go.Str.htmlDecode
      * @public
@@ -250,20 +258,20 @@ go.module("Str", function (go, global, undefined) {
     };
 
     /**
-     * Простая шаблонизация
+     * Simple template system
      *
      * @name go.Str.tpl
      * @public
      * @param {(String|Object)} template
-     *        шаблон (строка или скомпилированный через go.Str.tpl.compile)
+     *        template (string or compiling by go.Str.tpl.compile)
      * @param {Object} vars
-     *        переменные шаблона
+     *        vars for rendering
      * @param {String} [openTag]
-     *        открывающий тег (по умолчанию "{{")
+     *        open tag ("{{" by default)
      * @param {String} [closeTag]
-     *        закрывающий тег (по умолчанию "}}")
+     *        close tag ("}}" by default)
      * @return {String}
-     *         результат
+     *         rendering template
      */
     Str.tpl = function tpl(template, vars, openTag, closeTag) {
         var result = [], len, i, item, getValue;
@@ -296,7 +304,7 @@ go.module("Str", function (go, global, undefined) {
     };
 
     /**
-     * Компиляция шаблона для go.Str.tpl()
+     * Compile template for go.Str.tpl
      *
      * @name go.Str.tpl.compile
      * @public
