@@ -1019,18 +1019,18 @@ go.module("Lang", null, function (go, global, undefined) {
         },
 
         /**
-         * Расширение объекта свойствами другого
+         * Extension an object of the properties of another
          *
          * @name go.Lang.extend
          * @public
          * @param {Object} destination
-         *        исходный объект (расширяется на месте)
+         *        original object (will be changed)
          * @param {Object} source
-         *        источник новых свойств
+         *        source of new properties
          * @param {Boolean} [deep=false]
-         *        обходить прототипы source
+         *        whether to use source prototypes?
          * @return {Object}
-         *         расширенный destination
+         *         extended destination
          */
         'extend': function extend(destination, source, deep) {
             var k;
@@ -1045,16 +1045,16 @@ go.module("Lang", null, function (go, global, undefined) {
         },
 
         /**
-         * Рекурсивное слияние двух объектов на месте
+         * Recursive merge two objects
          *
          * @name go.Lang.merge
          * @public
          * @param {Object} destination
-         *        исходный объект (изменяется)
+         *        original object (will be changed)
          * @param {Object} source
-         *        источник новых свойств
+         *        source of new properties
          * @return {Object}
-         *         расширенный destination
+         *         extended destination
          */
         'merge': function merge(destination, source) {
             var k, value;
@@ -1072,18 +1072,18 @@ go.module("Lang", null, function (go, global, undefined) {
         },
 
         /**
-         * Простое наследование конструкторов
+         * Simple inheritance constructors
          *
          * @name go.Lang.inherit
          * @public
          * @param {Function} [Constr]
-         *        функция-конструктор (по умолчанию создаётся пустая)
+         *        constructor function (empty function by default)
          * @param {Function} [Parent]
-         *        конструктор-предок (по умолчанию Object)
+         *        constructor-parent (Object by default)
          * @param {Object} [extend]
-         *        список свойств для расширения прототипа
+         *        properties list for extend of prototype
          * @return {Function}
-         *         конструктор-наследник
+         *         constructor of new "class"
          */
         'inherit': (function () {
             var inherit,
@@ -1113,13 +1113,13 @@ go.module("Lang", null, function (go, global, undefined) {
         }()),
 
         /**
-         * Вспомогательные функции-заготовки
+         * Helper functions
          *
          * @namespace go.Lang.f
          */
         'f': {
             /**
-             * Функция, не делающая ничего
+             * The function that does nothing
              *
              * @name go.Lang.f.empty
              * @public
@@ -1129,7 +1129,7 @@ go.module("Lang", null, function (go, global, undefined) {
             },
 
             /**
-             * Функция, просто возвращающая FALSE
+             * The function that just returns FALSE
              *
              * @name go.Lang.f.ffalse
              * @public
@@ -1140,7 +1140,7 @@ go.module("Lang", null, function (go, global, undefined) {
             },
 
             /**
-             * Функция, просто возвращающая TRUE
+             * The function that just returns TRUE
              *
              * @name go.Lang.f.ftrue
              * @public
@@ -1151,7 +1151,7 @@ go.module("Lang", null, function (go, global, undefined) {
             },
 
             /**
-             * Функция, возвращающая полученное значение
+             * The function returns argument
              *
              * @name go.Lang.f.identity
              * @public
@@ -1163,12 +1163,12 @@ go.module("Lang", null, function (go, global, undefined) {
             },
 
             /**
-             * Возвращает функцию, которая будет вызвана только один раз
+             * Creation of the function to be called only once
              *
              * @name go.Lang.f.once
              * @public
              * @param {Function} f
-             *        исходная функция
+             *        original function
              * @return {Function}
              */
             'once': function (f) {
@@ -1184,7 +1184,7 @@ go.module("Lang", null, function (go, global, undefined) {
             },
 
             /**
-             * Композиция функций
+             * The composition of functions
              *
              * @example f = compose([f1, f2, f3]); f(value); // (f1(f2(f3(value)))
              *
@@ -1217,7 +1217,7 @@ go.module("Lang", null, function (go, global, undefined) {
 
     /**
      * @class go.Lang.Exception
-     *        пользовательские "классы" исключений
+     *        custom exception "classes"
      * @alias go.Lang.Exception.Base
      * @augments Error
      */
@@ -1230,17 +1230,17 @@ go.module("Lang", null, function (go, global, undefined) {
             inherit = Lang.inherit;
 
         /**
-         * Создание пользовательского "класса" исключения
+         * Create exception "class"
          *
          * @name go.Lang.Exception.create
          * @param {String} name
-         *        название класса
+         *        class name
          * @param {Function} [parent]
-         *        родительский класс (конструктор), по умолчанию - go.Exception
+         *        parent class (constructor). go.Exception by default
          * @param {String} [defmessage]
-         *        сообщение по умолчанию
+         *        default message
          * @return {Function}
-         *         конструктор пользовательского исключения
+         *         constructor of custom exception
          */
         create = function create(name, parent, defmessage) {
             var Exception,
@@ -1274,15 +1274,15 @@ go.module("Lang", null, function (go, global, undefined) {
          *
          * @name go.Lang.Exception.Block
          * @param {Object} exceptions
-         *        список исключений. "name" => [parent, defmessage]
+         *        list of exceptions. "name" => [parent, defmessage]
          * @param {String} [ns]
-         *        имя пространства имён
+         *        namespace
          * @param {(Function|String|Boolean)} [base]
-         *        базовое исключение
+         *        basic exception
          * @param {Boolean} [lazy]
-         *        отложенное создание
+         *        lazy instantination
          * @return {Object}
-         *         пространство имён с исключениями
+         *         namespace of exceptions
          */
         Block = function Block(exceptions, ns, base, lazy) {
             this._exceptions = exceptions;
@@ -1303,7 +1303,7 @@ go.module("Lang", null, function (go, global, undefined) {
         };
 
         /**
-         * Получить объект исключения из блока
+         * Getting exception instance from block
          *
          * @name go.Lang.Exception.Block#get
          * @public
@@ -1338,7 +1338,7 @@ go.module("Lang", null, function (go, global, undefined) {
         };
 
         /**
-         * Выбросить исключение из блока
+         * Throws exception from block
          *
          * @name go.Lang.Exception.Block#raise
          * @public
@@ -1352,7 +1352,7 @@ go.module("Lang", null, function (go, global, undefined) {
         };
 
         /**
-         * Создать все объекты исключений
+         * Create all exception instances in block
          *
          * @name go.Lang.Exception.Block#createAll
          * @public
@@ -1370,7 +1370,7 @@ go.module("Lang", null, function (go, global, undefined) {
 
         /**
          * @class go.Lang.Exception.Base
-         *        базовый "класс" исключений внутри библиотеки
+         *        basic exception for go-library
          * @augments Error
          */
         Base = create("go.Exception", Error);

@@ -1,8 +1,8 @@
 /**
- * Тестирование ядра библиотеки
+ * Testing the core
  *
  * @package go.js
- * @author  Григорьев Олег aka vasa_c (http://blgo.ru/)
+ * @author  Grigoriev Oleg aka vasa_c (http://blgo.ru/)
  */
 /*jslint node: true, nomen: true */
 /*global go, tests, ok, equal, deepEqual */
@@ -11,7 +11,7 @@
 tests.module("core");
 
 tests.test("go.VERSION", function () {
-    ok(go && go.VERSION);
+    ok(go && go.VERSION, "go AND go.VERSION");
 });
 
 tests.test("go.__Loader", function () {
