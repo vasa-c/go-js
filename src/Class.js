@@ -1,9 +1,9 @@
 /**
- * go.Class: надстройка над ООП с "классовым" синтаксисом
+ * go.Class: class syntax for JavaScript OOP
  *
  * @package    go.js
  * @subpackage Class
- * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
+ * @author     Grigoriev Oleg aka vasa_c <go.vasac@gmail.com>
  */
 /*jslint nomen: true, es5: true, todo: true */
 /*global go, window */
@@ -12,7 +12,7 @@ if (!window.go) {
     throw new Error("go.core is not found");
 }
 
-go.module("Class", function (go, global) {
+go.module("Class", null, function (go, global) {
     "use strict";
 
     var Class,
@@ -21,8 +21,8 @@ go.module("Class", function (go, global) {
         MutatorsList;
 
     /**
-     * Прототип корневого класса
-     * Свойства и методы, доступные во всех объектах (или классах)
+     * Prototype of root class
+     * Methods and properties available in all classes and instances
      *
      * @type {Object}
      */
@@ -33,7 +33,7 @@ go.module("Class", function (go, global) {
          */
 
         /**
-         * "Расширенный тип" экземпляров классов
+         * "Extended" type of class instances
          * @see go.Lang.getType
          * @name go.Class.Root#go$type
          * @protected
@@ -42,7 +42,7 @@ go.module("Class", function (go, global) {
         'go$type': "go.object",
 
         /**
-         * Имя класса для строкового представления
+         * Class name for string representation
          *
          * @name go.Class.Root#__classname
          * @protected
@@ -51,7 +51,7 @@ go.module("Class", function (go, global) {
         '__classname': "go.Class.Root",
 
         /**
-         * Признак абстрактного класса
+         * Flag of abstract class
          *
          * @name go.Class.Root#__abstract
          * @protected
@@ -60,7 +60,7 @@ go.module("Class", function (go, global) {
         '__abstract': true,
 
         /**
-         * Признак финального класса
+         * Flag of final class
          *
          * @name go.Class.Root#__final
          * @protected
@@ -69,28 +69,30 @@ go.module("Class", function (go, global) {
         '__final': false,
 
         /**
-         * Базовый конструктор
+         * Basic constructor
+         *
          * @constructs
          * @public
          */
         '__construct': function () {},
 
         /**
-         * Базовый деструктор
+         * Basic destructor
+         *
          * @destructs
          * @public
          */
         '__destruct': function () {},
 
         /**
-         * Вызов родительского конструктора
+         * Call parent constructor
          *
          * @name go.Class.Root#__parentConstruct
          * @protected
          * @param {Function} Parent
-         *        родительский класс
+         *        parent class
          * @param {... *} [args]
-         *        аргументы конструктора
+         *        arguments of call
          */
         '__parentConstruct': function (Parent) {
             var args = Array.prototype.slice.call(arguments);
@@ -99,30 +101,30 @@ go.module("Class", function (go, global) {
         },
 
         /**
-         * Вызов родительского деструктора
+         * Call parent destructor
          *
          * @name go.Class.Root#__parentDestructor
          * @protected
          * @param {Function} Parent
-         *        родительский класс
+         *        parent class
          */
         '__parentDestruct': function (Parent) {
             Parent.__destruct(this);
         },
 
         /**
-         * Вызов метода из родительского класса
+         * Call method from parent class
          *
          * @name go.Class.Root#__parentMethod
          * @protected
          * @param {Function} Parent
-         *        родительский класс
+         *        parent class
          * @param {String} name
-         *        имя метода
+         *        method name
          * @param {... *} [args]
-         *        аргументы метода
+         *        method arguments
          * @return {*}
-         *         результат выполнения запрошенного метода
+         *         results of calling
          */
         '__parentMethod': function (Parent) {
             var args = Array.prototype.slice.call(arguments);
@@ -131,7 +133,7 @@ go.module("Class", function (go, global) {
         },
 
         /**
-         * Принудительное разрушение экземпляра
+         * Forced destruction of instance
          *
          * @name go.Class.Root#destroy
          * @public
@@ -152,12 +154,12 @@ go.module("Class", function (go, global) {
         },
 
         /**
-         * Является ли объект экземпляром указанного класса
+         * Check whether a current object is an instance of specified class
          *
          * @name go.Class.Root#instance_of
          * @public
          * @param {Function} C
-         *        проверяемый класс
+         *
          * @return {Boolean}
          */
         'instance_of': function (C) {
@@ -168,7 +170,7 @@ go.module("Class", function (go, global) {
         },
 
         /**
-         * Строковое представление объекта
+         * String representation
          *
          * @name go.Class.Root#toString
          * @public
@@ -180,7 +182,7 @@ go.module("Class", function (go, global) {
         },
 
         /**
-         * Предопределённые мутаторы
+         * Predefined mutators
          *
          * @ignore
          * @type {Object}
@@ -188,12 +190,12 @@ go.module("Class", function (go, global) {
         '__mutators': {
 
             /**
-             * Мутатор "sysvars" - перенос системных переменных в класс
+             * Mutator "sysvars" - move system variables in class
              */
             'sysvars': {
                 /**
-                 * Переменные для переноса
-                 * имя переменной => значение по умолчанию (если не определено в props)
+                 * Variables for moving
+                 * name => default value
                  *
                  * @type {Object}
                  */
@@ -221,7 +223,7 @@ go.module("Class", function (go, global) {
             },
 
             /**
-             * Мутатор "static" - перенос статических полей в класс из объекта
+             * Mutator "static" - move static properties from object to class
              */
             'static': {
                 'processClass': function (props) {
@@ -243,7 +245,7 @@ go.module("Class", function (go, global) {
             },
 
             /**
-             * Мутатор "bind" - связь методов с объектом
+             * Mutator "bind" - association methods with the object
              */
             'bind': {
                 'regexp': /^on[A-Z_]/,
@@ -314,7 +316,7 @@ go.module("Class", function (go, global) {
     };
 
     /**
-     * @class "класс" объектов, создающих go-классы'ы
+     * @class "class" of objects, which create go-classes
      */
     ClassCreator = function (parents, props) {
         this.__construct(parents, props);
@@ -327,9 +329,9 @@ go.module("Class", function (go, global) {
          * @constructs
          * @public
          * @param {(Function|Array.<Function>)} [parents]
-         *        класс-предок или список предков
+         *        parent class or list of parents
          * @param {Object} props
-         *        набор свойств и методов класса
+         *        list of properties and methods of class
          */
         '__construct': function (parents, props) {
             if (!props) {
@@ -348,7 +350,7 @@ go.module("Class", function (go, global) {
         },
 
         /**
-         * Создание класса
+         * Class create
          *
          * @public
          * @return void
@@ -368,7 +370,7 @@ go.module("Class", function (go, global) {
         },
 
         /**
-         * Получение созданного класса
+         * Get created class
          *
          * @public
          * @return {Function}
@@ -378,7 +380,7 @@ go.module("Class", function (go, global) {
         },
 
         /**
-         * Создание функции-конструктора
+         * Create function-constructor
          *
          * @private
          * @return void
@@ -403,7 +405,7 @@ go.module("Class", function (go, global) {
         },
 
         /**
-         * Разделение предков на основные и второстепенные
+         * Separation of parents of major and minor
          *
          * @private
          * @return void
@@ -427,7 +429,7 @@ go.module("Class", function (go, global) {
         },
 
         /**
-         * Проверить, что среди предков нет финальных
+         * Check that there is no parent among the final class
          *
          * @private
          * @return {Boolean}
@@ -450,7 +452,7 @@ go.module("Class", function (go, global) {
         },
 
         /**
-         * Создание объекта прототипа
+         * Create prototype for constructor
          *
          * @private
          * @return void
@@ -467,7 +469,7 @@ go.module("Class", function (go, global) {
         },
 
         /**
-         * Создание списка мутаторов
+         * Create list of mutators
          *
          * @private
          * @return void
@@ -480,7 +482,7 @@ go.module("Class", function (go, global) {
         },
 
         /**
-         * Перенести поля второстепенных предков в прототип
+         * Move properties of minor parents to prototype
          *
          * @todo ref
          * @private
@@ -511,7 +513,7 @@ go.module("Class", function (go, global) {
         },
 
         /**
-         * Заполнение класса и прототипа нужными свойствами
+         * Filling class and prototype required properties
          *
          * @return void
          */
@@ -522,13 +524,13 @@ go.module("Class", function (go, global) {
             C.__Fake  = function () {};
             C.__Fake.prototype = C.prototype;
             go.Lang.extend(C, this.classMethods);
-            C.toString = this.classMethods.toString; // IE не копирует toString
+            C.toString = this.classMethods.toString; // IE does not copy the toString
             C.__mutators.processClass(props);
             go.Lang.extend(C.prototype, props);
         },
 
         /**
-         * Итоговая функция-конструктор класса
+         * Function-constructor of class
          *
          * @private
          * @type {Function}
@@ -536,7 +538,7 @@ go.module("Class", function (go, global) {
         'Class': null,
 
         /**
-         * Поля класса, переданные в качестве аргумента в go.Class()
+         * Class field passed as arguments to go.Class()
          *
          * @private
          * @type {Object}
@@ -544,7 +546,7 @@ go.module("Class", function (go, global) {
         'props': null,
 
         /**
-         * Переданные в качестве аргумента предки класса
+         * Parent of class passed as arguments to go.Class()
          *
          * @private
          * @type {Array|*}
@@ -552,7 +554,7 @@ go.module("Class", function (go, global) {
         'cparents': null,
 
         /**
-         * Базовые статические методы класса
+         * Basic static methods of class
          *
          * @private
          * @type {Object}
@@ -564,7 +566,7 @@ go.module("Class", function (go, global) {
              */
 
             /**
-             * Является ли класс подклассом указанного
+             * Check whether a current class is a subclass of the specified class
              *
              * @name go.Class.Root.isSubclassOf
              * @public
@@ -603,7 +605,7 @@ go.module("Class", function (go, global) {
             },
 
             /**
-             * Вызов конструктора данного класса для объекта
+             * Call constructor of current class for specified object
              *
              * @name go.Class.Root.__construct
              * @public
@@ -617,31 +619,28 @@ go.module("Class", function (go, global) {
             },
 
             /**
-             * Вызов деструктора данного класса для объекта
+             * Call destructor of current class for specified object
              *
              * @name go.Class.Root.__destruct
              * @public
              * @param {Object} instance
              */
             '__destruct': function (instance) {
-                var func = this.__method; // jslint'у не нравится this.__method.call()
+                var func = this.__method; // this.__method.call() - jslint swearing
                 func.call(this, instance, "__destruct");
             },
 
             /**
-             * Вызов метода данного класса для объекта
+             * Call method of current class for specified object
              *
              * @name go.Class.Root.__method
              * @public
              * @param {Object} instance
-             *        объект
              * @param {String} name
-             *        имя метода
              * @param {... *} args
-             *         аргументы метода
              * @return {*}
-             *         результат, возвращённый методом
              * @throws go.Class.Exceptions.Method
+             *         specified method is not found
              */
             '__method': function (instance, name) {
                 var args = Array.prototype.slice.call(arguments, 2),
@@ -658,8 +657,8 @@ go.module("Class", function (go, global) {
             },
 
             /**
-             * Заполнение экземпляра объекта нужными свойствами
-             * На этапе конструирования до вызова __construct()
+             * Filling instance of necessary properties
+             * Occurs during the design stage, before to call __construct()
              *
              * @param {Object} instance
              */
@@ -679,7 +678,7 @@ go.module("Class", function (go, global) {
     };
 
     /**
-     * @class список метаторов конкретного класса
+     * @class mutators list for specific class
      */
     MutatorsList = function (C) {
         MutatorsList.prototype.__construct(C);
@@ -689,7 +688,7 @@ go.module("Class", function (go, global) {
         'constructor': MutatorsList,
 
         /**
-         * Целевой класс
+         * Target class
          *
          * @private
          * @type {Function}
@@ -697,7 +696,7 @@ go.module("Class", function (go, global) {
         'Class': null,
 
         /**
-         * Набор мутаторов (имя => мутатор)
+         * Mutators list (name => mutator object)
          *
          * @private
          * @type {Object.<String, Mutator>}
@@ -708,14 +707,14 @@ go.module("Class", function (go, global) {
          * @constructs
          * @public
          * @param {Function} C
-         *        целевой класс
+         *        target class
          */
         '__construct': function (C) {
             this.Class = C;
         },
 
         /**
-         * Создание списка мутаторов для данного класса
+         * Create list mutators for this class
          *
          * @public
          * @return void
@@ -727,13 +726,13 @@ go.module("Class", function (go, global) {
         },
 
         /**
-         * Обработка создаваемого класса
+         * Follow the steps for creating a class
          *
          * @public
          * @param {Object} props
-         *        исходные поля класса
+         *        original class fields
          * @return {Object}
-         *         обработанные поля класса
+         *         final class fields
          */
         'processClass': function (props) {
             var mutators = this.mutators,
@@ -750,7 +749,7 @@ go.module("Class", function (go, global) {
         },
 
         /**
-         * Обработка создаваемого экземпляра класса
+         * Follow the steps for creating an instance
          *
          * @public
          * @param {Object} instance
@@ -768,7 +767,7 @@ go.module("Class", function (go, global) {
         },
 
         /**
-         * Получить метод, сохранённый в мутаторах
+         * Get method that has been stored in mutator
          *
          * @public
          * @param {String} name
@@ -790,7 +789,8 @@ go.module("Class", function (go, global) {
         },
 
         /**
-         * Создание мутаторов из прямой ветки (без множественного наследования)
+         * Create mutators from direct line (without multiple inheritance)
+
          *
          * @private
          * @return void
@@ -830,7 +830,7 @@ go.module("Class", function (go, global) {
         },
 
         /**
-         * Слияние с мутаторами из второстепенных предков
+         * Merging with mutators from minor parents
          *
          * @private
          * @return void
@@ -861,19 +861,19 @@ go.module("Class", function (go, global) {
         },
 
         /**
-         * Создать новый мутатор
+         * Create new mutator class
          *
          * @private
          * @param {String} name
-         *        название мутатора
+         *        mutator name
          * @param {Object} props
-         *        поля мутатора
+         *        mutator fields
          * @param {Object} [bproto]
-         *        прототип предка (по умолчанию - базовый Mutator)
+         *        parent prototype (basic Mutator by default)
          * @param {Function} [parent]
-         *        класс-предок
+         *        parent class
          * @return {Mutator}
-         *         созданный мутатор
+         *         constructor of new mutator
          */
         'createNewMutator': function (name, props, bproto, parent) {
             var Fake, proto, Constr;
@@ -890,25 +890,25 @@ go.module("Class", function (go, global) {
         },
 
         /**
-         * Расширить предковый мутатор
+         * Extend parent mutator
          *
          * @param {String} name
-         *        название мутатора
+         *        mutator name
          * @param {Mutator} mparent
-         *        мутатор-предок (расширяемый)
+         *        parent mutator (extended)
          * @param {Object} props
-         *        поля нового мутатора
+         *        new mutator fields
          * @param {Function} [parent]
-         *        класс-предок
+         *        parent class
          * @return {Mutator}
-         *         получившийся мутатор
+         *         constructor of new mutator
          */
         'extendMutator': function (name, mparent, props, parent) {
             return this.createNewMutator(name, props, mparent.constructor.prototype, parent);
         },
 
         /**
-         * Скопировать предковый мутатор
+         * Copy parent mutator
          *
          * @param {String} name
          * @param {Mutator} mparent
@@ -920,7 +920,7 @@ go.module("Class", function (go, global) {
         },
 
         /**
-         * @class базовый "класс" мутаторов
+         * @class basic "class" of mutators
          */
         'Mutator': (function () {
 
@@ -930,7 +930,7 @@ go.module("Class", function (go, global) {
             Mutator.prototype = {
 
                 /**
-                 * Название мутатора
+                 * Mutator name
                  *
                  * @protected
                  * @type {String}
@@ -938,7 +938,7 @@ go.module("Class", function (go, global) {
                 'name': null,
 
                 /**
-                 * Класс, к которому привязан
+                 * Owner class
                  *
                  * @protected
                  * @type {Function}
@@ -946,7 +946,7 @@ go.module("Class", function (go, global) {
                 'Class': null,
 
                 /**
-                 * Класс-предок мутатора
+                 * Parent class of mutator
                  *
                  * @protected
                  * @type {Function}
@@ -954,7 +954,7 @@ go.module("Class", function (go, global) {
                 'parent': null,
 
                 /**
-                 * Сохраняемые поля
+                 * Stored fields
                  *
                  * @protected
                  * @type {Object}
@@ -965,11 +965,11 @@ go.module("Class", function (go, global) {
                  * @constructs
                  * @public
                  * @param {String} name
-                 *        имя мутатора
+                 *        mutator name
                  * @param {Function} C
-                 *        класс к которому привязан
+                 *        owner class
                  * @param {Function} [parent]
-                 *        класс-предок мутатора
+                 *        parent class of mutator
                  */
                 '__construct': function (name, C, parent) {
                     this.name   = name;
@@ -980,7 +980,7 @@ go.module("Class", function (go, global) {
                 },
 
                 /**
-                 * Обработка полей на этапе создания класса
+                 * Processing class
                  *
                  * @public
                  * @param {Object} props
@@ -990,7 +990,7 @@ go.module("Class", function (go, global) {
                 },
 
                 /**
-                 * Заполнение экземпляра класса
+                 * Processing instance
                  *
                  * @public
                  * @param {Object} instance
@@ -1000,18 +1000,18 @@ go.module("Class", function (go, global) {
                 },
 
                 /**
-                 * Получить метод, если он сохранён в данном мутаторе
+                 * Get method, if it is stored in the mutator
                  *
                  * @public
                  * @params {String} name
                  * @params {go.object} instance
                  */
                 'getMethod': function () {
-                    // для переопределения у потомков
+                    // for override
                 },
 
                 /**
-                 * Подгрузка полей из предков
+                 * Uploading fields of parents
                  *
                  * @private
                  * @return void
@@ -1034,7 +1034,7 @@ go.module("Class", function (go, global) {
                 },
 
                 /**
-                 * Подгрузка полей из одного предка
+                 * Uploading fields of single parents
                  *
                  * @private
                  * @param {Function} parent
@@ -1061,19 +1061,19 @@ go.module("Class", function (go, global) {
     };
 
     /**
-     * Функция создания нового класса
+     * Function for create new class
      *
      * @name go.Class
      * @function
      * @public
      * @param {(Function|Array.<Function>)} [parents]
-     *        класс-предок или список предков
+     *        parent class or list of parents
      * @param {Object} props
-     *        список методов и свойств класса
+     *        method and properties list
      * @return {Function}
-     *         функция-конструктор экземпляров требуемого класса
+     *         constructor for instances
      * @throws go.Class.Exceptions.Final
-     *         попытка расширить финальный класс
+     *         attempt to extend the final class
      */
     Class = function Class(parents, props) {
         var creator, C;
@@ -1086,41 +1086,41 @@ go.module("Class", function (go, global) {
 
     /**
      * @class go.Class.Root
-     *        базовый класс
+     *        basic class
      */
     Class.Root = Class.apply(global, [null, RootPrototype]);
     Class.Root.prototype.toString = RootPrototype.toString; // IE !!!
 
     /**
      * @namespace go.Class.Exceptions
-     *            исключения при работе с библиотекой
+     *            library exceptions
      */
     Class.Exceptions = new go.Lang.Exception.Block({
 
         /**
          * @class go.Class.Exceptions.Base
-         *        базовое исключение при работе с go.Class
+         *        basic exception of go.Class
          * @augments go.Lang.Exception.Base
          * @abstract
          */
 
         /**
          * @class go.Class.Exceptions.Abstract
-         *        попытка инстанцировать абстрактный класс
+         *        attempt to instantiate abstract class
          * @augments go.Class.Exceptions.Base
          */
         'Abstract': [true, "Cannot instantiate abstract class"],
 
         /**
          * @class go.Class.Exceptions.Final
-         *        попытка расширить финальный класс
+         *        attempt to extend the final class
          * @augments go.Class.Exceptions.Base
          */
         'Final': [true, "Cannot extend final class"],
 
         /**
          * @class go.Class.Exceptions.Method
-         *        попытка вызова не существующего метода
+         *        attempt to call not existing method
          * @augments go.Class.Exceptions.Base
          */
         'Method': [true, "Method is not found"]
