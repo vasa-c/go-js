@@ -1,9 +1,9 @@
 /**
- * go.LangExt: расширение go.Lang
+ * go.LangExt: extension of go.Lang
  *
  * @package    go.js
  * @subpackage Lang
- * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
+ * @author     Grigoriev Oleg aka vasa_c <go.vasac@gmail.com>
  */
 /*jslint nomen: true, es5: true */
 /*global go, window */
@@ -20,16 +20,16 @@ go.module("LangExt", [], function (go, global, undefined) {
         isStrictArray = Lang.isStrictArray;
 
     /**
-     * Разбор GET или POST запроса
+     * Parses the string (GET or POST request) into variables
      *
      * @name go.Lang.parseQuery
      * @public
      * @param {(String|Object)} [query]
-     *        строка запроса (по умолчанию window.location) или сразу словарь переменных
+     *        request string (window.location by default) or dictionary of variables
      * @param {String} [sep]
-     *        разделитель переменных (по умолчанию "&")
+     *        variable separator ("&" by default)
      * @return {Object}
-     *         словарь переменных из запроса
+     *         dictionary of variables from request
      */
     Lang.parseQuery = function parseQuery(query, sep) {
         var result, i, len, v;
@@ -55,16 +55,16 @@ go.module("LangExt", [], function (go, global, undefined) {
     };
 
     /**
-     * Сформировать строку запроса на основе набора переменных
+     * Create query string (URL-encoded)
      *
      * @name go.Lang.buildQuery
      * @public
      * @param {(Object|String)} vars
-     *        набор переменных (или сразу строка)
+     *        variables (discionary or string)
      * @param {String} [sep]
-     *        разделитель (по умолчанию "&")
+     *        variable separator ("&" by default)
      * @return {String}
-     *         строка запроса
+     *         query string
      */
     Lang.buildQuery = function buildQuery(vars, sep) {
         var query, buildValue, buildArray, buildDict;
@@ -102,16 +102,16 @@ go.module("LangExt", [], function (go, global, undefined) {
     };
 
     /**
-     * Получить значение по пути внутри объекта
+     * Get value by path inside object
      *
      * @name go.Lang.getByPath
      * @public
      * @param {Object} context
-     *        объект, в котором производится поиск (не указан - глобальный)
+     *        target object (global by default)
      * @param {(String|Array.<String>)} path
-     *        путь - массив компонентов или строка вида "one.two.three"
+     *        path - string ("one.two.three") or list of components (["one", "two", "three"])
      * @param {*} [bydefault]
-     *        значение по умолчанию, если путь не найден
+     *        default value (if path is not found)
      * @return {*}
      */
     Lang.getByPath = function getByPath(context, path, bydefault) {
@@ -131,16 +131,16 @@ go.module("LangExt", [], function (go, global, undefined) {
     };
 
     /**
-     * Установить значение по пути внутри объекта
+     * Set value by path inside object
      *
      * @name go.Lang.setByPath
      * @public
      * @param {Object} context
-     *        целевой объект
+     *        target object
      * @param {(String|Array.<String>)} path
-     *        путь - массив компонентов или строка вида "one.two.three"
+     *        path - string ("one.two.three") or list of components (["one", "two", "three"]
      * @param {*} value
-     *        значение
+     *        value for setting
      */
     Lang.setByPath = function setByPath(context, path, value) {
         var len, i, p;
@@ -159,16 +159,16 @@ go.module("LangExt", [], function (go, global, undefined) {
     };
 
     /**
-     * Каррирование функции
+     * Currying of function
      *
      * @name go.Lang.curry
      * @public
      * @param {Function} fn
-     *        исходная функция
+     *        original function
      * @param {... *} [args]
-     *        запоминаемые аргументы
+     *        memorized arguments
      * @return {Function}
-     *         каррированная функция
+     *         curried function
      */
     Lang.curry = function curry(fn) {
         var slice = Array.prototype.slice,
@@ -180,15 +180,14 @@ go.module("LangExt", [], function (go, global, undefined) {
     };
 
     /**
-     * Выполнить первую корректную функцию
+     * Execute first correct function
      *
      * @name go.Lang.tryDo
      * @public
      * @param {Array.<Function>} funcs
-     *        список функций
+     *        list of functions
      * @return {*}
-     *         результат первой корректно завершившейся функции.
-     *         ни одна не сработала - undefined.
+     *         first correct result (or undefined if none of them correct)
      */
     Lang.tryDo = function tryDo(funcs) {
         var i, len, result;
@@ -202,7 +201,7 @@ go.module("LangExt", [], function (go, global, undefined) {
     };
 
     /**
-     * Является ли значение undefined
+     * Finds out whether a variable is an undefined
      *
      * @name go.Lang.isUndefined
      * @param {*} value
@@ -213,7 +212,7 @@ go.module("LangExt", [], function (go, global, undefined) {
     };
 
     /**
-     * Является ли значение null
+     * Finds out whether a variable is NULL
      *
      * @name go.Lang.isNull
      * @param {*} value
@@ -224,7 +223,7 @@ go.module("LangExt", [], function (go, global, undefined) {
     };
 
     /**
-     * Является ли значение логическим
+     * Finds out whether a variable is a boolean
      *
      * @name go.Lang.isBoolean
      * @param {*} value
@@ -235,7 +234,7 @@ go.module("LangExt", [], function (go, global, undefined) {
     };
 
     /**
-     * Является ли значение числом
+     * Finds out whether a variable is a number
      *
      * @name go.Lang.isNumber
      * @param {*} value
@@ -246,7 +245,7 @@ go.module("LangExt", [], function (go, global, undefined) {
     };
 
     /**
-     * Является ли значение строкой
+     * Finds out whether a variable is a string
      *
      * @name go.Lang.isString
      * @param {*} value
@@ -257,7 +256,7 @@ go.module("LangExt", [], function (go, global, undefined) {
     };
 
     /**
-     * Является ли значение функцией
+     * Finds out whether a variable is a function
      *
      * @name go.Lang.isFunction
      * @param {*} value
@@ -277,7 +276,7 @@ go.module("LangExt", [], function (go, global, undefined) {
     }
 
     /**
-     * Является ли значение объектом исключения
+     * Finds out whether a instance of exception
      *
      * @name go.Lang.isError
      * @param {*} value
@@ -291,7 +290,7 @@ go.module("LangExt", [], function (go, global, undefined) {
     };
 
     /**
-     * Является ли значение датой
+     * Finds out whether a data
      *
      * @name go.Lang.isDate
      * @param {*} value
@@ -303,7 +302,7 @@ go.module("LangExt", [], function (go, global, undefined) {
 
     if (nativeToString.call(arguments) === "[object Arguments]") {
         /**
-         * Является ли значение DOM-элементом
+         * Finds out whether a DOM element
          *
          * @name go.Lang.isElement
          * @param {*} value
@@ -314,7 +313,7 @@ go.module("LangExt", [], function (go, global, undefined) {
         };
 
         /**
-         * Является ли значение текстовой нодой
+         * Finds out whether a text node
          *
          * @name go.Lang.isTextnode
          * @param {*} value
@@ -325,7 +324,7 @@ go.module("LangExt", [], function (go, global, undefined) {
         };
 
         /**
-         * Является ли значение HTML-коллекцией
+         * Finds out whether a HTML collection
          *
          * @name go.Lang.isCollection
          * @param {*} value
@@ -340,7 +339,7 @@ go.module("LangExt", [], function (go, global, undefined) {
         };
 
         /**
-         * Является ли значение объектом arguments
+         * Finds out whether a arguments
          *
          * @name go.Lang.is
          * @param {*} value
@@ -396,18 +395,18 @@ go.module("LangExt", [], function (go, global, undefined) {
     }
 
     /**
-     * Вызов определённого метода для списка объектов
+     * Call method by name for list of objects
      *
      * @name go.Lang.invoke
      * @public
      * @param {(Object|Array)} items
-     *        список или словарь объектов
+     *        list or dictionary of objects
      * @param {String} methodName
-     *        аргументы метода
+     *        method name
      * @param {Array} [args]
-     *        аргументы вызова метода
+     *        arguments for call
      * @return {(Object|Array)}
-     *         список той же структуры, что и items с результатами вызова метода
+     *         results of calling (structure same items)
      */
     Lang.invoke = function invoke(items, methodName, args) {
         return Lang.each(items, function (item) {
@@ -416,16 +415,16 @@ go.module("LangExt", [], function (go, global, undefined) {
     };
 
     /**
-     * Получение определённого поля для списка объектов
+     * Get field value by name from list of objects
      *
      * @name go.Lang.field
      * @public
      * @param {(Object|Array)} items
-     *        список или словарь объектов
+     *        list or dictionary of items
      * @param {String} fieldName
-     *        имя поля
+     *        field name
      * @return {(Object|Array)}
-     *         список той же структуры, что и items со значениями, соответствующими значению поля
+     *         values of field (structure same items)
      */
     Lang.field = function field(items, fieldName) {
         return Lang.each(items, function (item) {
@@ -434,18 +433,18 @@ go.module("LangExt", [], function (go, global, undefined) {
     };
 
     /**
-     * Получение полей объектов по указанному пути
+     * Get field value by path from list of objects
      *
-     * @see go.Lang.field в отличии от field() в качестве поля можно указать путь (через точку)
+     * In contrast to the field(), you can specify the path instead of the name
      *
      * @name go.Lang.fieldByPath
      * @public
      * @param {(Object|Array)} items
-     *        список или словарь объектов
+     *        list or dictionary of items
      * @param {(String|Array)} fieldPath
-     *        путь к полю внутри объекта
+     *        path to field as string ("one.two.three") or as list (["one", "two", "three"])
      * @return {(Object|Array)}
-     *         список той же структуры, что и items со значениями, соответствующими значению поля
+     *         values of field (structure same items)
      */
     Lang.fieldByPath = function fieldByPath(items, fieldPath) {
         var getByPath = Lang.getByPath;
@@ -458,18 +457,18 @@ go.module("LangExt", [], function (go, global, undefined) {
     };
 
     /**
-     * Фильтрация структуры
+     * Filtering structure
      *
      * @name go.Lang.filter
      * @public
      * @param {(Object|Array)} items
-     *        список или словарь объектов
+     *        original structure
      * @param {(Function|String)} criterion
-     *        критерий фильтра - функция-итератор или имя поля объекта из items
+     *        filter criterion (function or field name)
      * @param {Object} context [optional]
-     *        контекст для вызова итератора
+     *        executive context for criterion
      * @return {(Object|Array)}
-     *         отфильтрованная изначальная структура
+     *         filtered structure
      */
     Lang.filter = function filter(items, criterion, context) {
         var i, len, result, item;
@@ -518,20 +517,20 @@ go.module("LangExt", [], function (go, global, undefined) {
     };
 
     /**
-     * Сортировка объектов по определённому критерию
+     * Sort list by criterion
      *
      * @name go.Lang.sortBy
      * @public
      * @param {Array} items
-     *        исходный массив
+     *        original list
      * @param {(Function|String)} criterion
-     *        критерий сортировки (имя поля или callback(item))
+     *        sort criterion (field name or callback(item))
      * @param {Object} [context]
-     *        контекст вызова criterion
+     *        executive context for criterion
      * @param {Boolean} [reverse]
-     *        в обратном порядке
+     *        sort in reverse order
      * @return {Array}
-     *         результирующий массив
+     *         sorted list
      */
     Lang.sortBy = function sortBy(items, criterion, context, reverse) {
         var arr = [],
@@ -566,18 +565,18 @@ go.module("LangExt", [], function (go, global, undefined) {
     };
 
     /**
-     * Группировка по критериям
+     * Grouping by criterion
      *
      * @name go.Lang.groupBy
      * @public
      * @param {(Array|Object)} items
-     *        исходный список или словарь объектов
+     *        original list or dictionary of objects
      * @param {(Function|String)} criterion
-     *        критерий группировки (имя поля или callback(item))
+     *        grouping criterion (field name or callback(item))
      * @param {Object} [context]
-     *        контекст вызова criterion
+     *        executive context for criterion
      * @return {Object}
-     *         сгруппированная структура
+     *         grouped structure
      */
     Lang.groupBy = function groupBy(items, criterion, context) {
         var f = (typeof criterion === "function"),
@@ -612,16 +611,16 @@ go.module("LangExt", [], function (go, global, undefined) {
     };
 
     /**
-     * Обменять местами ключи и значения
+     * Exchanges all keys with their associated values
      *
      * @name flip
      * @public
      * @param {(Object|Array)} items
-     *        исходный список или словарь
+     *        original list or dictionary
      * @param {*} [value]
-     *        значение (по умолчанию в качестве значения используется ключ)
+     *        value (key by default)
      * @return {Object}
-     *         перевёрнутый словарь
+     *         flipped items
      */
     Lang.flip = function flip(items, value) {
         var result = {},
@@ -643,18 +642,18 @@ go.module("LangExt", [], function (go, global, undefined) {
     };
 
     /**
-     * Проверка всех элементов списка на соответствие заданным критериям
+     * Check whether all the elements meet the criterion
      *
      * @name go.Lang.every
      * @public
      * @param {(Object|Array)} items
-     *        список элементов
+     *        elements (list or dictionary)
      * @param {(Function|String)} [criterion]
-     *        критерий (функция или имя поля)
+     *        criterion (field name or callback)
      * @param {Object} [context]
-     *        контекст для вызова критерия
+     *        executive context for criterion
      * @return {Boolean}
-     *         все ли элементы соответствуют критерию
+     *         TRUE - all items meet the criterion
      */
     Lang.every = function every(items, criterion, context) {
         var len,
@@ -702,18 +701,18 @@ go.module("LangExt", [], function (go, global, undefined) {
     };
 
     /**
-     * Проверка, есть ли хоть один элемент, соответствующий критерию
+     * Check if there is at least one element that matches the criteria
      *
      * @name go.Lang.some
      * @public
      * @param {(Object|Array)} items
-     *        список элементов
+     *        elements (list or dictionary)
      * @param {(Function|String)} [criterion]
-     *        критерий (функция или имя поля)
+     *        criterion (field name or callback)
      * @param {Object} [context]
-     *        контекст для вызова критерия
+     *        executive context for criterion
      * @return {Boolean}
-     *         есть ли хоть один элемент, соответствующий критерию
+     *         there is at least one element meet the criterion
      */
     Lang.some = function some(items, criterion, context) {
         var field;
@@ -732,22 +731,22 @@ go.module("LangExt", [], function (go, global, undefined) {
     };
 
     /**
-     * Поиск элемента, соответствующего критерию
+     * Search element, which meet the criterion
      *
      * @name go.Lang.find
      * @public
      * @param {(Object|Array)} items
-     *        набор элементов
+     *        elements (list or dictionary)
      * @param {(Function|String)} [criterion]
-     *        критерий (функция или имя поля)
+     *        criterion (field name or callback)
      * @param {Object} [context]
-     *        контекст для вызова criterion
+     *        executive context for criterion
      * @param {Boolean} [returnkey]
-     *        возвращать вместо значения ключ или индекс
+     *        instead values ​​should return the key (dictionary) or index (array)
      * @param {*} [bydefault]
-     *        значение по умолчанию (если элемент не найден)
+     *        default value (element is not found)
      * @return {*}
-     *         значение найденого элемента, его ключ (returnkey) или bydefault
+     *         value (or key) of target item or bydefault for fail
      */
     Lang.find = function find(items, criterion, context, returnkey, bydefault) {
         var len,
@@ -818,18 +817,18 @@ go.module("LangExt", [], function (go, global, undefined) {
     };
 
     /**
-     * Объединение значений (левоассоциативное)
+     * Reduce of items (left-to-right)
      *
      * @name go.Lang.reduce
      * @public
      * @param {(Array|Object)} items
-     *        набор значений
+     *        list or dictionary of items
      * @param {(Function|Array)} callback
-     *        колбэк или [callback, context]
+     *        callback or [callback, context]
      * @param initialValue [optional]
-     *        начальное значение
+     *        the initial value
      * @return {*}
-     *         объединённое значение
+     *         result of reduce
      */
     Lang.reduce = function reduce(items, callback, initialValue) {
         var clb = callback, // jslint: Do not mutate parameter 'callback' when using 'arguments'.
@@ -889,18 +888,18 @@ go.module("LangExt", [], function (go, global, undefined) {
     };
 
     /**
-     * Объединение значений (правоассоциативное)
+     * Reduce of items (right-to-left)
      *
-     * @name go.Lang.reduceRight
+     * @name go.Lang.reduce
      * @public
      * @param {(Array|Object)} items
-     *        набор значений
+     *        list or dictionary of items
      * @param {(Function|Array)} callback
-     *        колбэк или [callback, context]
+     *        callback or [callback, context]
      * @param initialValue [optional]
-     *        начальное значение
+     *        the initial value
      * @return {*}
-     *         объединённое значение
+     *         result of reduce
      */
     Lang.reduceRight = function reduceRight(items, callback, initialValue) {
         var clb = callback, // jslint: Do not mutate parameter 'callback' when using 'arguments'.
