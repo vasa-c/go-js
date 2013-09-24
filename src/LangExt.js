@@ -48,7 +48,7 @@ go.module("LangExt", [], function (go, global, undefined) {
             if (v.length === 2) {
                 result[decodeURIComponent(v[0])] = decodeURIComponent(v[1]);
             } else {
-                result[''] = decodeURIComponent(v[0]);
+                result[decodeURIComponent(v[0])] = undefined;
             }
         }
         return result;

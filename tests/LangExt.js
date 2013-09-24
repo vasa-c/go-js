@@ -15,7 +15,7 @@ tests.test("parseQuery", function () {
     deepEqual(go.Lang.parseQuery(""), {}, "empty string");
     deepEqual(go.Lang.parseQuery("x=1&y=2"), {'x': "1", 'y': "2"}, "parse string");
     deepEqual(go.Lang.parseQuery("x=one%3Atwo&y=2"), {'x': "one:two", 'y': "2"}, "encoded URI component");
-    deepEqual(go.Lang.parseQuery("12345&x=5"), {'': "12345", 'x': "5"}, "empty value");
+    deepEqual(go.Lang.parseQuery("12345&x=5"), {'12345': undefined, 'x': "5"}, "empty value");
     deepEqual(go.Lang.parseQuery({'x': "5"}), {'x': "5"}, "dictionary = dictionary");
 });
 
