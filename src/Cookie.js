@@ -129,6 +129,7 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
             this.set(name, this.options['delete-value'], {'expires': "delete"});
         },
 
+        /* jshint maxstatements: 25 */
         /**
          * Create header for document.cookie
          *
@@ -170,6 +171,7 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
             }
             return header.join("; ");
         },
+        /* jshint maxstatements: 20 */
 
         /**
          * Value escaping for writing to document.cookie
@@ -261,6 +263,7 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
         'week'   : 604800
     };
 
+    /* jshint maxcomplexity: 20 */
     /**
      * Convert all possible formats expires to Date
      *
@@ -317,6 +320,7 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
         }
         return now;
     };
+    /* jshint maxcomplexity: 10 */
 
     /**
      * @namespace go.Cookie.CookieClass.Exceptions
