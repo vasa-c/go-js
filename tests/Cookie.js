@@ -6,7 +6,7 @@
  * @author     Grigoriev Oleg aka vasa_c <go.vasac@gmail.com>
  */
 /*jslint node: true, nomen: true */
-/*global document, go, tests, ok, equal, deepEqual, raises */
+/*global document, go, tests, ok, equal, deepEqual, throws */
 "use strict";
 
 tests.module("Cookie");
