@@ -5,8 +5,6 @@
  * @subpackage Class
  * @author     Grigoriev Oleg aka vasa_c <go.vasac@gmail.com>
  */
-/*jslint nomen: true, todo: true */
-/*global go, window */
 
 if (!window.go) {
     throw new Error("go.core is not found");

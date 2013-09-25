@@ -7,8 +7,6 @@
  * @uses       go.Class
  * @uses       go.Ext
  */
-/*jslint nomen: true */
-/*global window, go */
 
 if (!window.go) {
     throw new Error("go.core is not found");

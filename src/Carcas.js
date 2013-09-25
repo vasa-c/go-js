@@ -7,8 +7,6 @@
  * @uses       go.Class
  * @uses       jQuery
  */
-/*jslint nomen: true */
-/*global go, window, jQuery */
 
 if (!window.go) {
     throw new Error("go.core is not found");

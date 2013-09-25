@@ -6,8 +6,6 @@
  * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
  * @uses       go.Class
  */
-/*jslint nomen: true, todo: true */
-/*global go, window, jQuery */
 
 if (!window.go) {
     throw new Error("go.core is not found");

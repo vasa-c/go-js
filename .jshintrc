@@ -31,7 +31,11 @@
     "jquery": true,
     
     "globals": {
-        "go": false
+        "go": false,
+        "ok": false,
+        "equal": false,
+        "notEqual": false,
+        "deepEqual": false
     }
 }
 
