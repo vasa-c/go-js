@@ -5,6 +5,7 @@
  * @subpackage Class
  * @author     Grigoriev Oleg aka vasa_c <go.vasac@gmail.com>
  */
+/* jshint camelcase: false */
 "use strict";
 
 tests.module("Class");
@@ -414,7 +415,7 @@ tests.test("Mutators (class)", function () {
             'mul': {
                 'value': 2,
                 'processClass': function (props) {
-                    var name, prop, value = this.value, fields = this.fields;
+                    var name, prop, value = this.value;
 
                     for (name in props) {
                         if (props.hasOwnProperty(name)) {
@@ -498,7 +499,9 @@ tests.test("static", function () {
 
             'getInstance': function () {
                 if (!this.instance) {
+                    /* jshint newcap: false */
                     this.instance = new this();
+                    /* jshint newcap: true */
                 }
                 return this.instance;
             },
