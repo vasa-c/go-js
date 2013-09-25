@@ -1,12 +1,11 @@
 /**
- * Тестирование модуля go.LangExt
+ * Testing the module go.LangExt
  *
  * @package    go.js
  * @subpackage Lang
- * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
+ * @author     Grigoriev Oleg aka vasa_c <go.vasac@gmail.com>
  */
-/*jslint node: true, nomen: true */
-/*global window, document, go, tests, ok, equal, notEqual, deepEqual, raises, $ */
+/* jshint globalstrict: true, maxstatements: 250 */
 "use strict";
 
 tests.module("LangExt");
@@ -638,7 +637,8 @@ tests.test("flip", function () {
 });
 
 tests.test("every", function () {
-    var list = [11, 3, 15, 4, 7, 11],
+    var every = go.Lang.every,
+        list = [11, 3, 15, 4, 7, 11],
         dict = {
             'a': {'x': 5},
             'b': {'x': 11},
@@ -646,20 +646,20 @@ tests.test("every", function () {
             'd': {'x': 3}
         };
 
-    ok(go.Lang.every(list), "no criterion - scalar");
-    ok(go.Lang.every(dict), "no criterion - objects");
-    ok(go.Lang.every(list, function (item) {return item > 0; }), "list and callback (true)");
-    ok(!go.Lang.every(list, function (item) {return item > 10; }), "list and callback (false)");
+    ok(every(list), "no criterion - scalar");
+    ok(every(dict), "no criterion - objects");
+    ok(every(list, function (item) {return item > 0; }), "list and callback (true)");
+    ok(!every(list, function (item) {return item > 10; }), "list and callback (false)");
 
     list = [{'x': 1}, {'x': 2}, {'x': 3}];
-    ok(go.Lang.every(list, "x"), "list and field (true)");
+    ok(every(list, "x"), "list and field (true)");
 
     list[1].x = 0;
-    ok(!go.Lang.every(list, "x"), "list and field (false)");
+    ok(!every(list, "x"), "list and field (false)");
 
-    ok(!go.Lang.every(dict, "x"), "dict and field");
-    ok(!go.Lang.every(dict, function (item) {return item.x !== this.d; }, {'d': 3}), "dict and callback and context (false)");
-    ok(go.Lang.every(dict, function (item) {return item.x !== this.d; }, {'d': 33}), "dict and callback and context (true)");
+    ok(!every(dict, "x"), "dict and field");
+    ok(!every(dict, function (item) {return item.x !== this.d; }, {'d': 3}), "dict and callback and context (false)");
+    ok(every(dict, function (item) {return item.x !== this.d; }, {'d': 33}), "dict and callback and context (true)");
 });
 
 tests.test("some", function () {
@@ -721,11 +721,11 @@ tests.test("some", function () {
 
     dict.d = 10;
     ok(go.Lang.some(dict, callback, context), "dict, callback + context, not empty");
-    /*jslint unparam: true */
+    /* jshint unused: false */
     callback = function (item, key, items) {
         context[key] = item;
     };
-    /*jslint unparam: false */
+    /* jshint unused: true */
 
     list = [1, 2, 3];
     context = {};
@@ -789,11 +789,11 @@ tests.test("find", function () {
     context = {
         'd': 5
     };
-    /*jslint unparam: true */
+    /* jshint unused: false */
     callback = function (item, key, items) {
         return item > context.d;
     };
-    /*jslint unparam: false */
+    /* jshint unused: true */
 
     list = [1, 2, 3, 4, 5];
     equal(go.Lang.find(list, callback, context), undefined, "list, callback + context, empty");
@@ -864,7 +864,7 @@ tests.test("reduce", function () {
     expected = 21; // 1 + 1 * 2 + 2 * 3 + 3 * 4
     equal(go.Lang.reduce(dict, [callback, context], 1), expected, "dict and initial value + context");
 
-    raises(function () {
+    throws(function () {
         go.Lang.reduce([], function () {});
     }, TypeError, "TypeError for empty array");
 });
@@ -921,7 +921,7 @@ tests.test("reduceRight", function () {
     expected = 21; // 1 + 1 * 2 + 2 * 3 + 3 * 4
     equal(go.Lang.reduce(dict, [callback, context], 1), expected, "dict and initial value + context");
 
-    raises(function () {
+    throws(function () {
         go.Lang.reduceRight([], function () {});
     }, TypeError, "TypeError for empty array");
 });

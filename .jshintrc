@@ -36,7 +36,8 @@
         "ok": false,
         "equal": false,
         "notEqual": false,
-        "deepEqual": false
+        "deepEqual": false,
+        "throws": false
     }
 }
 
