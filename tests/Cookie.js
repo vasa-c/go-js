@@ -28,7 +28,8 @@ tests.test("Parse expires", function () {
     equal(result.getTime() - now.getTime(), 1200000, "Number of seconds (as numeric string)");
 
     result = parse(1234567890123, now);
-    equal(result.toUTCString().replace("UTC", "GMT"), "Fri, 13 Feb 2009 23:31:30 GMT", "Unix timestamp"); // replace for IE
+    result = result.toUTCString().replace("UTC", "GMT"); // replace for IE
+    equal(result, "Fri, 13 Feb 2009 23:31:30 GMT", "Unix timestamp");
 
     result = parse("minute", now);
     equal(result.getTime() - now.getTime(), 60000, 'Const "minute"');
@@ -49,7 +50,8 @@ tests.test("Parse expires", function () {
     equal(result.toUTCString().replace("UTC", "GMT"), "Sat, 13 Feb 2010 23:31:30 GMT", 'Const "year"');
     nowc = new Date("Fri, 14 Dec 2012 23:31:30 GMT");
     result = parse("month", nowc);
-    equal(result.toUTCString().replace("UTC", "GMT"), "Mon, 14 Jan 2013 23:31:30 GMT", 'Const "month" and year overflow');
+    result = result.toUTCString().replace("UTC", "GMT"); // replace for IE
+    equal(result, "Mon, 14 Jan 2013 23:31:30 GMT", 'Const "month" and year overflow');
 
     result = parse("delete", now);
     ok(result.getTime() < now.getTime(), 'Const "delete"');
@@ -79,7 +81,8 @@ tests.test("Parse expires", function () {
 
 tests.test("Test with wrapper", function () {
 
-    var WrapperClass, cooks, params, wrapper, now = new Date("Tue, 12 Mar 2013 15:41:06 GMT");
+    var WrapperClass, cooks, params, wrapper, expected, now;
+    now = new Date("Tue, 12 Mar 2013 15:41:06 GMT");
 
     /**
      * @augments go.Cookie.CookieClass
@@ -149,9 +152,12 @@ tests.test("Test with wrapper", function () {
 
     deepEqual(params.one, {}, 'Parameters of "one" is ok');
 
-    deepEqual(params.two, {'expires': "Tue, 12 Mar 2013 15:41:16 GMT", 'path': "/"}, 'Parameters of "two" is ok (inc expires and default secure)');
-    deepEqual(params.three, {'domain': ".example.com", 'secure': true}, 'Parameters of "three" is ok');
-    deepEqual(params.four, {'expires': "Tue, 12 Mar 2013 16:41:06 GMT", 'path': "/path/"}, 'Parameters of "four" is ok (inc expires)');
+    expected = {'expires': "Tue, 12 Mar 2013 15:41:16 GMT", 'path': "/"};
+    deepEqual(params.two, expected, 'Parameters of "two" is ok (inc expires and default secure)');
+    expected = {'domain': ".example.com", 'secure': true};
+    deepEqual(params.three, expected, 'Parameters of "three" is ok');
+    expected = {'expires': "Tue, 12 Mar 2013 16:41:06 GMT", 'path': "/path/"};
+    deepEqual(params.four, expected, 'Parameters of "four" is ok (inc expires)');
 
     equal(wrapper.get("start"), 5, "Original cookie");
     equal(wrapper.get("one"), 10, "Out cookie");
