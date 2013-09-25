@@ -12,7 +12,8 @@ if (!window.go) {
     throw new Error("go.core is not found");
 }
 
-go.module("LangExt", [], function (go, global, undefined) {
+/* jshint maxstatements: 50, maxcomplexity: 20 */
+go.module("LangExt", null, function (go, global, undefined) {
     "use strict";
     var Lang = go.Lang,
         nativeToString = global.Object.prototype.toString,
