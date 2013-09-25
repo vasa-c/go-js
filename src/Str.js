@@ -5,7 +5,7 @@
  * @subpackage Str
  * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
  */
-/*jslint nomen: true, es5: true */
+/*jslint nomen: true */
 /*global go, window */
 
 if (!window.go) {

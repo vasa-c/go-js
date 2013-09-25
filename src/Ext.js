@@ -6,7 +6,7 @@
  * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
  * @uses       go.Class
  */
-/*jslint nomen: true, es5: true, todo: true */
+/*jslint nomen: true, todo: true */
 /*global go, window, jQuery */
 
 if (!window.go) {

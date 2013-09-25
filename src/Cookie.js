@@ -7,7 +7,7 @@
  * @uses       go.Class
  * @uses       go.Ext
  */
-/*jslint nomen: true, es5: true */
+/*jslint nomen: true */
 /*global window, go */
 
 if (!window.go) {

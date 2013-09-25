@@ -11,7 +11,7 @@
  * @link https://github.com/vasa-c/go-js repository
  * @link https://github.com/vasa-c/go-js/wiki documentation
  */
-/*jslint nomen: true, es5: true, todo: true */
+/*jslint nomen: true, todo: true */
 
 /**
  * @namespace go
@@ -1086,14 +1086,13 @@ go.module("Lang", null, function (go, global, undefined) {
          *         constructor of new "class"
          */
         'inherit': (function () {
-            var inherit,
-                nativeCreate,
+            var nativeCreate,
                 Fake;
             nativeCreate = nativeObject.create;
             if (!nativeCreate) {
                 Fake = function () {};
             }
-            return function inherit(Constr, Parent, extend) {
+            function inherit(Constr, Parent, extend) {
                 var proto;
                 Constr = Constr || function EmptyConstructor() {};
                 Parent = Parent || nativeObject;
@@ -1109,7 +1108,8 @@ go.module("Lang", null, function (go, global, undefined) {
                 proto.constructor = Constr;
                 Constr.prototype = proto;
                 return Constr;
-            };
+            }
+            return inherit;
         }()),
 
         /**

@@ -5,7 +5,7 @@
  * @subpackage Class
  * @author     Grigoriev Oleg aka vasa_c <go.vasac@gmail.com>
  */
-/*jslint nomen: true, es5: true, todo: true */
+/*jslint nomen: true, todo: true */
 /*global go, window */
 
 if (!window.go) {
