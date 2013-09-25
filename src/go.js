@@ -11,11 +11,9 @@
  * @link https://github.com/vasa-c/go-js repository
  * @link https://github.com/vasa-c/go-js/wiki documentation
  */
-/*jslint nomen: true, todo: true */
 
-/**
- * @namespace go
- */
+/*global go:true */
+
 var go = (function (global) {
     "use strict";
 
@@ -126,6 +124,7 @@ var go = (function (global) {
                 this.preloaded = {};
             },
 
+            /*jshint maxstatements: 30 */
             /**
              * Request for including module
              *
@@ -177,6 +176,7 @@ var go = (function (global) {
                     counter.filled();
                 }
             },
+            /*jshint maxstatements: 20 */
 
             /**
              * Processing of data loading module
@@ -665,6 +665,7 @@ go.module("Lang", null, function (go, global, undefined) {
             return f;
         },
 
+        /*jshint maxstatements: 50, maxcomplexity: 25 */
         /**
          * Getting extended type of value
          *
@@ -767,6 +768,7 @@ go.module("Lang", null, function (go, global, undefined) {
 
             return "object";
         },
+        /*jshint maxstatements: 20, maxcomplexity: 10 */
 
         /**
          * Whether the object is a simple dictionary
@@ -870,6 +872,7 @@ go.module("Lang", null, function (go, global, undefined) {
             };
         }()),
 
+        /*jshint maxcomplexity: 15 */
         /**
          * Convert value to Array
          *
@@ -909,6 +912,7 @@ go.module("Lang", null, function (go, global, undefined) {
                 return [value];
             }
         },
+        /*jshint maxcomplexity: 15 */
 
         /**
          * Checks if a value exists in an array
