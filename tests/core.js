@@ -4,8 +4,7 @@
  * @package go.js
  * @author  Grigoriev Oleg aka vasa_c (http://blgo.ru/)
  */
-/*jslint node: true, nomen: true */
-/*global go, tests, ok, equal, deepEqual */
+/* jshint globalstrict: true, maxstatements: 70 */
 "use strict";
 
 tests.module("core");

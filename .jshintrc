@@ -32,6 +32,7 @@
     
     "globals": {
         "go": false,
+        "tests": false,
         "ok": false,
         "equal": false,
         "notEqual": false,
