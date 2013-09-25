@@ -268,9 +268,9 @@ tests.test("is*-functions", function () {
     ok(!L.isArguments(value), "isArguments(" + name + ")");
 
     value = go.Lang.Exception.create("test", go.Lang.Exception);
-    /*jslint newcap: true */
+    /* jshint newcap: false */
     value = new value();
-    /*jslint newcap: false */
+
     name = "go.Lang.Exception";
     ok(!L.isUndefined(value), "isUndefined(" + name + ")");
     ok(!L.isNull(value), "isNull(" + name + ")");
@@ -735,11 +735,10 @@ tests.test("some", function () {
     context = {};
     go.Lang.some(dict, callback);
     deepEqual(context, dict, "dict, key in callback");
-    /*jslint unparam: true */
     callback = function (item, key, items) {
+        /* jshint unused: false */
         return (items !== context);
     };
-    /*jslint unparam: false */
 
     context = [1, 2, 3];
     ok(!go.Lang.some(context, callback), "list, items in callback");

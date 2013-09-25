@@ -176,9 +176,9 @@ tests.test("getType", function () {
     equal(go.Lang.getType(Array), "function", "built-in constructor");
     equal(go.Lang.getType(alert), "function", "host function (alert)");
     equal(go.Lang.getType(document.getElementById), "function", "host (dom) function");
-    /*jslint evil: true */
+    /* jshint evil: true */
     equal(go.Lang.getType(new Function('return true')), "function", "new Function");
-    /*jslint evil: false */
+    /* jshint evil: false */
 
     equal(go.Lang.getType([1, 2, 3]), "array", "literal array");
     equal(go.Lang.getType(new w.Array(1, 2, 3)), "array", "new Array");

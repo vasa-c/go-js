@@ -10,13 +10,12 @@ if (!window.go) {
     throw new Error("go.core is not found");
 }
 
-/*jslint unparam: true */
 /**
  * @namespace go.Str
  */
 go.module("Str", null, function (go, global, undefined) {
     "use strict";
-    /*jslint unparam: false */
+
     var Str = {},
         nativeProto = String.prototype,
         nativeTrim = nativeProto.trim,

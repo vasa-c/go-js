@@ -499,13 +499,12 @@ go.module("Class", null, function (go, global) {
                     parent = parent.prototype;
                 }
                 if (parent) {
-                    /*jslint forin: true */
+                    /* jshint forin: false */
                     for (k in parent) {
                         if (proto[k] === undefined) {
                             proto[k] = parent[k];
                         }
                     }
-                    /*jslint forin: false */
                 }
             }
         },
@@ -624,8 +623,7 @@ go.module("Class", null, function (go, global) {
              * @param {Object} instance
              */
             '__destruct': function (instance) {
-                var func = this.__method; // this.__method.call() - jslint swearing
-                func.call(this, instance, "__destruct");
+                this.__method.call(this, instance, "__destruct");
             },
 
             /**

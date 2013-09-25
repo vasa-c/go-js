@@ -11,13 +11,12 @@ if (!window.go) {
     throw new Error("go.core is not found");
 }
 
-/*jslint unparam: true */
 /**
  * @namespace go.Ext
  */
 go.module("Ext", ["Class"], function (go, global, undefined) {
     "use strict";
-    /*jslint unparam: false */
+
     var Ext = {};
 
     /**

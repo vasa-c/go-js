@@ -571,13 +571,11 @@ var go = (function (global) {
     return go;
 }(this));
 
-/*jslint unparam: true */
 /**
  * @namespace go.Lang
  */
 go.module("Lang", null, function (go, global, undefined) {
     "use strict";
-    /*jslint unparam: false */
 
     var Lang,
         nativeObject = global.Object,
@@ -733,21 +731,19 @@ go.module("Lang", null, function (go, global, undefined) {
                 }
                 if (value.item) {
                     /* collection has property "item" (not iterable) */
-                    /*jslint forin: true */
+                    /* jshint forin: false */
                     for (name in value) {
                         if (name === "item") {
                             break;
                         }
                     }
-                    /*jslint forin: false */
                     if (name !== "item") {
                         return "collection";
                     }
                 }
-                if ((value + ":").indexOf("function") !== -1) {
+                if ((value + "").indexOf("function") !== -1) {
                     /* Define host-functions in old IE (typeof === "object") by string representation.
                      * They may not have toString()-method: convert through the addition of a string.
-                     * ":" - because the addition of the empty string is not like JSLint
                      */
                     return "function";
                 }
@@ -755,13 +751,12 @@ go.module("Lang", null, function (go, global, undefined) {
 
             if (typeof value.length === "number") {
                 /* arguments has property "number" (not iterable) */
-                /*jslint forin: true */
+                /* jshint forin: false */
                 for (name in value) {
                     if (name === "length") {
                         return "object";
                     }
                 }
-                /*jslint forin: false */
                 return "arguments";
             }
 
@@ -985,13 +980,12 @@ go.module("Lang", null, function (go, global, undefined) {
                 }
             } else {
                 result = {};
-                /*jslint forin: true */
+                /* jshint forin: false */
                 for (i in items) {
                     if (items.hasOwnProperty(i) || deep) {
                         result[i] = callback.call(thisArg, items[i], i, items);
                     }
                 }
-                /*jslint forin: false */
             }
             return result;
         },
@@ -1035,13 +1029,12 @@ go.module("Lang", null, function (go, global, undefined) {
          */
         'extend': function extend(destination, source, deep) {
             var k;
-            /*jslint forin: true */
             for (k in source) {
+                /* jshint forin: false */
                 if (deep || source.hasOwnProperty(k)) {
                     destination[k] = source[k];
                 }
             }
-            /*jslint forin: false */
             return destination;
         },
 

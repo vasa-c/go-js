@@ -364,13 +364,12 @@ go.module("LangExt", null, function (go, global, undefined) {
             if (!value.item) {
                 return false;
             }
-            /*jslint forin: true */
             for (k in value) {
+                /* jshint forin: false */
                 if (k === "item") {
                     return false;
                 }
             }
-            /*jslint forin: false */
             return true;
         };
 
@@ -382,13 +381,12 @@ go.module("LangExt", null, function (go, global, undefined) {
             if ((typeof value.length !== "number") || (value.item) || (value.slice)) {
                 return false;
             }
-            /*jslint forin: true */
             for (k in value) {
+                /* jshint forin: false */
                 if (k === "length") {
                     return false;
                 }
             }
-            /*jslint forin: false */
             return true;
         };
     }
@@ -830,26 +828,25 @@ go.module("LangExt", null, function (go, global, undefined) {
      *         result of reduce
      */
     Lang.reduce = function reduce(items, callback, initialValue) {
-        var clb = callback, // jslint: Do not mutate parameter 'callback' when using 'arguments'.
-            context,
+        var context,
             init = (arguments.length > 2),
             value,
             len,
             i,
             start;
-        if (typeof clb === "object") {
-            context = clb[1];
-            clb = clb[0];
+        if (typeof callback === "object") {
+            context = callback[1];
+            callback = callback[0];
         }
         if (isStrictArray(items)) {
             if (nativeArrayPrototype.reduce) {
                 if (context) {
-                    clb = Lang.bind(clb, context);
+                    callback = Lang.bind(callback, context);
                 }
                 if (init) {
-                    return nativeArrayPrototype.reduce.call(items, clb, initialValue);
+                    return nativeArrayPrototype.reduce.call(items, callback, initialValue);
                 }
-                return nativeArrayPrototype.reduce.call(items, clb);
+                return nativeArrayPrototype.reduce.call(items, callback);
             }
             len = items.length;
             if (init) {
@@ -863,7 +860,7 @@ go.module("LangExt", null, function (go, global, undefined) {
                 start = 1;
             }
             for (i = start; i < len; i += 1) {
-                value = clb.call(context, value, items[i], i, items);
+                value = callback.call(context, value, items[i], i, items);
             }
         } else {
             if (init) {
@@ -875,7 +872,7 @@ go.module("LangExt", null, function (go, global, undefined) {
             for (i in items) {
                 if (items.hasOwnProperty(i)) {
                     if (start) {
-                        value = clb.call(context, value, items[i], i, items);
+                        value = callback.call(context, value, items[i], i, items);
                     } else {
                         value = items[i];
                         start = true;
