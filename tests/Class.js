@@ -1,50 +1,44 @@
 /**
- * Тестирование модуля go.Class
+ * Testing the module go.Class
  *
  * @package    go.js
  * @subpackage Class
- * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
+ * @author     Grigoriev Oleg aka vasa_c <go.vasac@gmail.com>
  */
-/*jslint node: true, nomen: true */
-/*global window, document, go, tests, ok, equal, notEqual, deepEqual, raises */
+/* jshint camelcase: false */
 "use strict";
 
 tests.module("Class");
 
 tests.test("Create class and instance", function () {
-
     var TestClass, obj1, obj2;
 
     TestClass = go.Class({
-
         'setX': function (x) {
             this.x = x;
         },
 
         'getX': function () {
             return this.x;
-        },
-
-        'eoc': null
+        }
     });
 
-    equal(typeof TestClass, "function");
+    equal(typeof TestClass, "function", "Class is function-constructor");
 
     obj1 = new TestClass();
     obj2 = new TestClass();
 
-    ok(obj1 instanceof TestClass);
-    notEqual(obj1, obj2);
+    ok(obj1 instanceof TestClass, "obj instance of Class");
+    notEqual(obj1, obj2, "two instances is not equals");
 
     obj1.setX(1);
     obj2.setX(2);
 
-    equal(obj1.getX(), 1);
-    equal(obj2.getX(), 2);
+    equal(obj1.getX(), 1, "Different instances share the different data");
+    equal(obj2.getX(), 2, "Different instances share the different data");
 });
 
 tests.test("constructor can be called without new", function () {
-
     var testClass, obj;
 
     testClass = go.Class({
@@ -54,26 +48,23 @@ tests.test("constructor can be called without new", function () {
     });
 
     obj = testClass();
-    ok(obj instanceof testClass);
-    equal(obj.f(), "f");
+    ok(obj instanceof testClass, "function result is instance of class");
+    equal(obj.f(), "f", "instance has method");
 });
 
 tests.test("go.Class.Root is root class", function () {
-
     var TestClass, obj;
 
     TestClass = go.Class({});
     obj = new TestClass();
-    ok(obj instanceof TestClass);
-    ok(obj instanceof go.Class.Root);
+    ok(obj instanceof TestClass, "object instance of self class");
+    ok(obj instanceof go.Class.Root, "object instance of Root class");
 });
 
 tests.test("constructor/destructor", function () {
-
     var TestClass, obj1, obj2, destrCount = 0;
 
     TestClass = go.Class({
-
         '__construct': function (value) {
             this.value = value;
         },
@@ -84,26 +75,25 @@ tests.test("constructor/destructor", function () {
 
         'getValue': function () {
             return this.value;
-        },
-
-        'eoc': null
+        }
     });
 
     obj1 = new TestClass(1);
     obj2 = new TestClass(2);
 
-    equal(obj1.getValue(), 1);
-    equal(obj2.getValue(), 2);
+    equal(obj1.getValue(), 1, "constructor for obj1");
+    equal(obj2.getValue(), 2, "constructor for obj2");
 
     equal(destrCount, 0);
     obj1.destroy();
-    equal(destrCount, 1);
+    equal(destrCount, 1, "destructor for obj1");
     obj2.destroy();
-    equal(destrCount, 2);
+    equal(destrCount, 2, "destructor for obj2");
+    obj1.destroy();
+    equal(destrCount, 2, "destructor is not called again");
 });
 
 tests.test("inheritance (single)", function () {
-
     var OneClass, TwoClass, ThreeClass, objTwo, objThree;
 
     OneClass = go.Class({
@@ -148,9 +138,7 @@ tests.test("inheritance (single)", function () {
 });
 
 tests.test("inheritance (multi)", function () {
-
-    var
-        OneParentClass,
+    var OneParentClass,
         OneClass,
         TwoParentClass,
         TwoClass,
@@ -226,7 +214,6 @@ tests.test("inheritance (multi)", function () {
 });
 
 tests.test("save constructor.prototype", function () {
-
     var TestClass, instance;
 
     TestClass = go.Class({
@@ -235,11 +222,10 @@ tests.test("save constructor.prototype", function () {
 
     instance = new TestClass();
 
-    equal(instance.constructor, TestClass);
+    equal(instance.constructor, TestClass, "instance.constructor is a reference to the class");
 });
 
 tests.test("parent access", function () {
-
     var OneClass,
         TwoClass,
         SideClass,
@@ -326,7 +312,7 @@ tests.test("parent access", function () {
     function undefinedMethod() {
         instance.undefinedMethod();
     }
-    raises(undefinedMethod, go.Class.Exceptions.Method);
+    throws(undefinedMethod, go.Class.Exceptions.Method);
 
     instance.destroy();
     deepEqual(destrs, ["One", "Two", "Side", "Target"]);
@@ -334,7 +320,6 @@ tests.test("parent access", function () {
 });
 
 tests.test("abstract", function () {
-
     var BaseClass, CClass, instance;
 
     BaseClass = go.Class({
@@ -350,21 +335,26 @@ tests.test("abstract", function () {
         }
     });
 
-    ok(BaseClass.__abstract);
-    ok(!CClass.__abstract);
+    ok(BaseClass.__abstract, "Base class is abstract");
+    ok(!CClass.__abstract, "Concrete class is not abstract");
 
-    raises(function () {instance = new BaseClass(); }, go.Class.Exceptions.Abstract);
+    function instBase() {
+        instance = new BaseClass();
+    }
+    throws(instBase, go.Class.Exceptions.Abstract, "Can not create an instance of an abstract class");
+
     instance = new CClass();
-
     equal(instance.func2(), "f2");
-    equal(typeof instance.__abstract, "undefined");
+    equal(typeof instance.__abstract, "undefined", "instance has no abstract flag");
 
-    ok(go.Class.Root.__abstract);
-    raises(function () {instance = new go.Class.Root(); }, go.Class.Exceptions.Abstract);
+    ok(go.Class.Root.__abstract, "Root is abstract class");
+    function instRoot() {
+        instance = new go.Class.Root();
+    }
+    throws(instRoot, go.Class.Exceptions.Abstract, "Can not create an instance of Root-class");
 });
 
 tests.test("final", function () {
-
     var TestClass, instance;
 
     TestClass = go.Class({
@@ -384,17 +374,16 @@ tests.test("final", function () {
         var NClass = go.Class(TestClass, {});
         return new NClass();
     }
-    raises(extendTestClass, go.Class.Exceptions.Final, "Can't extend final class");
+    throws(extendTestClass, go.Class.Exceptions.Final, "Can't extend final class");
 
     function extendMulti() {
         var NClass = go.Class([null, TestClass], {});
         return new NClass();
     }
-    raises(extendMulti, go.Class.Exceptions.Final, "Can't extend final class (multi-inherit)");
+    throws(extendMulti, go.Class.Exceptions.Final, "Can't extend final class (multi-inherit)");
 });
 
 tests.test("type and toString", function () {
-
     var OneClass, TwoClass, oneInstance, twoInstance;
 
     OneClass = go.Class({
@@ -419,16 +408,14 @@ tests.test("type and toString", function () {
 });
 
 tests.test("Mutators (class)", function () {
-
     var OneClass, TwoClass, ThreeClass, twoInstance, threeInstance;
 
     OneClass = go.Class({
-
         '__mutators': {
             'mul': {
                 'value': 2,
                 'processClass': function (props) {
-                    var name, prop, value = this.value, fields = this.fields;
+                    var name, prop, value = this.value;
 
                     for (name in props) {
                         if (props.hasOwnProperty(name)) {
@@ -458,11 +445,9 @@ tests.test("Mutators (class)", function () {
         'mul_two': function (x) {
             return x + 2;
         }
-
     });
 
     TwoClass = go.Class(OneClass, {
-
         '__mutators': {
             'mul': {
                 'value': 3
@@ -477,11 +462,9 @@ tests.test("Mutators (class)", function () {
         'mul_three': function (x) {
             return x + 3;
         }
-
     });
 
     ThreeClass = go.Class(TwoClass, {
-
         '__mutators': {
             'mul': null,
             'x': null
@@ -490,7 +473,6 @@ tests.test("Mutators (class)", function () {
         'mul_four': function (x) {
             return x + 4;
         }
-
     });
 
     twoInstance = new TwoClass();
@@ -507,7 +489,6 @@ tests.test("Mutators (class)", function () {
 });
 
 tests.test("static", function () {
-
     var OneClass, TwoClass, NoStaticClass, oneInstance, twoInstance;
 
     OneClass = go.Class({
@@ -517,6 +498,7 @@ tests.test("static", function () {
             'value': 1,
 
             'getInstance': function () {
+                /* jshint newcap: false */
                 if (!this.instance) {
                     this.instance = new this();
                 }
@@ -535,11 +517,9 @@ tests.test("static", function () {
         'method': function () {
             return "instance";
         }
-
     });
 
     TwoClass = go.Class(OneClass, {
-
         '__static': {
 
             'value': 2,
@@ -553,7 +533,6 @@ tests.test("static", function () {
             }
 
         }
-
     });
 
     oneInstance = OneClass.getInstance();
@@ -586,11 +565,10 @@ tests.test("static", function () {
     NoStaticClass = go.Class(go.Class(TwoClass, {}), {
         'method': function () {}
     });
-    ok(NoStaticClass.getInstance, "Наследование static через классы без определения новых static-членов");
+    ok(NoStaticClass.getInstance, "Inheritance of static through classes without defining new static-members");
 });
 
 tests.test("bind", function () {
-
     var OneClass, TwoClass, ThreeClass, OtherClass, NoBindClass, instance, fake, f;
 
     OneClass = go.Class({
@@ -613,7 +591,6 @@ tests.test("bind", function () {
     });
 
     TwoClass = go.Class(OneClass, {
-
         '__bind': ["two"],
 
         'two': function () {
@@ -623,19 +600,15 @@ tests.test("bind", function () {
         'onTwo': function () {
             return "ontwo " + this.name;
         }
-
     });
 
     OtherClass = go.Class({
-
         'onOther': function () {
             return "onother " + this.name;
         }
-
     });
 
     ThreeClass = go.Class([TwoClass, OtherClass], {
-
         'onPress': function () {
             return "onpress-3 " + this.name;
         },
@@ -643,7 +616,6 @@ tests.test("bind", function () {
         'onLoad': function () {
             return "onload " + this.name;
         }
-
     });
 
     instance = new ThreeClass("instance");
@@ -670,13 +642,11 @@ tests.test("bind", function () {
     equal(instance.onLoad.__original, ThreeClass.__props.onLoad);
 
     NoBindClass = go.Class({
-
         '__bind': null,
 
         'onGetThis': function () {
             return this;
         }
-
     });
 
     instance = new NoBindClass();
@@ -685,11 +655,9 @@ tests.test("bind", function () {
 });
 
 tests.test("destroy", function () {
-
     var TestClass, instance, destr = 0;
 
     TestClass = go.Class({
-
         '__construct': function (x) {
             this.x = x;
             this.y = x * 2;
@@ -720,7 +688,6 @@ tests.test("destroy", function () {
 });
 
 tests.test("this-var for python style instantiation", function () {
-
     var TestClass, instance1, instance2;
 
     TestClass = go.Class({

@@ -6,20 +6,17 @@
  * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
  * @uses       go.Class
  */
-/*jslint nomen: true, es5: true, todo: true */
-/*global go, window, jQuery */
 
 if (!window.go) {
     throw new Error("go.core is not found");
 }
 
-/*jslint unparam: true */
 /**
  * @namespace go.Ext
  */
 go.module("Ext", ["Class"], function (go, global, undefined) {
     "use strict";
-    /*jslint unparam: false */
+
     var Ext = {};
 
     /**
@@ -341,6 +338,7 @@ go.module("Ext", ["Class"], function (go, global, undefined) {
          * @todo протестировать лучше
          */
         'initNodes': function (node) {
+            /* jshint maxstatements: 25, maxcomplexity: 15 */
             var nodes = {},
                 nnode,
                 lnodes = this.nodes,

@@ -1,18 +1,15 @@
 /**
- * Тестирование модуля go.Ext
+ * Testing the module go.Ext
  *
  * @package    go.js
  * @subpackage Ext
- * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
+ * @author     Grigoriev Oleg aka vasa_c
  */
-/*jslint node: true, nomen: true */
-/*global window, document, go, tests, ok, equal, notEqual, deepEqual, raises, $ */
 "use strict";
 
 tests.module("Ext");
 
 tests.test("Options class", function () {
-
     var OneClass, NClass, TwoClass, options, instance, expected;
 
     OneClass = go.Class([null, go.Ext.Options], {
@@ -71,18 +68,17 @@ tests.test("Options class", function () {
 
     deepEqual(instance.getOptions(), expected, "getOptions()");
     deepEqual(instance.getOption("one.x"), expected.one.x, "getOptions(opt)");
-    raises(function () {instance.getOption("two.x"); }, go.Ext.Options.Exceptions.NotFound, "getOption() error");
+    throws(function () {instance.getOption("two.x"); }, go.Ext.Options.Exceptions.NotFound, "getOption() error");
 
     instance.setOption("one.y", 11);
     expected.one.y = 11;
     deepEqual(instance.getOptions(), expected, "setOption()");
 
-    raises(function () {instance.setOption("three.x"); }, go.Ext.Options.Exceptions.NotFound, "setOption() error");
+    throws(function () {instance.setOption("three.x"); }, go.Ext.Options.Exceptions.NotFound, "setOption() error");
     deepEqual(instance.getOptions(), expected);
 });
 
 tests.test("Options class and lazy copy", function () {
-
     var TestClass, one, two, three;
 
     TestClass = go.Class([null, go.Ext.Options], {
@@ -116,7 +112,6 @@ tests.test("Options class and lazy copy", function () {
 });
 
 tests.test("Nodes class: bind/unbind", function () {
-
     var TestClass,
         instance,
         html,
@@ -202,7 +197,6 @@ tests.test("Nodes class: bind/unbind", function () {
 });
 
 tests.test("Nodes class: load nodes", function () {
-
     var ParentClass,
         TestClass,
         instance,
@@ -282,7 +276,6 @@ tests.test("Nodes class: load nodes", function () {
 });
 
 tests.test("Events class", function () {
-
     var TestClass, f1, f2, f3, instance1, instance2, result = [], expected, f3id;
 
     TestClass = go.Class([null, go.Ext.Events], {

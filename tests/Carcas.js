@@ -1,12 +1,10 @@
 /**
- * Тестирование модуля go.Carcas
+ * Testint the module go.Carcas
  *
  * @package    go.js
  * @subpackage Carcas
- * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
+ * @author     Grigoriev Oleg aka vasa_c <go.vasac@gmail.com>
  */
-/*jslint node: true, nomen: true */
-/*global go, tests, ok, equal, deepEqual, throws, $ */
 "use strict";
 
 tests.module("Carcas");
@@ -240,7 +238,7 @@ tests.test("preload", function () {
          * @override
          */
         'requestJSFile': function (filename) {
-
+            /* jshint unused: false */
         }
     });
 
@@ -254,7 +252,7 @@ tests.test("preload", function () {
 
     carcas.controller("page1", ["layouts.main", "mo:one"], {});
     carcas.controller("layouts.main", ["layouts.xhtml", "mo:two"], {});
-    carcas.controller("layouts.xhtml", ["mo:one"], {'this_xhtml': true});
+    carcas.controller("layouts.xhtml", ["mo:one"], {'thisXhtml': true});
 
     deepEqual(carcas.controllersList, {});
     deepEqual(carcas.modulesList, {});
@@ -266,7 +264,7 @@ tests.test("preload", function () {
 
     ok(carcas.controllersList.page1);
     ok(carcas.controllersList.layouts.xhtml);
-    ok(carcas.controllersList.layouts.xhtml.this_xhtml);
+    ok(carcas.controllersList.layouts.xhtml.thisXhtml);
 
     ok(carcas.mo.one);
     ok(!carcas.mo.one.n);
@@ -335,7 +333,7 @@ tests.test("Create parent module (controller)", function () {
 });
 
 tests.test("Events", function () {
-
+    /* jshint camelcase: false */
     var carcas, events = {}, expected = {}, TestCarcas, ondomload, onfullload, onunload;
 
     TestCarcas = go.Class(go.Carcas, {

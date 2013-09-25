@@ -1,22 +1,20 @@
 /**
- * Тестирование модуля go.LangExt
+ * Testing the module go.LangExt
  *
  * @package    go.js
  * @subpackage Lang
- * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
+ * @author     Grigoriev Oleg aka vasa_c <go.vasac@gmail.com>
  */
-/*jslint node: true, nomen: true */
-/*global window, document, go, tests, ok, equal, notEqual, deepEqual, raises, $ */
 "use strict";
 
 tests.module("LangExt");
 
 tests.test("parseQuery", function () {
-    deepEqual(go.Lang.parseQuery(""), {});
-    deepEqual(go.Lang.parseQuery("x=1&y=2"), {'x': "1", 'y': "2"});
-    deepEqual(go.Lang.parseQuery("x=one%3Atwo&y=2"), {'x': "one:two", 'y': "2"});
-    deepEqual(go.Lang.parseQuery("12345&x=5"), {'': "12345", 'x': "5"});
-    deepEqual(go.Lang.parseQuery({'x': "5"}), {'x': "5"});
+    deepEqual(go.Lang.parseQuery(""), {}, "empty string");
+    deepEqual(go.Lang.parseQuery("x=1&y=2"), {'x': "1", 'y': "2"}, "parse string");
+    deepEqual(go.Lang.parseQuery("x=one%3Atwo&y=2"), {'x': "one:two", 'y': "2"}, "encoded URI component");
+    deepEqual(go.Lang.parseQuery("12345&x=5"), {'12345': undefined, 'x': "5"}, "empty value");
+    deepEqual(go.Lang.parseQuery({'x': "5"}), {'x': "5"}, "dictionary = dictionary");
 });
 
 tests.test("buildQuery", function () {
@@ -30,12 +28,11 @@ tests.test("buildQuery", function () {
             }
         },
         expected = "one=1&two=two%3Athree&A[x]=5&A[y][0]=1&A[y][1]=2&A[y][2]=3";
-    equal(go.Lang.buildQuery(vars), expected);
-    equal(go.Lang.buildQuery(expected), expected);
+    equal(go.Lang.buildQuery(vars), expected, "build from dictionary");
+    equal(go.Lang.buildQuery(expected), expected, "string = string");
 });
 
 tests.test("getByPath", function () {
-
     var context = {
         'one': 1,
         'two': {
@@ -46,21 +43,18 @@ tests.test("getByPath", function () {
             'six': null
         }
     };
-
-    equal(go.Lang.getByPath(context, "one"), 1);
-    deepEqual(go.Lang.getByPath(context, "two"), context.two);
-    equal(typeof go.Lang.getByPath(context, "three"), "undefined");
-    equal(go.Lang.getByPath(context, "three", 11), 11, "by default");
-
-    equal(go.Lang.getByPath(context, "two.four.five"), "five");
-    equal(go.Lang.getByPath(context, ["two", "four", "five"]), "five");
-
-    equal(typeof go.Lang.getByPath(context, "two.six.seven"), "undefined");
+    equal(go.Lang.getByPath(context, "one"), 1, "first level scalar");
+    deepEqual(go.Lang.getByPath(context, "two"), context.two, "first level object");
+    equal(typeof go.Lang.getByPath(context, "three"), "undefined", "not found - undefined");
+    equal(go.Lang.getByPath(context, "three", 11), 11, "by default", "not found - by default");
+    equal(go.Lang.getByPath(context, "two.four.five"), "five", "third level");
+    equal(go.Lang.getByPath(context, ["two", "four", "five"]), "five", "path as list");
+    equal(typeof go.Lang.getByPath(context, "two.six.seven"), "undefined", "search in NULL");
+    equal(typeof go.Lang.getByPath(context, "two.eight.seven"), "undefined", "search in undefined");
     equal(typeof go.Lang.getByPath(context, "two.four.five.toString"), "undefined", "prototype");
 });
 
 tests.test("setByPath", function () {
-
     var context = {
         'one': 1,
         'two': {
@@ -71,22 +65,20 @@ tests.test("setByPath", function () {
             'six': null
         }
     };
-
     go.Lang.setByPath(context, "one", 2);
-    equal(context.one, 2);
+    equal(context.one, 2, "existing value on first level");
     go.Lang.setByPath(context, "two.three", 4);
-    equal(context.two.three, 4);
+    equal(context.two.three, 4, "existing value on second level");
     go.Lang.setByPath(context, ["two", "four"], 5);
-    equal(context.two.four, 5);
+    equal(context.two.four, 5, "path as array");
     go.Lang.setByPath(context, "two.x.y.z", "xyz");
-    equal(typeof context.two.x, "object");
-    equal(typeof context.two.x.y, "object");
-    equal(context.two.x.y.z, "xyz");
+    equal(typeof context.two.x, "object", "not existing path");
+    equal(typeof context.two.x.y, "object", "not existing path");
+    equal(context.two.x.y.z, "xyz", "not existing path");
 
 });
 
 tests.test("curry", function () {
-
     var cur, cur2;
 
     function f(a, b, c, d) {
@@ -94,14 +86,13 @@ tests.test("curry", function () {
     }
 
     cur = go.Lang.curry(f, 1, 2);
-    equal(cur(3, 4), "1, 2, 3, 4");
+    equal(cur(3, 4), "1, 2, 3, 4", "curry");
 
     cur2 = go.Lang.curry(cur, 5);
-    equal(cur2(6), "1, 2, 5, 6");
+    equal(cur2(6), "1, 2, 5, 6", "curry of curried");
 });
 
 tests.test("tryDo", function () {
-
     var one, two, undef, funcs;
 
     function err() {
@@ -133,11 +124,10 @@ tests.test("tryDo", function () {
     equal(go.Lang.tryDo(funcs), "two");
 
     two = false;
-    equal(go.Lang.tryDo(funcs), undef);
+    equal(go.Lang.tryDo(funcs), undef, "undefiend");
 });
 
 tests.test("is*-functions", function () {
-
     var L = go.Lang,
         value,
         name;
@@ -278,9 +268,9 @@ tests.test("is*-functions", function () {
     ok(!L.isArguments(value), "isArguments(" + name + ")");
 
     value = go.Lang.Exception.create("test", go.Lang.Exception);
-    /*jslint newcap: true */
+    /* jshint newcap: false */
     value = new value();
-    /*jslint newcap: false */
+
     name = "go.Lang.Exception";
     ok(!L.isUndefined(value), "isUndefined(" + name + ")");
     ok(!L.isNull(value), "isNull(" + name + ")");
@@ -387,7 +377,6 @@ tests.test("is*-functions", function () {
 });
 
 tests.test("invoke", function () {
-
     var MyClass, list, dict;
 
     MyClass = function (x) {
@@ -437,7 +426,6 @@ tests.test("field", function () {
 });
 
 tests.test("fieldByPath", function () {
-
     var dict, list;
 
     dict = {
@@ -465,7 +453,6 @@ tests.test("fieldByPath", function () {
 });
 
 tests.test("filter", function () {
-
     var dict, list, context;
 
     context = {
@@ -506,7 +493,6 @@ tests.test("filter", function () {
 });
 
 tests.test("sortBy", function () {
-
     var obj1 = {'x': 1, 'y': 5},
         obj2 = {'x': 2, 'y': 2},
         obj3 = {'x': 3, 'y': 2},
@@ -538,7 +524,6 @@ tests.test("sortBy", function () {
 });
 
 tests.test("groupBy", function () {
-
     var obj12 = {'x': 1, 'y': 2},
         obj21 = {'x': 2, 'y': 1},
         obj23 = {'x': 2, 'y': 3},
@@ -614,7 +599,6 @@ tests.test("groupBy", function () {
 });
 
 tests.test("flip", function () {
-
     var list = [1, 2, 3, 4, 5, 2, 3],
         dict = {
             '1': "one",
@@ -652,8 +636,8 @@ tests.test("flip", function () {
 });
 
 tests.test("every", function () {
-
-    var list = [11, 3, 15, 4, 7, 11],
+    var every = go.Lang.every,
+        list = [11, 3, 15, 4, 7, 11],
         dict = {
             'a': {'x': 5},
             'b': {'x': 11},
@@ -661,20 +645,20 @@ tests.test("every", function () {
             'd': {'x': 3}
         };
 
-    ok(go.Lang.every(list), "no criterion - scalar");
-    ok(go.Lang.every(dict), "no criterion - objects");
-    ok(go.Lang.every(list, function (item) {return item > 0; }), "list and callback (true)");
-    ok(!go.Lang.every(list, function (item) {return item > 10; }), "list and callback (false)");
+    ok(every(list), "no criterion - scalar");
+    ok(every(dict), "no criterion - objects");
+    ok(every(list, function (item) {return item > 0; }), "list and callback (true)");
+    ok(!every(list, function (item) {return item > 10; }), "list and callback (false)");
 
     list = [{'x': 1}, {'x': 2}, {'x': 3}];
-    ok(go.Lang.every(list, "x"), "list and field (true)");
+    ok(every(list, "x"), "list and field (true)");
 
     list[1].x = 0;
-    ok(!go.Lang.every(list, "x"), "list and field (false)");
+    ok(!every(list, "x"), "list and field (false)");
 
-    ok(!go.Lang.every(dict, "x"), "dict and field");
-    ok(!go.Lang.every(dict, function (item) {return item.x !== this.d; }, {'d': 3}), "dict and callback and context (false)");
-    ok(go.Lang.every(dict, function (item) {return item.x !== this.d; }, {'d': 33}), "dict and callback and context (true)");
+    ok(!every(dict, "x"), "dict and field");
+    ok(!every(dict, function (item) {return item.x !== this.d; }, {'d': 3}), "dict and callback and context (false)");
+    ok(every(dict, function (item) {return item.x !== this.d; }, {'d': 33}), "dict and callback and context (true)");
 });
 
 tests.test("some", function () {
@@ -736,11 +720,11 @@ tests.test("some", function () {
 
     dict.d = 10;
     ok(go.Lang.some(dict, callback, context), "dict, callback + context, not empty");
-    /*jslint unparam: true */
+
     callback = function (item, key, items) {
+        /* jshint unused: false */
         context[key] = item;
     };
-    /*jslint unparam: false */
 
     list = [1, 2, 3];
     context = {};
@@ -751,11 +735,10 @@ tests.test("some", function () {
     context = {};
     go.Lang.some(dict, callback);
     deepEqual(context, dict, "dict, key in callback");
-    /*jslint unparam: true */
     callback = function (item, key, items) {
+        /* jshint unused: false */
         return (items !== context);
     };
-    /*jslint unparam: false */
 
     context = [1, 2, 3];
     ok(!go.Lang.some(context, callback), "list, items in callback");
@@ -804,11 +787,10 @@ tests.test("find", function () {
     context = {
         'd': 5
     };
-    /*jslint unparam: true */
     callback = function (item, key, items) {
+        /* jshint unused: false */
         return item > context.d;
     };
-    /*jslint unparam: false */
 
     list = [1, 2, 3, 4, 5];
     equal(go.Lang.find(list, callback, context), undefined, "list, callback + context, empty");
@@ -879,13 +861,12 @@ tests.test("reduce", function () {
     expected = 21; // 1 + 1 * 2 + 2 * 3 + 3 * 4
     equal(go.Lang.reduce(dict, [callback, context], 1), expected, "dict and initial value + context");
 
-    raises(function () {
+    throws(function () {
         go.Lang.reduce([], function () {});
     }, TypeError, "TypeError for empty array");
 });
 
 tests.test("reduceRight", function () {
-
     var list,
         dict,
         callback,
@@ -937,7 +918,7 @@ tests.test("reduceRight", function () {
     expected = 21; // 1 + 1 * 2 + 2 * 3 + 3 * 4
     equal(go.Lang.reduce(dict, [callback, context], 1), expected, "dict and initial value + context");
 
-    raises(function () {
+    throws(function () {
         go.Lang.reduceRight([], function () {});
     }, TypeError, "TypeError for empty array");
 });

@@ -1,14 +1,12 @@
 /**
- * go.Cookie: доступ к cookie
+ * go.Cookie: access to cookies
  *
  * @package    go.js
  * @subpackage Carcas
- * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
+ * @author     Grigoriev Oleg aka vasa_c <go.vasac@gmail.com>
  * @uses       go.Class
  * @uses       go.Ext
  */
-/*jslint nomen: true, es5: true */
-/*global window, go */
 
 if (!window.go) {
     throw new Error("go.core is not found");
@@ -50,7 +48,7 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
         },
 
         /**
-         * Установить значение куки
+         * Setting cookie value
          *
          * @name go.Cookie.CookieClass#set
          * @public
@@ -65,7 +63,7 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
         },
 
         /**
-         * Установить значение списка кук
+         * Setting values for cookies list
          *
          * @name go.Cookie.CookieClass#setList
          * @public
@@ -83,7 +81,7 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
         },
 
         /**
-         * Получить значение куки
+         * Getting cookie value
          *
          * @name go.Cookie.CookieClass#get
          * @public
@@ -95,7 +93,7 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
         },
 
         /**
-         * Получить значение всех кук
+         * Getting values for all existing cookies
          *
          * @name go.Cookie.CookieClass#getAll
          * @public
@@ -119,7 +117,7 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
         },
 
         /**
-         * Удалить куку
+         * Deleting cookie
          *
          * @name go.Cookie.CookieClass#remove
          * @public
@@ -130,7 +128,7 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
         },
 
         /**
-         * Сформировать заголовок для записи в document.cookie
+         * Create header for document.cookie
          *
          * @name go.Cookie.CookieClass#createCookieHeader
          * @protected
@@ -140,6 +138,7 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
          * @return {String}
          */
         'createCookieHeader': function (name, value, params) {
+            /* jshint maxstatements: 25 */
             var header = [], expires, now, delta;
             header.push(name + "=" + this.escapeValue(value));
             params = this.normalizeParams(params || {});
@@ -172,7 +171,7 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
         },
 
         /**
-         * Экранирование значения для записи в document.cookie
+         * Value escaping for writing to document.cookie
          *
          * @name go.Cookie.CookieClass#escapeValue
          * @protected
@@ -184,7 +183,7 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
         },
 
         /**
-         * Приведение значения, полученного из document.cookie в нормальный вид
+         * Convert the value obtained from the document.cookie to normal view
          *
          * @name go.Cookie.CookieClass#unescapeValue
          * @protected
@@ -196,6 +195,8 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
         },
 
         /**
+         * Save cookie header in document.cookie
+         *
          * @name go.Cookie.CookieClass#saveCookieHeader
          * @protected
          * @param {String} header
@@ -205,6 +206,8 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
         },
 
         /**
+         * Load headers from document.cookie
+         *
          * @name go.Cookie.CookieClass#loadCookieHeader
          * @protected
          * @return {String}
@@ -214,7 +217,7 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
         },
 
         /**
-         * Получить текущее время (от которого отсчитывается expires)
+         * Get current time (point of reference for expires)
          *
          * @name go.Cookie.CookieClass#getNow
          * @protected
@@ -225,7 +228,7 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
         },
 
         /**
-         * Заполнение всех параметров
+         * Filling all parameters
          *
          * @name go.Cookie.CookieClass#normalizeParams
          * @private
@@ -248,7 +251,6 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
             }
             return result;
         }
-
     });
 
     expiresS = {
@@ -259,7 +261,7 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
     };
 
     /**
-     * Приведение всех возможных форматов expires к Date
+     * Convert all possible formats expires to Date
      *
      * @name go.Cookie.CookieClass.pareseExpires
      * @param {*} expires
@@ -268,11 +270,12 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
      * @throws go.Cookie.CookieClass.Exceptions.ErrorExpires
      */
     CookieClass.parseExpires = function (expires, now) {
+        /* jshint maxcomplexity: 20 */
         if (typeof expires === "object") {
             if ((expires instanceof Date) || (Object.prototype.toString.call(expires) === "[object Date]")) {
                 return (new Date(expires.toUTCString()));
             }
-            throw new CookieClass.go.Cookie.CookieClass.Exceptions.ErrorExpires("Error object in expires");
+            throw new CookieClass.Exceptions.ErrorExpires("Error object in expires");
         }
 
         if (typeof expires === "string") {
@@ -317,19 +320,19 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
 
     /**
      * @namespace go.Cookie.CookieClass.Exceptions
-     *            исключения при работе с библиотекой
+     *            exceptions when using libraries
      */
     CookieClass.Exceptions = new go.Lang.Exception.Block({
 
         /**
          * @class go.Cookie.Exceptions.Base
-         *        базовое исключение при работе с библиотекой
+         *        basic exceptions
          * @abstract
          */
 
         /**
          * @class go.Cookie.Exceptions.ErrorExpires
-         *        неверный формат expires
+         *        invalid expires format
          * @augments go.Cookie.CookieClass.Exceptions.Base
          */
         'ErrorExpires': [true, "error expires"]

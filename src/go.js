@@ -1,20 +1,19 @@
 /**
- * go.js: библиотека для упрощения некоторых вещей в JavaScript
+ * go.js: library for simplify some things in javascript
  *
- * В данном файле определяется только ядро библиотеки и модуль go.Lang.
- * Остальные модули располагаются в других файлах.
+ * This file contains only core and basic part of module go.Lang.
+ * Other modules are located in other files.
  *
  * @package go.js
- * @author  Григорьев Олег aka vasa_c (http://blgo.ru/)
+ * @author Grigoriev Oleg aka vasa_c <go.vasac@gmail.com>
  * @version 2.0-beta
- * @license MIT (http://www.opensource.org/licenses/mit-license.php)
- * @link    https://github.com/vasa-c/go-js
+ * @license http://www.opensource.org/licenses/mit-license.php MIT
+ * @link https://github.com/vasa-c/go-js repository
+ * @link https://github.com/vasa-c/go-js/wiki documentation
  */
-/*jslint nomen: true, es5: true, todo: true */
 
-/**
- * @namespace go
- */
+/*global go:true */
+
 var go = (function (global) {
     "use strict";
 
@@ -23,7 +22,7 @@ var go = (function (global) {
         },
 
         /**
-         * Http-адрес каталога в котором находится go.js и модули
+         * Http-address directory of go.js and modules
          *
          * @type {String}
          */
@@ -35,46 +34,46 @@ var go = (function (global) {
         doc = global.document,
 
         /**
-         * Загрузчик модулей
+         * Loader of modules
          *
          * @type {go.__Loader}
          */
         loader,
 
         /**
-         * Антикэш при подключении модулей
+         * String for anticache
          *
          * @type {String}
          */
         anticache;
 
     /**
-     * Инициирование загрузки нужных модулей
-     * (только на этапе загрузки страницы)
+     * Initiating loading necessary modules
+     * (step of loading page only)
      *
      * @name go.include
      * @public
      * @param {(String|Array.<String>)} names
-     *        имя нужного модуля или список из нескольких имён
+     *        module name (String) or list of names (Array.String)
      * @param {Function} [listener]
-     *        обработчик загрузки всех указанных модулей
+     *        handler has finished loading all the modules
      */
     go.include = function include(names, listener) {
         loader.include(names, listener);
     };
 
     /**
-     * Добавление модуля в пространство имён
-     * (вызывается при определении модуля в соответствующем файле)
+     * Adding the module to the namespace
+     * (calling when the module definition)
      *
      * @name go.module
      * @public
      * @param {String} name
-     *        имя модуля
+     *        module name
      * @param {(Array.<String>|String)} [deps]
-     *        список зависимостей
+     *        dependency list
      * @param {Function} CModule
-     *        функция-конструктор модуля
+     *        function-constructor of module
      */
     go.module = function module(name, deps, CModule) {
         if (!CModule) {
@@ -85,7 +84,7 @@ var go = (function (global) {
     };
 
     /**
-     * Получить каталог в котором находится go.js
+     * Get http-address of directory of go.js
      *
      * @name go.getRootDir
      * @public
@@ -97,7 +96,7 @@ var go = (function (global) {
 
     /**
      * @class go.__Loader
-     *        загрузчик модулей
+     *        loader for modules
      */
     go.__Loader = (function () {
 
@@ -114,9 +113,9 @@ var go = (function (global) {
              * @constructs
              * @public
              * @param {Function} includer
-             *        внешняя функция, инициирующая запрос на загрузку модуля: Function(String name)
+             *        external function that initiates the request to load the module: Function(String name)
              * @param {Function} creator
-             *        внешнаяя функция, создающая модуль: Function(String name, * data)
+             *        external function that creates a module: Function(String name, * data)
              */
             '__construct': function (includer, creator) {
                 this.includer = includer;
@@ -126,16 +125,17 @@ var go = (function (global) {
             },
 
             /**
-             * Запрос на подключения модулей
+             * Request for including module
              *
              * @name go.__Loader#include
              * @public
              * @param {(String|Array.<String>)} names
-             *        имя модуля или список имён
+             *        module name or list of names
              * @param {Function} [listener]
-             *        слушатель окончания загрузки всех модулей из списка
+             *        handler has finished loading all the modules from list
              */
             'include': function (names, listener) {
+                /* jshint maxstatements: 30 */
                 var len,
                     i,
                     name,
@@ -178,16 +178,16 @@ var go = (function (global) {
             },
 
             /**
-             * Информирование о загрузке данных модуля
+             * Processing of data loading module
              *
              * @name go.__Loader#loaded
              * @public
              * @param {String} name
-             *        название
+             *        module name
              * @param {Array.<String>} deps
-             *        список зависимостей
+             *        dependency list
              * @param {*} data
-             *        данные модуля
+             *        data of module
              */
             'loaded': function (name, deps, data) {
                 var module = this.modules[name],
@@ -211,13 +211,16 @@ var go = (function (global) {
             },
 
             /**
-             * Предварительная загрузка модуля
+             * Module pre-loading
              *
              * @name go.__Loader#preload
              * @public
              * @param {String} name
+             *        module name
              * @param {Array.<String>} deps
+             *        dependency list
              * @param {*} data
+             *        data of module
              */
             'preload': function (name, deps, data) {
                 if (!this.preloaded.hasOwnProperty(name)) {
@@ -226,7 +229,7 @@ var go = (function (global) {
             },
 
             /**
-             * Создать все предварительно загруженные модули
+             * Create all preloaded modules
              *
              * @name go.__Loader#createPreloaded
              * @public
@@ -245,7 +248,7 @@ var go = (function (global) {
             },
 
             /**
-             * См. конструктор
+             * @see __construct
              * @name go.__Loader#includer
              * @private
              * @type {Function(String)}
@@ -253,7 +256,7 @@ var go = (function (global) {
             'includer': null,
 
             /**
-             * См. конструктор
+             * @see __construct
              * @name go.__Loader#creator
              * @private
              * @type {Function(String, *)}
@@ -261,12 +264,12 @@ var go = (function (global) {
             'creator': null,
 
             /**
-             * Статусы и параметры модулей
-             * имя => параметры
+             * Statuses and parameters of modules
+             * name => parameters
              *
-             * Есть запись - запрос на загрузку уже послан
-             * поле "created"  - модуль создан
-             * поле "listener" - слушатель на создание этого модуля
+             * If a record exists, then the load request is sent
+             * field "created"  - module is created
+             * field "listener" - handler of creating module
              *
              * @name go.__Loader#modules
              * @private
@@ -275,10 +278,10 @@ var go = (function (global) {
             'modules': null,
 
             /**
-             * Предзагруженные модули
+             * Preloaded modules
              *
-             * Имя модуля => [name, deps, data]
-             * После нормальной загрузки => null
+             * name => [name, deps, data]
+             * After normal loading => null
              *
              * @name go.__Loader#preloaded
              * @private
@@ -292,21 +295,21 @@ var go = (function (global) {
     go.__Loader.Listeners = {
 
         /**
-         * Создание простого слушателя
+         * Create simple listener
          *
          * @name go.Lang.Listeners.create
          * @public
          * @param {(Function|Array.<Function>)} [handlers]
-         *        привязанный к слушателю обработчики или список обработчиков
+         *        tied to the listener handlers or list of handlers
          * @return {go.Lang.Listeners.Listener}
-         *         объект слушателя
+         *         listener object
          */
         'create': (function () {
 
             var ping, append, remove;
 
             /**
-             * Вызов слушателя
+             * Call listener
              *
              * @name go.Lang.Listeners.Listener#ping
              * @public
@@ -317,16 +320,16 @@ var go = (function (global) {
             };
 
             /**
-             * Добавить обработчик к слушателю
+             * Append handler to listener
              *
              * @name go.Lang.Listeners.Listener#append
              * @public
              * @param {Function} handler
-             *        обработчик
+             *        handler
              * @param {Boolean} [check]
-             *        проверять на наличие
+             *        check whether it has already
              * @return {Number}
-             *         ID установленного обработчика
+             *         handler ID
              */
             append = function append(handler, check) {
                 var handlers = this._handlers,
@@ -344,16 +347,16 @@ var go = (function (global) {
             };
 
             /**
-             * Удалить обработчик из слушателя
+             * Remove handler from listener
              *
              * @name go.Lang.Listeners.Listener#remove
              * @public
              * @param {(Function|Number)} handler
-             *        функция-обработчик или её ID
+             *        handler-function or its ID
              * @param {Boolean} [all]
-             *        удалять все одинаковые функции (по умолчанию, только первую найденную)
+             *        delete all the same functions (by default, only the first found)
              * @return {Boolean}
-             *         был ли обработчик найден и удалён
+             *         handler was found and removed
              */
             remove = function remove(handler, all) {
                 var handlers = this._handlers,
@@ -415,7 +418,7 @@ var go = (function (global) {
         }()),
 
         /**
-         * Создать слушатель-счётчик
+         * Create listener-counter
          *
          * @name go.Lang.Listeners.createCounter
          * @public
@@ -428,7 +431,7 @@ var go = (function (global) {
             var inc, filled;
 
             /**
-             * Увеличить счётчик
+             * Increase the counter
              *
              * @name go.Lang.Listeners.Counter#inc
              * @public
@@ -443,7 +446,7 @@ var go = (function (global) {
             };
 
             /**
-             * Обозначить счётчик заполненным
+             * Mark the counter as filled
              *
              * @name go.Lang.Listeners.Counter#filled
              * @public
@@ -489,7 +492,7 @@ var go = (function (global) {
     };
 
     /**
-     * Запрос на подключение JS-файла
+     * Request on including JS-file
      *
      * @name go.__Loader.includeJSFile
      * @param {String} src
@@ -509,7 +512,7 @@ var go = (function (global) {
     }());
 
     /**
-     * Вывод отладочной информации, если есть куда
+     * Debug out
      *
      * @name go.log
      * @public
@@ -522,11 +525,11 @@ var go = (function (global) {
     };
 
     /**
-     * Инициализация библиотеки
-     * - вычисление каталога с go.js
-     * - подключение модулей заданных в параметрах URL
+     * Core init
+     * - define ROOT_DIR
+     * - include modules from url
      *
-     * @todo оптимизировать и протестировать для различных вариантов URL
+     * @todo optimize and test for different URL
      */
     (function () {
 
@@ -563,19 +566,16 @@ var go = (function (global) {
         if (matches[4]) {
             go.include(matches[4].split(","));
         }
-
     }());
 
     return go;
 }(this));
 
-/*jslint unparam: true */
 /**
  * @namespace go.Lang
  */
-go.module("Lang", function (go, global, undefined) {
+go.module("Lang", null, function (go, global, undefined) {
     "use strict";
-    /*jslint unparam: false */
 
     var Lang,
         nativeObject = global.Object,
@@ -593,22 +593,22 @@ go.module("Lang", function (go, global, undefined) {
          */
 
         /**
-         * Связывание функции с контекстом и аргументами
-         * Поведение аналогично Function.prototype.bind()
+         * Binding of function with arguments and context
+         * The behavior is similar Function.prototype.bind()
          * @see https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function/bind
          *
-         * Если для функции определён свой метод bind(), то используется он
+         * If defined func.bind() then use it
          *
          * @name go.Lang.bind
          * @public
          * @param {Function} func
-         *        функция
+         *        original function
          * @param {Object} [thisArg]
-         *        контекст в котором функция должна выполняться (по умолчанию - global)
+         *        execution context (global by default)
          * @param {Array} [args]
-         *        аргументы, вставляемые в начало вызова функции
+         *        arguments to prepend to calling arguments
          * @return {Function}
-         *         связанная с контекстом функция
+         *         bounded function
          */
         'bind': function bind(func, thisArg, args) {
             var result;
@@ -633,20 +633,20 @@ go.module("Lang", function (go, global, undefined) {
         },
 
         /**
-         * Связывание метода по имени.
+         * Binding method by name
          *
-         * Допускает отсутствие метода в момент связывания.
+         * The method can not exist when the binding.
          *
          * @name go.Lang.bindMethod
          * @public
          * @param {Object} context
-         *        объект, содержащий метод
+         *        object, owner of the method
          * @param {String} methodName
-         *        имя метода
+         *        method name
          * @param {Array} [args]
-         *        аргументы, вставляемые в начало вызова функции
+         *        arguments to prepend to calling arguments
          * @return {Function}
-         *         связанная функция
+         *         bounded function
          */
         'bindMethod': function bindMethod(context, methodName, args) {
             var f;
@@ -663,16 +663,17 @@ go.module("Lang", function (go, global, undefined) {
         },
 
         /**
-         * Получение расширенного типа значения
+         * Getting extended type of value
          *
          * @name go.Lang.getType
          * @public
          * @param {*} value
-         *        проверяемое значение
+         *        value to test
          * @return {String}
-         *         название типа
+         *         name of type
          */
         'getType': function getType(value) {
+            /* jshint maxstatements: 50, maxcomplexity: 25 */
             var type, name;
 
             if (value && (typeof value.go$type === "string")) {
@@ -682,7 +683,7 @@ go.module("Lang", function (go, global, undefined) {
             /* typeof отсеивает основные типы */
             type = typeof value;
             if ((type !== "object") && (type !== "function")) {
-                /* function - иногда это может быть регулярка в Chrome или HTMLCollection в Safari */
+                /* function - sometimes it can be a regexp (Chrome) or HTMLCollection (Safari) */
                 return type;
             }
 
@@ -691,7 +692,7 @@ go.module("Lang", function (go, global, undefined) {
                 return "null";
             }
 
-            /* Определяем тип по строковому представлению */
+            /* Define by string representation */
             if (!getType._str) {
                 getType._str = {
                     '[object Function]' : "function",
@@ -714,14 +715,14 @@ go.module("Lang", function (go, global, undefined) {
                 return type;
             }
 
-            /* DOM-элементы имеют представление [object HTML{tag}Element] */
+            /* DOM-elements has representation as [object HTML{tag}Element] */
             if (name.indexOf("[object HTML") === 0) {
                 return "element";
             }
 
-            /* Все основные браузеры здесь уже определились. Остался IE < 9 */
+            /* All normal browser is already ok. There was only IE < 9 */
             if (!(value instanceof Object)) {
-                /* host-объект из IE<9 или объект из другого фрейма */
+                /* host-object in IE<9 or object from another frame */
                 if (value.nodeType === 1) {
                     return "element";
                 }
@@ -729,36 +730,33 @@ go.module("Lang", function (go, global, undefined) {
                     return "textnode";
                 }
                 if (value.item) {
-                    /* collection имеет свойство item, но оно не итерируемое */
-                    /*jslint forin: true */
+                    /* collection has property "item" (not iterable) */
+                    /* jshint forin: false */
                     for (name in value) {
                         if (name === "item") {
                             break;
                         }
                     }
-                    /*jslint forin: false */
                     if (name !== "item") {
                         return "collection";
                     }
                 }
-                if ((value + ":").indexOf("function") !== -1) {
-                    /* Идентификация host-функции в старых IE (typeof === "object") по строковому представлению
-                     * Также у них нет toString(), так что складываем со строкой.
-                     * Сложение с пустой строкой не нравится JSLint
+                if ((value + "").indexOf("function") !== -1) {
+                    /* Define host-functions in old IE (typeof === "object") by string representation.
+                     * They may not have toString()-method: convert through the addition of a string.
                      */
                     return "function";
                 }
             }
 
             if (typeof value.length === "number") {
-                /* arguments имеет свойство number, но оно не итерируемое */
-                /*jslint forin: true */
+                /* arguments has property "number" (not iterable) */
+                /* jshint forin: false */
                 for (name in value) {
                     if (name === "length") {
                         return "object";
                     }
                 }
-                /*jslint forin: false */
                 return "arguments";
             }
 
@@ -766,52 +764,52 @@ go.module("Lang", function (go, global, undefined) {
         },
 
         /**
-         * Является ли объект простым словарём.
-         * То есть любым объектом, не имеющим более специфического типа.
+         * Whether the object is a simple dictionary
+         * (any object not having a specific type)
          *
          * @name go.Lang.isDict
          * @public
          * @param {Object} value
-         *        проверяемое значение
+         *        value for test
          * @return {Boolean}
-         *         является ли значение простым словарём
+         *         value is dictionary
          */
         'isDict': function isDict(value) {
             if ((!value) || (typeof value !== "object")) {
-                /* Сразу отсеить по typeof. (!value) требуется, так как typeof null === "object" */
+                /* !value: (typeof null === "object") */
                 return false;
             }
 
             if (value.constructor === Object) {
                 if (nativeGetPrototypeOf && (nativeGetPrototypeOf(value) !== Object.prototype)) {
-                    /* Случай с переопределённым прототипом и не восстановленным constructor */
+                    /* The case of the overriden prototype and constructor are not restored */
                     return false;
                 }
                 return true;
             }
 
             if (value instanceof Object) {
-                /* value из нашего фрейма, значит constructor должен был быть Object */
+                /* value from current frame, so constructor must be Object */
                 return false;
             }
             if (nativeGetPrototypeOf) {
-                /* value не из нашего фрейма, можно выкрутиться с помощью getPrototypeOf, так как у прототипа объекта прототип - null */
-                value = Object.getPrototypeOf(value);
+                /* Value from another frame. Prototype of object prototype - null. */
+                value = nativeGetPrototypeOf(value);
                 if (!value) {
                     return false;
                 }
-                return (Object.getPrototypeOf(value) === null);
+                return (nativeGetPrototypeOf(value) === null);
             }
 
             /**
-             * Все нормальные браузеры на этот момент уже определились.
-             * Остались только IE<9 и значения пришедшие из фреймов.
-             * Пытаемся определить по имени конструктора.
+             * All normal browser is already ok. There was only IE < 9 and value from another frame.
+             * Attempt to use constructor name.
              *
-             * В IE нет constructor.name, приходится заниматься разбором строкового представления.
-             * toString() тоже может не быть, да ещё и могут выбрасываться исключения.
+             * constructor.name is not exists in IE (parse string representation).
+             * Object may not have toString()-method.
+             * May also be an exception is thrown.
              *
-             * Определить объект с уничтоженным прототипом в IE<9 не получается.
+             * Define the object with destroyed prototype in IE <9 does not work.
              */
             try {
                 return ((value.constructor + ":").indexOf("function Object()") !== -1);
@@ -823,17 +821,17 @@ go.module("Lang", function (go, global, undefined) {
         },
 
         /**
-         * Является ли значение массивом
+         * Whether value is an array
          *
          * @name go.Lang.isArray
          * @public
          * @param {*} value
-         *        проверяемое значение
+         *        value for test
          * @param {Boolean} [strict=false]
-         *        точная проверка - именно массивом
-         *        по умолчанию - любая коллекция с порядковым доступом
+         *        strict - only Array
+         *        by default - any collection (HTMLCollection, arguments)
          * @return {Boolean}
-         *         является ли значение массивом
+         *         value is an array
          */
         'isArray': function isArray(value, strict) {
             if (strict) {
@@ -851,14 +849,14 @@ go.module("Lang", function (go, global, undefined) {
         },
 
         /**
-         * Является ли значение строго массивом (Array)
+         * Whether value is an array (strict)
          *
          * @name go.Lang.isStrictArray
          * @public
          * @param {*} value
          * @return {Boolean}
          */
-        'isStrictArray': (function (value) {
+        'isStrictArray': (function () {
             if (nativeIsArray) {
                 return nativeIsArray;
             }
@@ -868,7 +866,7 @@ go.module("Lang", function (go, global, undefined) {
         }()),
 
         /**
-         * Приведение значения к виду массива
+         * Convert value to Array
          *
          * @name go.Lang.toArray
          * @public
@@ -876,6 +874,7 @@ go.module("Lang", function (go, global, undefined) {
          * @return {Array}
          */
         'toArray': function toArray(value) {
+            /* jshint maxcomplexity: 15 */
             var len, i, result;
             switch (Lang.getType(value)) {
             case "array":
@@ -908,17 +907,14 @@ go.module("Lang", function (go, global, undefined) {
         },
 
         /**
-         * Присутствует ли значение в массиве
-         * (строгая проверка)
+         * Checks if a value exists in an array
+         * (strict checking)
          *
          * @name go.Lang.inArray
          * @public
          * @param {mixed} needle
-         *        значение
          * @param {Array} haystack
-         *        порядковый массив
          * @return {Boolean}
-         *         находится ли значение в массиве
          */
         'inArray': function inArray(needle, haystack) {
             var i, len;
@@ -934,7 +930,7 @@ go.module("Lang", function (go, global, undefined) {
         },
 
         /**
-         * Получить собственные ключи объекта
+         * Getting own keys of object (not from prototype)
          *
          * @name go.Lang.getObjectKeys
          * @public
@@ -956,20 +952,20 @@ go.module("Lang", function (go, global, undefined) {
         },
 
         /**
-         * Обход элементов объекта
+         * Traversing the elements of an object
          *
          * @name go.Lang.each
          * @public
          * @param {(Object|Array)} items
-         *        итерируемый объект (или порядковый массив)
+         *        object or array for traversing
          * @param {Function} callback
-         *        тело цикла (value, key, iter)
+         *        loop body (value, key, iter)
          * @param {Object} [thisArg=global]
-         *        контекст, в котором следует выполнять тело цикла
+         *        executive context for loop body
          * @param {Boolean} [deep=false]
-         *        обходить ли прототипы
+         *        prototypes traverse
          * @return {(Object|Array)}
-         *         результаты выполнения функции для всех элементов
+         *         resulting for all elements
          */
         'each': function each(items, callback, thisArg, deep) {
             var result, i, len;
@@ -984,26 +980,25 @@ go.module("Lang", function (go, global, undefined) {
                 }
             } else {
                 result = {};
-                /*jslint forin: true */
+                /* jshint forin: false */
                 for (i in items) {
                     if (items.hasOwnProperty(i) || deep) {
                         result[i] = callback.call(thisArg, items[i], i, items);
                     }
                 }
-                /*jslint forin: false */
             }
             return result;
         },
 
         /**
-         * Копирование объекта или массива
+         * Copy object or array
          *
          * @name go.Lang.copy
          * @public
          * @param {(Object|Array)} source
-         *        исходный объект
+         *        source object
          * @return {(Object|Array)}
-         *         копия исходного объекта
+         *         copy of source object
          */
         'copy': function copy(source) {
             var result, i, len;
@@ -1019,42 +1014,41 @@ go.module("Lang", function (go, global, undefined) {
         },
 
         /**
-         * Расширение объекта свойствами другого
+         * Extension an object of the properties of another
          *
          * @name go.Lang.extend
          * @public
          * @param {Object} destination
-         *        исходный объект (расширяется на месте)
+         *        original object (will be changed)
          * @param {Object} source
-         *        источник новых свойств
+         *        source of new properties
          * @param {Boolean} [deep=false]
-         *        обходить прототипы source
+         *        whether to use source prototypes?
          * @return {Object}
-         *         расширенный destination
+         *         extended destination
          */
         'extend': function extend(destination, source, deep) {
             var k;
-            /*jslint forin: true */
             for (k in source) {
+                /* jshint forin: false */
                 if (deep || source.hasOwnProperty(k)) {
                     destination[k] = source[k];
                 }
             }
-            /*jslint forin: false */
             return destination;
         },
 
         /**
-         * Рекурсивное слияние двух объектов на месте
+         * Recursive merge two objects
          *
          * @name go.Lang.merge
          * @public
          * @param {Object} destination
-         *        исходный объект (изменяется)
+         *        original object (will be changed)
          * @param {Object} source
-         *        источник новых свойств
+         *        source of new properties
          * @return {Object}
-         *         расширенный destination
+         *         extended destination
          */
         'merge': function merge(destination, source) {
             var k, value;
@@ -1072,28 +1066,27 @@ go.module("Lang", function (go, global, undefined) {
         },
 
         /**
-         * Простое наследование конструкторов
+         * Simple inheritance constructors
          *
          * @name go.Lang.inherit
          * @public
          * @param {Function} [Constr]
-         *        функция-конструктор (по умолчанию создаётся пустая)
+         *        constructor function (empty function by default)
          * @param {Function} [Parent]
-         *        конструктор-предок (по умолчанию Object)
+         *        constructor-parent (Object by default)
          * @param {Object} [extend]
-         *        список свойств для расширения прототипа
+         *        properties list for extend of prototype
          * @return {Function}
-         *         конструктор-наследник
+         *         constructor of new "class"
          */
         'inherit': (function () {
-            var inherit,
-                nativeCreate,
+            var nativeCreate,
                 Fake;
             nativeCreate = nativeObject.create;
             if (!nativeCreate) {
                 Fake = function () {};
             }
-            return function inherit(Constr, Parent, extend) {
+            function inherit(Constr, Parent, extend) {
                 var proto;
                 Constr = Constr || function EmptyConstructor() {};
                 Parent = Parent || nativeObject;
@@ -1109,17 +1102,18 @@ go.module("Lang", function (go, global, undefined) {
                 proto.constructor = Constr;
                 Constr.prototype = proto;
                 return Constr;
-            };
+            }
+            return inherit;
         }()),
 
         /**
-         * Вспомогательные функции-заготовки
+         * Helper functions
          *
          * @namespace go.Lang.f
          */
         'f': {
             /**
-             * Функция, не делающая ничего
+             * The function that does nothing
              *
              * @name go.Lang.f.empty
              * @public
@@ -1129,7 +1123,7 @@ go.module("Lang", function (go, global, undefined) {
             },
 
             /**
-             * Функция, просто возвращающая FALSE
+             * The function that just returns FALSE
              *
              * @name go.Lang.f.ffalse
              * @public
@@ -1140,7 +1134,7 @@ go.module("Lang", function (go, global, undefined) {
             },
 
             /**
-             * Функция, просто возвращающая TRUE
+             * The function that just returns TRUE
              *
              * @name go.Lang.f.ftrue
              * @public
@@ -1151,7 +1145,7 @@ go.module("Lang", function (go, global, undefined) {
             },
 
             /**
-             * Функция, возвращающая полученное значение
+             * The function returns argument
              *
              * @name go.Lang.f.identity
              * @public
@@ -1163,12 +1157,12 @@ go.module("Lang", function (go, global, undefined) {
             },
 
             /**
-             * Возвращает функцию, которая будет вызвана только один раз
+             * Creation of the function to be called only once
              *
              * @name go.Lang.f.once
              * @public
              * @param {Function} f
-             *        исходная функция
+             *        original function
              * @return {Function}
              */
             'once': function (f) {
@@ -1184,7 +1178,7 @@ go.module("Lang", function (go, global, undefined) {
             },
 
             /**
-             * Композиция функций
+             * The composition of functions
              *
              * @example f = compose([f1, f2, f3]); f(value); // (f1(f2(f3(value)))
              *
@@ -1217,7 +1211,7 @@ go.module("Lang", function (go, global, undefined) {
 
     /**
      * @class go.Lang.Exception
-     *        пользовательские "классы" исключений
+     *        custom exception "classes"
      * @alias go.Lang.Exception.Base
      * @augments Error
      */
@@ -1230,17 +1224,17 @@ go.module("Lang", function (go, global, undefined) {
             inherit = Lang.inherit;
 
         /**
-         * Создание пользовательского "класса" исключения
+         * Create exception "class"
          *
          * @name go.Lang.Exception.create
          * @param {String} name
-         *        название класса
+         *        class name
          * @param {Function} [parent]
-         *        родительский класс (конструктор), по умолчанию - go.Exception
+         *        parent class (constructor). go.Exception by default
          * @param {String} [defmessage]
-         *        сообщение по умолчанию
+         *        default message
          * @return {Function}
-         *         конструктор пользовательского исключения
+         *         constructor of custom exception
          */
         create = function create(name, parent, defmessage) {
             var Exception,
@@ -1274,15 +1268,15 @@ go.module("Lang", function (go, global, undefined) {
          *
          * @name go.Lang.Exception.Block
          * @param {Object} exceptions
-         *        список исключений. "name" => [parent, defmessage]
+         *        list of exceptions. "name" => [parent, defmessage]
          * @param {String} [ns]
-         *        имя пространства имён
+         *        namespace
          * @param {(Function|String|Boolean)} [base]
-         *        базовое исключение
+         *        basic exception
          * @param {Boolean} [lazy]
-         *        отложенное создание
+         *        lazy instantination
          * @return {Object}
-         *         пространство имён с исключениями
+         *         namespace of exceptions
          */
         Block = function Block(exceptions, ns, base, lazy) {
             this._exceptions = exceptions;
@@ -1303,7 +1297,7 @@ go.module("Lang", function (go, global, undefined) {
         };
 
         /**
-         * Получить объект исключения из блока
+         * Getting exception instance from block
          *
          * @name go.Lang.Exception.Block#get
          * @public
@@ -1338,7 +1332,7 @@ go.module("Lang", function (go, global, undefined) {
         };
 
         /**
-         * Выбросить исключение из блока
+         * Throws exception from block
          *
          * @name go.Lang.Exception.Block#raise
          * @public
@@ -1352,7 +1346,7 @@ go.module("Lang", function (go, global, undefined) {
         };
 
         /**
-         * Создать все объекты исключений
+         * Create all exception instances in block
          *
          * @name go.Lang.Exception.Block#createAll
          * @public
@@ -1370,7 +1364,7 @@ go.module("Lang", function (go, global, undefined) {
 
         /**
          * @class go.Lang.Exception.Base
-         *        базовый "класс" исключений внутри библиотеки
+         *        basic exception for go-library
          * @augments Error
          */
         Base = create("go.Exception", Error);
