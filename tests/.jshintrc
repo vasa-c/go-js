@@ -22,15 +22,22 @@
     
     "maxparams": 5,
     "maxdepth": 5,
-    "maxstatements": 20,
+    "maxstatements": 250,
     "maxcomplexity": 10,
     "maxlen": 120,
-    "indent": 4,    
+    "indent": 4,
+    "globalstrict": true,
     
     "browser": true,
     "jquery": true,
     
     "globals": {
-        "go": false
+        "go": false,
+        "tests": false,
+        "ok": false,
+        "equal": false,
+        "notEqual": false,
+        "deepEqual": false,
+        "throws": false
     }
 }
