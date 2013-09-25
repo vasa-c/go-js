@@ -5,7 +5,6 @@
  * @subpackage Str
  * @author     Grigoriev Oleg aka vasa_c <go.vasac@gmail.com>
  */
-/* jshint globalstrict: true */
 "use strict";
 
 tests.module("Str");
@@ -32,7 +31,6 @@ tests.test("trim, trimLeft, rtrimRight", function () {
     equal(go.Str.trimRight(s4), "   рус", "trimRight (cyrillic)");
 });
 
-/* jshint maxstatements: 50 */
 tests.test("isNumeric", function () {
     ok(go.Str.isNumeric("10"), "10 is integer and positive");
     ok(!go.Str.isNumeric("10.2"), "10.2 is not integer");
@@ -63,7 +61,6 @@ tests.test("isNumeric", function () {
     ok(!go.Str.isNumeric(undefined), "Undefined is not numeric");
     ok(!go.Str.isNumeric({}), "Object is not numeric");
 });
-/* jshint maxstatements: 20 */
 
 tests.test("repeat", function () {
     equal(go.Str.repeat("1", 10), "1111111111", "Repeat character");

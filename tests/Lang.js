@@ -5,7 +5,6 @@
  * @subpackage Lang
  * @author     Grigoriev Oleg aka vasa_c (http://blgo.ru/)
  */
-/* jshint globalstrict: true, camelcase: false, maxstatements: 50 */
 /* global alert */
 "use strict";
 
@@ -23,11 +22,11 @@ tests.test("bind() context", function () {
         'x': 2
     };
 
-    obj2.f_norm = obj1.f;
-    obj2.f_bind = go.Lang.bind(obj1.f, obj1);
+    obj2.fNorm = obj1.f;
+    obj2.fBind = go.Lang.bind(obj1.f, obj1);
 
-    equal(obj2.f_norm(), 2, "not bounded function");
-    equal(obj2.f_bind(), 1, "bounded function");
+    equal(obj2.fNorm(), 2, "not bounded function");
+    equal(obj2.fBind(), 1, "bounded function");
 });
 
 tests.test("bind() arguments", function () {
@@ -53,14 +52,14 @@ tests.test("bind(global)", function () {
     };
 
     obj = {
-        'f_g'  : go.Lang.bind(f),
-        'f_ga' : go.Lang.bind(f, null, ['a']),
-        'f_n'  : f
+        'fG'  : go.Lang.bind(f),
+        'fGA' : go.Lang.bind(f, null, ['a']),
+        'fN'  : f
     };
 
-    equal(obj.f_g(1, 2), "g, 1, 2", "bind global (by default)");
-    equal(obj.f_ga(1, 2), "g, a, 1", "bind global (and args)");
-    equal(obj.f_n(1, 2), "-, 1, 2", "not bounded function");
+    equal(obj.fG(1, 2), "g, 1, 2", "bind global (by default)");
+    equal(obj.fGA(1, 2), "g, a, 1", "bind global (and args)");
+    equal(obj.fN(1, 2), "-, 1, 2", "not bounded function");
 });
 
 tests.test("bind() user defined", function () {
@@ -91,11 +90,11 @@ tests.test("bind() no builtin Function.bind", function () {
 
     obj1.f.bind = null;
 
-    obj2.f_norm = obj1.f;
-    obj2.f_bind = go.Lang.bind(obj1.f, obj1);
+    obj2.fNorm = obj1.f;
+    obj2.fBind = go.Lang.bind(obj1.f, obj1);
 
-    equal(obj2.f_norm(), 2, "not bounded function");
-    equal(obj2.f_bind(), 1, "bounded function");
+    equal(obj2.fNorm(), 2, "not bounded function");
+    equal(obj2.fBind(), 1, "bounded function");
 });
 
 tests.test("bind() arguments + no builtin Function.bind", function () {

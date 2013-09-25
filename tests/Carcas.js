@@ -5,8 +5,6 @@
  * @subpackage Carcas
  * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
  */
-/*jslint node: true, nomen: true */
-/*global go, tests, ok, equal, deepEqual, $ */
 "use strict";
 
 tests.module("Carcas");

@@ -5,8 +5,6 @@
  * @subpackage Ext
  * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
  */
-/*jslint node: true, nomen: true */
-/*global window, document, go, tests, ok, equal, notEqual, deepEqual, raises, $ */
 "use strict";
 
 tests.module("Ext");

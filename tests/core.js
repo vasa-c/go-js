@@ -4,7 +4,6 @@
  * @package go.js
  * @author  Grigoriev Oleg aka vasa_c (http://blgo.ru/)
  */
-/* jshint globalstrict: true, maxstatements: 70 */
 "use strict";
 
 tests.module("core");

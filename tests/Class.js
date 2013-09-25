@@ -5,8 +5,6 @@
  * @subpackage Class
  * @author     Grigoriev Oleg aka vasa_c <go.vasac@gmail.com>
  */
-/*jslint node: true, nomen: true */
-/*global go, tests, ok, equal, notEqual, deepEqual */
 "use strict";
 
 tests.module("Class");

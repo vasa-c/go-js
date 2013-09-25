@@ -6,6 +6,7 @@
  * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
  * @uses       QUnit (http://docs.jquery.com/QUnit)
  */
+/* global ok, deepEqual */
 
 if (!window.go) {
     throw new Error("go.core is not found");

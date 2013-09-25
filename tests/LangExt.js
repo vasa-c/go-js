@@ -5,7 +5,6 @@
  * @subpackage Lang
  * @author     Grigoriev Oleg aka vasa_c <go.vasac@gmail.com>
  */
-/* jshint globalstrict: true, maxstatements: 250 */
 "use strict";
 
 tests.module("LangExt");
