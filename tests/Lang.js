@@ -5,8 +5,8 @@
  * @subpackage Lang
  * @author     Grigoriev Oleg aka vasa_c (http://blgo.ru/)
  */
-/*jslint node: true, nomen: true */
-/*global window, document, go, tests, ok, equal, deepEqual, alert */
+/* jshint globalstrict: true, camelcase: false, maxstatements: 50 */
+/* global alert */
 "use strict";
 
 tests.module("Lang");
@@ -157,7 +157,9 @@ tests.test("getType", function () {
     equal(go.Lang.getType(-5), "number", "negative number");
     equal(go.Lang.getType(10 / 3), "number", "float number");
     equal(go.Lang.getType(0), "number", "number 0");
+    /* jshint sub: true */
     equal(go.Lang.getType(Number["NaN"]), "number", "NaN");
+    /* jshint sub: false */
     equal(go.Lang.getType(Number.NEGATIVE_INFINITY), "number", "-Infinity");
     equal(go.Lang.getType(Number.POSITIVE_INFINITY), "number", "+Infinity");
     equal(go.Lang.getType(new w.Number(3)), "number", "object Number");
@@ -244,24 +246,26 @@ tests.test("isArray", function () {
         asimilar2 = document.body.childNodes,
         anone1    = {'x': 1},
         anone2    = 5,
-        iframe = document.getElementById("iframe");
+        iframe = document.getElementById("iframe"),
+        iframeCW = iframe.contentWindow,
+        isArray = go.Lang.isArray;
 
-    ok(go.Lang.isArray(astrict), "Array is nonstrict list");
-    ok(go.Lang.isArray(asimilar1), "Arguments is nonstrict list");
-    ok(go.Lang.isArray(asimilar2), "HTMLCollection is nonstrict list");
-    ok(!go.Lang.isArray(anone1), "Object is not list");
-    ok(!go.Lang.isArray(anone2), "Number is not list");
+    ok(isArray(astrict), "Array is nonstrict list");
+    ok(isArray(asimilar1), "Arguments is nonstrict list");
+    ok(isArray(asimilar2), "HTMLCollection is nonstrict list");
+    ok(!isArray(anone1), "Object is not list");
+    ok(!isArray(anone2), "Number is not list");
 
-    ok(go.Lang.isArray(astrict, true), "Array is strict list");
-    ok(!go.Lang.isArray(asimilar1, true), "Arguments is not strict list");
-    ok(!go.Lang.isArray(asimilar2, true), "HTMLCollection is not strict list");
-    ok(!go.Lang.isArray(anone1, true), "Object is not strict list");
-    ok(!go.Lang.isArray(anone2, true), "Number is not strict list");
+    ok(isArray(astrict, true), "Array is strict list");
+    ok(!isArray(asimilar1, true), "Arguments is not strict list");
+    ok(!isArray(asimilar2, true), "HTMLCollection is not strict list");
+    ok(!isArray(anone1, true), "Object is not strict list");
+    ok(!isArray(anone2, true), "Number is not strict list");
 
-    ok(go.Lang.isArray(iframe.contentWindow.getResult('[1, 2, 3]'), true), "[] and iframe");
-    ok(go.Lang.isArray(iframe.contentWindow.getResult('new Array()'), true), "new Array() and iframe");
-    ok(go.Lang.isArray(iframe.contentWindow.getResult('document.getElementsByTagName("div")'), false), "collection and iframe (nonstict)");
-    ok(!go.Lang.isArray(iframe.contentWindow.getResult('document.getElementsByTagName("div")'), true), "collection and iframe (strict)");
+    ok(isArray(iframeCW.getResult('[1, 2, 3]'), true), "[] and iframe");
+    ok(isArray(iframeCW.getResult('new Array()'), true), "new Array() and iframe");
+    ok(isArray(iframeCW.getResult('document.getElementsByTagName("div")'), false), "collection and iframe (nonstict)");
+    ok(!isArray(iframeCW.getResult('document.getElementsByTagName("div")'), true), "collection and iframe (strict)");
 });
 
 tests.test("isStrictArray", function () {
@@ -548,8 +552,8 @@ tests.test("merge", function () {
 
 tests.test("inArray", function () {
     var obj1, obj2, haystack;
-    obj1 = {'x': 5},
-    obj2 = {'x': 5},
+    obj1 = {'x': 5};
+    obj2 = {'x': 5};
     haystack = [1, 3, "5", obj1];
 
     ok(go.Lang.inArray(1, haystack), "Number in array");
