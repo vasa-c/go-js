@@ -5,8 +5,7 @@
  * @subpackage Str
  * @author     Grigoriev Oleg aka vasa_c <go.vasac@gmail.com>
  */
-/*jslint node: true, nomen: true */
-/*global go, tests, ok, equal, deepEqual, throws, $ */
+/* jshint globalstrict: true */
 "use strict";
 
 tests.module("Str");
@@ -33,6 +32,7 @@ tests.test("trim, trimLeft, rtrimRight", function () {
     equal(go.Str.trimRight(s4), "   рус", "trimRight (cyrillic)");
 });
 
+/* jshint maxstatements: 50 */
 tests.test("isNumeric", function () {
     ok(go.Str.isNumeric("10"), "10 is integer and positive");
     ok(!go.Str.isNumeric("10.2"), "10.2 is not integer");
@@ -45,7 +45,9 @@ tests.test("isNumeric", function () {
     ok(!go.Str.isNumeric("string"), '"string" is not numeric');
     ok(!go.Str.isNumeric("123x"), '"123x" is not numeric');
 
+    /* jshint sub: true */
     ok(!go.Str.isNumeric(Number['NaN']), "NaN is not numeric");
+    /* jshint sub: false */
     ok(!go.Str.isNumeric(Number.POSITIVE_INFINITY), "POSITIVE_INFINITY is not numeric");
     ok(!go.Str.isNumeric(Number.NEGATIVE_INFINITY), "NEGATIVE_INFINITY is not numeric");
     ok(!go.Str.isNumeric(Number.NEGATIVE_INFINITY, false, true), "NEGATIVE_INFINITY is not numeric (negative allow)");
@@ -61,6 +63,7 @@ tests.test("isNumeric", function () {
     ok(!go.Str.isNumeric(undefined), "Undefined is not numeric");
     ok(!go.Str.isNumeric({}), "Object is not numeric");
 });
+/* jshint maxstatements: 20 */
 
 tests.test("repeat", function () {
     equal(go.Str.repeat("1", 10), "1111111111", "Repeat character");
@@ -117,7 +120,8 @@ tests.test("tpl", function () {
         }
     };
 
-    template = "N: {{ num }}, str: {{ str }}, none: {{ none }}, dict.x.y: {{  dict.x.y  }}, ({{ dict.a.b.c }});obj: {{dict.obj}}; {{num}}";
+    template = "N: {{ num }}, str: {{ str }}, none: {{ none }}, dict.x.y: {{  dict.x.y  }}, ";
+    template += "({{ dict.a.b.c }});obj: {{dict.obj}}; {{num}}";
     expected = "N: 10, str: String, none: , dict.x.y: 0, ();obj: OBJ!; 10";
     equal(go.Str.tpl(template, vars), expected, "template");
 
