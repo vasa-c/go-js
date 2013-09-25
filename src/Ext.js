@@ -331,6 +331,7 @@ go.module("Ext", ["Class"], function (go, global, undefined) {
             this.doneNodes();
         },
 
+        /* jshint maxstatements: 25, maxcomplexity: 15 */
         /**
          * Инициализация нод
          *
@@ -405,6 +406,7 @@ go.module("Ext", ["Class"], function (go, global, undefined) {
             }
             this.nodes = nodes;
         },
+        /* jshint maxstatements: 20, maxcomplexity: 10 */
 
         /**
          * Очищение структур данных
