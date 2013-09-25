@@ -79,6 +79,7 @@ go.module("Str", null, function (go, global, undefined) {
         };
     }
 
+    /* jshint maxcomplexity: 15 */
     /**
      * Checking if a value is numeric (numeric string or number directly)
      *
@@ -120,6 +121,7 @@ go.module("Str", null, function (go, global, undefined) {
             return false;
         }
     };
+    /* jshint maxcomplexity: 10 */
 
     /**
      * Repeat a string
