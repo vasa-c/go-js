@@ -792,6 +792,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
      */
     Carcas.Helpers = {
 
+        /*jshint maxstatements: 30 */
         /**
          * Привести список зависимостей к виду словаря
          *
@@ -854,6 +855,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
 
         'nodes': [["c", "controllers"], ["mo", "modules"], ["go", "go"], ["l", "libs"]]
     };
+    /*jshint maxstatements: 20 */
 
     return Carcas;
 });
