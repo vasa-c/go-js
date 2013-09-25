@@ -498,10 +498,9 @@ tests.test("static", function () {
             'value': 1,
 
             'getInstance': function () {
+                /* jshint newcap: false */
                 if (!this.instance) {
-                    /* jshint newcap: false */
                     this.instance = new this();
-                    /* jshint newcap: true */
                 }
                 return this.instance;
             },

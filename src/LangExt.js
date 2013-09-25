@@ -5,12 +5,12 @@
  * @subpackage Lang
  * @author     Grigoriev Oleg aka vasa_c <go.vasac@gmail.com>
  */
+/* jshint maxstatements: 50, maxcomplexity: 20 */
 
 if (!window.go) {
     throw new Error("go.core is not found");
 }
 
-/* jshint maxstatements: 50, maxcomplexity: 20 */
 go.module("LangExt", null, function (go, global, undefined) {
     "use strict";
     var Lang = go.Lang,

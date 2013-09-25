@@ -127,7 +127,6 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
             this.set(name, this.options['delete-value'], {'expires': "delete"});
         },
 
-        /* jshint maxstatements: 25 */
         /**
          * Create header for document.cookie
          *
@@ -139,6 +138,7 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
          * @return {String}
          */
         'createCookieHeader': function (name, value, params) {
+            /* jshint maxstatements: 25 */
             var header = [], expires, now, delta;
             header.push(name + "=" + this.escapeValue(value));
             params = this.normalizeParams(params || {});
@@ -169,7 +169,6 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
             }
             return header.join("; ");
         },
-        /* jshint maxstatements: 20 */
 
         /**
          * Value escaping for writing to document.cookie
@@ -261,7 +260,6 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
         'week'   : 604800
     };
 
-    /* jshint maxcomplexity: 20 */
     /**
      * Convert all possible formats expires to Date
      *
@@ -272,6 +270,7 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
      * @throws go.Cookie.CookieClass.Exceptions.ErrorExpires
      */
     CookieClass.parseExpires = function (expires, now) {
+        /* jshint maxcomplexity: 20 */
         if (typeof expires === "object") {
             if ((expires instanceof Date) || (Object.prototype.toString.call(expires) === "[object Date]")) {
                 return (new Date(expires.toUTCString()));
@@ -318,7 +317,6 @@ go.module("Cookie", ["Class", "Ext"], function (go, global, undefined) {
         }
         return now;
     };
-    /* jshint maxcomplexity: 10 */
 
     /**
      * @namespace go.Cookie.CookieClass.Exceptions

@@ -786,7 +786,6 @@ go.module("Class", null, function (go, global) {
             }
         },
 
-        /* jshint maxcomplexity: 15 */
         /**
          * Create mutators from direct line (without multiple inheritance)
          *
@@ -794,6 +793,7 @@ go.module("Class", null, function (go, global) {
          * @return void
          */
         'createDirectLine': function () {
+            /* jshint maxcomplexity: 15 */
             var C = this.Class,
                 mutators = this.mutators,
                 mprops   = C.__props.__mutators || {},
@@ -826,9 +826,7 @@ go.module("Class", null, function (go, global) {
                 }
             }
         },
-        /* jshint maxcomplexity: 10 */
 
-        /* jshint maxdepth: 10 */
         /**
          * Merging with mutators from minor parents
          *
@@ -836,6 +834,7 @@ go.module("Class", null, function (go, global) {
          * @return void
          */
         'mergeColBranch': function () {
+            /* jshint maxdepth: 10 */
             var oparents = this.Class.__otherParents,
                 oparent,
                 mutators = this.mutators,
@@ -859,7 +858,6 @@ go.module("Class", null, function (go, global) {
                 }
             }
         },
-        /* jshint maxdepth: 5 */
 
         /**
          * Create new mutator class

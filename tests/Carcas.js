@@ -234,14 +234,12 @@ tests.test("preload", function () {
     var TestCarcas, carcas;
 
     TestCarcas = go.Class(go.Carcas, {
-        /* jshint unused: true */
         /**
          * @override
          */
         'requestJSFile': function (filename) {
-
+            /* jshint unused: false */
         }
-        /* jshint unused: false */
     });
 
     carcas = new TestCarcas();
@@ -334,8 +332,8 @@ tests.test("Create parent module (controller)", function () {
     deepEqual(logs, expected);
 });
 
-/* jshint camelcase: false */
 tests.test("Events", function () {
+    /* jshint camelcase: false */
     var carcas, events = {}, expected = {}, TestCarcas, ondomload, onfullload, onunload;
 
     TestCarcas = go.Class(go.Carcas, {
@@ -450,7 +448,6 @@ tests.test("Events", function () {
     expected.three_done = true;
     deepEqual(events, expected);
 });
-/* jshint camelcase: true */
 
 tests.test("Exceptions", function () {
 

@@ -720,11 +720,11 @@ tests.test("some", function () {
 
     dict.d = 10;
     ok(go.Lang.some(dict, callback, context), "dict, callback + context, not empty");
-    /* jshint unused: false */
+
     callback = function (item, key, items) {
+        /* jshint unused: false */
         context[key] = item;
     };
-    /* jshint unused: true */
 
     list = [1, 2, 3];
     context = {};
@@ -788,11 +788,10 @@ tests.test("find", function () {
     context = {
         'd': 5
     };
-    /* jshint unused: false */
     callback = function (item, key, items) {
+        /* jshint unused: false */
         return item > context.d;
     };
-    /* jshint unused: true */
 
     list = [1, 2, 3, 4, 5];
     equal(go.Lang.find(list, callback, context), undefined, "list, callback + context, empty");

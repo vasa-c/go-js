@@ -124,7 +124,6 @@ var go = (function (global) {
                 this.preloaded = {};
             },
 
-            /* jshint maxstatements: 30 */
             /**
              * Request for including module
              *
@@ -136,6 +135,7 @@ var go = (function (global) {
              *        handler has finished loading all the modules from list
              */
             'include': function (names, listener) {
+                /* jshint maxstatements: 30 */
                 var len,
                     i,
                     name,
@@ -176,7 +176,6 @@ var go = (function (global) {
                     counter.filled();
                 }
             },
-            /* jshint maxstatements: 20 */
 
             /**
              * Processing of data loading module
@@ -665,7 +664,6 @@ go.module("Lang", null, function (go, global, undefined) {
             return f;
         },
 
-        /* jshint maxstatements: 50, maxcomplexity: 25 */
         /**
          * Getting extended type of value
          *
@@ -677,6 +675,7 @@ go.module("Lang", null, function (go, global, undefined) {
          *         name of type
          */
         'getType': function getType(value) {
+            /* jshint maxstatements: 50, maxcomplexity: 25 */
             var type, name;
 
             if (value && (typeof value.go$type === "string")) {
@@ -768,7 +767,6 @@ go.module("Lang", null, function (go, global, undefined) {
 
             return "object";
         },
-        /* jshint maxstatements: 20, maxcomplexity: 10 */
 
         /**
          * Whether the object is a simple dictionary
@@ -872,7 +870,6 @@ go.module("Lang", null, function (go, global, undefined) {
             };
         }()),
 
-        /* jshint maxcomplexity: 15 */
         /**
          * Convert value to Array
          *
@@ -882,6 +879,7 @@ go.module("Lang", null, function (go, global, undefined) {
          * @return {Array}
          */
         'toArray': function toArray(value) {
+            /* jshint maxcomplexity: 15 */
             var len, i, result;
             switch (Lang.getType(value)) {
             case "array":
@@ -912,7 +910,6 @@ go.module("Lang", null, function (go, global, undefined) {
                 return [value];
             }
         },
-        /* jshint maxcomplexity: 15 */
 
         /**
          * Checks if a value exists in an array
