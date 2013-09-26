@@ -1,9 +1,9 @@
 /**
- * go.Tests: юнит-тестирование для go.js
+ * go.Tests: unit testing go.js
  *
  * @package    go.js
  * @subpackage Tests
- * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
+ * @author     Grigoriev Oleg aka vasa_c <go.vasac@gmail.com>
  * @uses       QUnit (http://docs.jquery.com/QUnit)
  */
 /* global ok, deepEqual */
@@ -16,48 +16,47 @@ go.module("Tests", null, function (go, global) {
     "use strict";
 
     /**
-     * Прототип объектов тестирования.
-     * Создаются конструктором go.Tests().
+     * Prototype of test-objects
+     * These objects are created using go.Test()-constructor
      * @example var test = new go.Tests(modules, testDir)
      *
      * @class go.Tests
      * @property {String} testDir
-     *      каталог с js-файлами тестов
+     *           directory of test files
      * @property {Array} calls
-     *      список накопленных вызовов (function, args).
+     *           list of accumulated calls (function, args).
      */
     var TestsPrototype = {
-
         /**
          * @lends go.Tests.prototype
          */
 
         /**
-         * Список нужных глобальных функций QUnit
+         * Global QUnit functions
          *
-         * @const dict
+         * @const {Object}
          */
-        'QUNIT' : {
-            'test'   : global.test,
-            'module' : global.module
+        'QUNIT': {
+            'test': global.test,
+            'module': global.module
         },
 
         /**
          * @constructs
          * @name go.Tests#__constructor
          * @param {Array.<String>} modules
-         *        список имён тестируемых модулей
+         *        List of names of test modules
          * @param {String} testDir
-         *        каталог с js-файлами тестов
+         *        directory of test files
          */
         '__constructor': function (modules, testDir) {
             this.testDir = testDir;
-            this.calls   = [];
+            this.calls = [];
             this.loadModules(modules);
         },
 
         /**
-         * Запуск накопленных тестов
+         * Run accumulated tests
          *
          * @name go.Tests#run
          * @public
@@ -72,7 +71,7 @@ go.module("Tests", null, function (go, global) {
         },
 
         /**
-         * Деструктор
+         * Destructor
          *
          * @name go.Tests#destroy
          * @public
@@ -83,10 +82,10 @@ go.module("Tests", null, function (go, global) {
         },
 
         /**
-         * Определить тест
-         * Вызывается из файла юнит-тестов
+         * Add test to run
+         * Called from the file unit tests
          *
-         * Аргументы соответствуют test() из QUnit
+         * Arguments: see test() from QUnit
          * @see http://docs.jquery.com/QUnit/test#nameexpectedtest
          *
          * @name go.Tests#test
@@ -101,10 +100,10 @@ go.module("Tests", null, function (go, global) {
         },
 
         /**
-         * Указать текущий тестируемый модуль
-         * Вызывается из файла юнит-тестов
+         * Specify the current test module
+         * Called from the file unit tests
          *
-         * Аргументы соответствуют module() из QUnit
+         * Arguments: see module() from QUnit
          * @see http://docs.jquery.com/QUnit/module#namelifecycle
          *
          * @name go.Tests#test
@@ -118,9 +117,9 @@ go.module("Tests", null, function (go, global) {
         },
 
         /**
-         * Сравнение двух перемешанных массивов
+         * Comparison of the two mixed arrays
          *
-         * Списки значений в массивах должны совпадать, но порядок может различаться.
+         * Lists of values ​​in the array must be the same, but the order may vary.
          *
          * @param {Array} actual
          * @param {Array} expected
@@ -132,7 +131,6 @@ go.module("Tests", null, function (go, global) {
                 o2 = {},
                 len,
                 i;
-
             if (toString.call(actual) !== "[object Array]") {
                 ok(false, message);
                 return;
@@ -146,22 +144,20 @@ go.module("Tests", null, function (go, global) {
                 ok(false, message);
                 return;
             }
-
             for (i = 0; i < len; i += 1) {
                 o1[actual[i]] = true;
                 o2[expected[i]] = true;
             }
-
             deepEqual(o1, o2, message);
         },
 
         /**
-         * Загрузка нужных модулей и тестов к ним
+         * Load required modules with tests
          *
          * @name go.Tests#loadModules
          * @private
          * @param {Array.<String>} modules
-         *        список имён модулей
+         *        names of modules list
          * @return void
          */
         'loadModules': function (modules) {
