@@ -1,9 +1,9 @@
 /**
- * go.Carcas: небольшой фреймворк
+ * go.Carcas: a simply framework
  *
  * @package    go.js
  * @subpackage Carcas
- * @author     Григорьев Олег aka vasa_c (http://blgo.ru/)
+ * @author     Grigoriev Oleg aka vasa_c <go.vasac@gmail.com>
  * @uses       go.Class
  * @uses       jQuery
  */
@@ -17,8 +17,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
     /**
      * @class go.Carcas
      */
-    var Carcas = go.Class({
-
+    var Carcas = go.Class(null, {
         /**
          * @ignore
          */
@@ -101,7 +100,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
          */
 
         /**
-         * Общедоступный реестр
+         * Public registry
          *
          * @name go.Carcas#registry
          * @public
@@ -110,7 +109,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         'registry': null,
 
         /**
-         * Список загруженных контроллеров
+         * List of loaded controllers
          *
          * @name go.Carcas#controllersList
          * @public
@@ -119,7 +118,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         'controllersList': null,
 
         /**
-         * Список загруженных модулей
+         * List of loaded modules
          *
          * @name go.Carcas#modulesList
          * @public
@@ -128,7 +127,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         'modulesList': null,
 
         /**
-         * Список загруженных модулей
+         * List of loaded modules
          *
          * @name go.Carcas#mo
          * @alias go.Carcas#modulesList
@@ -138,7 +137,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         'mo': null,
 
         /**
-         * Базовый каталог контроллеров и модулей
+         * Basic directory of controllers and modules
          *
          * @name go.Carcas#root
          * @protected
@@ -147,7 +146,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         'root': null,
 
         /**
-         * Загрузчик дополнительных библиотек
+         * Loader of external libraries
          *
          * @name go.Carcas#libsLoader
          * @protected
@@ -156,7 +155,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         'libsLoader': null,
 
         /**
-         * Был ли каркас инициализован
+         * Was instance initialized?
          *
          * @name go.Carcas#inited
          * @protected
@@ -165,7 +164,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         'inited': false,
 
         /**
-         * Загрузчик
+         * Loader
          *
          * @name go.Carcas#loader
          * @protected
@@ -174,11 +173,11 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         'loader': null,
 
         /**
-         * Статус загрузки
+         * Loading status
          *
-         * 0 - до загрузки DOM
-         * 1 - DOM загружен
-         * 2 - полная загрузка
+         * 0 - before DOM loading
+         * 1 - DOM loaded
+         * 2 - full loaded
          *
          * @name go.Carcas#loadedStatus
          * @protected
@@ -187,7 +186,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         'loadedStatus': 0,
 
         /**
-         * Загруженные контроллеры и модули (имя => объект)
+         * Loading controllers and modules (name => object)
          *
          * @name go.Carcas#loadedObjects
          * @private
@@ -216,12 +215,12 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
 
 
         /**
-         * Инициализация и запуск каркаса
+         * Initializing and run carcas
          *
          * @name go.Carcas#init
          * @public
          * @param {Object} params
-         *        параметры (реестр, загружаемые контроллеры и т.п)
+         *        parameters (registry, controllers for load and etc)
          * @throws {go.Carcas.Exceptions.AlreadyInited}
          */
         'init': function (params) {
@@ -246,16 +245,16 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         },
 
         /**
-         * Определение модуля
+         * Define module
          *
          * @name go.Carcas#mo
          * @public
          * @param {String} name
-         *        имя модуля
+         *        module name
          * @param {(String|Array.<String>|Object)} [deps]
-         *        зависимости
+         *        dependencies
          * @param {Function} CModule
-         *        функция-конструктор модуля
+         *        module constructor
          * @throws go.Carcas.Exceptions.NotInited
          * @throws go.Carcas.Exceptions.ModuleRedeclare
          */
@@ -276,16 +275,16 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         },
 
         /**
-         * Определение контроллера
+         * Define controller
          *
          * @name go.Carcas#controller
          * @public
          * @param {String} name
-         *        имя контроллера
+         *        controller name
          * @param {(String|Object)} [deps]
-         *        зависимости
+         *        dependencies
          * @param {Object} props
-         *        поля класса контроллера (расширение go.Carcas.Controller)
+         *        fields of controller class (extends go.Carcas.Controller)
          * @throws go.Carcas.Exceptions.NotInited
          * @throws go.Carcas.Exceptions.ControllerRedeclare
          */
@@ -306,7 +305,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         },
 
         /**
-         * Колбэк includer для загрузчика
+         * Callback "includer" for loader
          * @see go.__Loader
          *
          * @name go.Carcas#includerForLoader
@@ -339,7 +338,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         },
 
         /**
-         * Колбэк creator для загрузчика
+         * Callback "creator" for loader
          * @see go.__Loader
          *
          * @name go.Carcas#creatorForLoader
@@ -372,7 +371,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         },
 
         /**
-         * Запрос на подключения JS-файла
+         * Request for js-file load
          *
          * @name go.Carcas#requestJSFile
          * @protected
@@ -383,7 +382,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         },
 
         /**
-         * Запрос на подключения сторонних библиотек
+         * Request for include external lib
          *
          * @name go.Carcas#requestOtherLib
          * @protected
@@ -397,7 +396,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         },
 
         /**
-         * Запрос на подключение модулей go
+         * Request for include go-extension
          *
          * @name go.Carcas#requestGoModule
          * @protected
@@ -411,14 +410,14 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         },
 
         /**
-         * Создание объекта контроллера
+         * Create controller instance
          *
          * @name go.Carcas#createController
          * @protected
          * @param {String} name
-         *        имя контроллера
+         *        controller name
          * @param {Object} props
-         *        расширение класса go.Carcas.Controller
+         *        controller fields (extends go.Carcas.Controller)
          */
         'createController': function (name, props) {
             var CController, controller;
@@ -438,14 +437,14 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         },
 
         /**
-         * Создание объекта модуля
+         * Create module
          *
          * @name go.Carcas#createModule
          * @protected
          * @param {String} name
-         *        имя модуля
+         *        module name
          * @param {Function} CModule
-         *        функция-конструктор модуля
+         *        module constructor
          */
         'createModule': function (name, CModule) {
             var module;
@@ -458,7 +457,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         },
 
         /**
-         * Записать объект (модуль|контроллер) по нужному пути (в зависимости от имени) в хранилище
+         * Save instance (module or controller) to the path in storage
          *
          * @name go.Carcas#setByPath
          * @protected
@@ -489,7 +488,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         },
 
         /**
-         * Установить слушаетели событий загрузки документа
+         * Set listeners of document loading
          *
          * @name go.Carcas#setEventsListeners
          * @protected
@@ -503,7 +502,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         },
 
         /**
-         * Обработка загрузки DOM
+         * Handler of DOM loading
          *
          * @name go.Carcas#ondomload
          * @protected
@@ -520,7 +519,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         },
 
         /**
-         * Обработка полной загрузки документа
+         * Handler of full loading
          *
          * @name go.Carcas#onload
          * @protected
@@ -537,7 +536,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         },
 
         /**
-         * Обработка закрытия страницы
+         * Handler of windows close
          *
          * @name go.Carcas#onunload
          * @protected
@@ -567,12 +566,11 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
 
         /**
          * @name go.Carcas#DOMLayer
-         *       весь интерфейс с DOM выносится сюда
+         *       interface for works with DOM
          */
         'DOMLayer': {
-
             /**
-             * Повесить обработчик на загрузку DOM
+             * Set handler of DOM load
              *
              * @name go.Carcas#DOMLayer.ondomload
              * @public
@@ -583,7 +581,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
             },
 
             /**
-             * Повесить обработчик на полную загрузку документа
+             * Set handler of full load
              *
              * @name go.Carcas#DOMLayer.onfullload
              * @public
@@ -594,7 +592,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
             },
 
             /**
-             * Повесить обработчик на закрытие страницы
+             * Set handler of window close
              *
              * @name go.Carcas#DOMLayer.onunload
              * @public
@@ -608,7 +606,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
 
     /**
      * @class go.Carcas.Controller
-     *        базовый класс контроллеров
+     *        basic controllers class
      * @augments go.Ext.Nodes
      */
     Carcas.Controller = go.Class([null, go.Ext.Nodes], {
@@ -620,7 +618,7 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
          */
 
         /**
-         * Название конструктора
+         * Controller name
          *
          * @name go.Carcas.Controller#name
          * @protected
@@ -629,6 +627,8 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         'name': null,
 
         /**
+         * Link on carcas
+         *
          * @name go.Carcas.Controller#carcas
          * @protected
          * @type {go.Carcas}
@@ -654,17 +654,19 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         },
 
         /**
-         * Действия после создания объекта
+         * Actions after create instance
          *
          * @name go.Carcas.Controller#oncreate
          * @protected
          * @return void
          */
         'oncreate': function () {
-            // переопределятеся у потомков
+            // for override
         },
 
         /**
+         * Handle DOM load
+         *
          * @name go.Carcas.Controller#ondomload
          * @private
          * @return void
@@ -675,50 +677,52 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
         },
 
         /**
-         * Действия после загрузки DOM
+         * Action after DOM load
          *
          * @name go.Carcas.Controller#init
          * @protected
          * @return void
          */
         'init': function () {
-            // переопределяется у потомков
+            // for override
         },
 
         /**
-         * Действия после загрузки всех ресурсов
+         * Action after full load
          *
          * @name go.Carcas.Controller#onload
          * @protected
          * @return void
          */
         'onload': function () {
-            // переопределяется у потомков
+            // for override
         },
 
         /**
-         * Действия перед закрытием страницы
+         * Action before window close
          *
          * @name go.Carcas.Controller#onunload
          * @protected
          * @return void
          */
         'onunload': function () {
-
+            // for override
         },
 
         /**
-         * Действия перед разрушением объекта
+         * Action before destroying object
          *
          * @name go.Carcas.Controller#done
          * @protected
          * @return void
          */
         'done': function () {
-            // переопределяется у потомков
+            // for override
         },
 
         /**
+         * String representation of controller instance
+         *
          * @return {String}
          */
         'toString': function () {
@@ -730,54 +734,52 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
 
     /**
      * @namespace go.Carcas.Exceptions
-     *            исключения при работе с библиотекой
      */
     Carcas.Exceptions = new go.Lang.Exception.Block({
 
         /**
          * @class go.Carcas.Exceptions.Base
-         *        базовое исключение при работе с библиотекой
          * @abstract
          */
 
         /**
          * @class go.Carcas.Exceptions.AlreadyInited
-         *        попытка инициализовать уже инициализированный каркас
+         *        attempt to initialize an already initialized carcas
          * @augments go.Carcas.Exceptions.Base
          */
         'AlreadyInited': [true, "already initialized"],
 
         /**
          * @class go.Carcas.Exceptions.NotInited
-         *        попытка доступа к ещё не инициализированному каркасу
+         *        attempting to access is not yet initialized carcas
          * @augments go.Carcas.Exceptions.Base
          */
         'NotInited': [true, "is not initialized"],
 
         /**
          * @class go.Carcas.Exceptions.ModuleRedeclare
-         *        попытка повторно определить модуль
+         *        attempting to redeclare module
          * @augments go.Carcas.Exceptions.Base
          */
         'ModuleRedeclare': [true, "module redeclare"],
 
         /**
          * @class go.Carcas.Exceptions.ControllerRedeclare
-         *        попытка повторно определить контроллер
+         *        attempting to redeclare controller
          * @augments go.Carcas.Exceptions.Base
          */
         'ControllerRedeclare': [true, "controller redeclare"],
 
         /**
          * @class go.Carcas.Exceptions.ErrorDependence
-         *        ошибочная зависимость
+         *        invalid dependence
          * @augments go.Carcas.Exceptions.Base
          */
         'ErrorDependence': [true, "error dependence"],
 
         /**
          * @class go.Carcas.Exceptions.MainInstanceCreated
-         *        попытка заменить уже созданный основной объект (через setInstance)
+         *        attempt to replace main object (setInstance), which has already been created
          * @augments go.Carcas.Exceptions.Base
          */
         'MainInstanceCreated': [true, "main instance already created"]
@@ -786,13 +788,12 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
 
     /**
      * @namespace Carcas.Helpers
-     *            некоторые вспомогательные функции
      */
     Carcas.Helpers = {
 
         /*jshint maxstatements: 30 */
         /**
-         * Привести список зависимостей к виду словаря
+         * Convert dependencies list to dictionary
          *
          * @name go.Carcas.Helpers
          * @public
@@ -814,16 +815,13 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
                 nodes,
                 node,
                 list;
-
             if (!deps) {
                 return [];
             }
-
             if (typeof deps === "string") {
                 deps = deps.split(",");
                 isarray = true;
             }
-
             if (isarray) {
                 result = [];
                 for (i = 0, len = deps.length; i < len; i += 1) {
@@ -835,7 +833,6 @@ go.module("Carcas", ["Class", "Ext"], function (go, global) {
                 }
                 return result;
             }
-
             result = [];
             nodes = Carcas.Helpers.nodes;
             for (i = 0, len = nodes.length; i < len; i += 1) {
